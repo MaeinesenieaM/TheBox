@@ -1,6 +1,8 @@
 //possible required code.
 //use fastrand;
 
+use std::fs;
+
 use sdl2::pixels::Color;
 //use sdl2::render::*;
 
@@ -23,12 +25,17 @@ fn main() {
 
     let mut event_pump = sdl2.event_pump().unwrap();
 
+    match directory_manager() {
+        Ok (()) => {}
+        Err (error) => { println! ("{:?}", error); }
+    };
+
     'running: loop {
         canvas.set_draw_color(Color::RGB(20, 20, 20));
         canvas.clear();
 
         for event in event_pump.poll_iter() {
-            match event{
+            match event {
                 Event::Quit {..} => { break 'running }, 
                 _ => {}
             }
@@ -36,4 +43,20 @@ fn main() {
 
         canvas.present();
     }
+}
+
+fn directory_manager () -> std::io::Result<()> {
+
+    for entry in fs::read_dir("./src")? {
+        let entry = entry?;
+        if entry.path().to_str().unwrap() == "./src\\Items" { 
+            println! ("Found Items directory.");
+            return Ok (());
+        }        
+    }
+    println! ("[Items] directory not found.\nCreating [Items] directory...");
+    fs::create_dir("./src/Items")?;
+    println! ("[Items] created!");
+
+    Ok (())
 }
