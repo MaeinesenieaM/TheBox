@@ -7,7 +7,7 @@ use sdl2::pixels::Color;
 //use sdl2::render::*;
 
 use sdl2::event::Event;
-//use sdl2::keyboard::*;
+use sdl2::keyboard::*;
 //use sdl2::rect::*;
 
 fn main() {
@@ -25,7 +25,7 @@ fn main() {
 
     let mut event_pump = sdl2.event_pump().unwrap();
 
-    match directory_manager() {
+    match directory_verifier() {
         Ok (()) => {}
         Err (error) => { println! ("{:?}", error); }
     };
@@ -36,7 +36,8 @@ fn main() {
 
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit {..} => { break 'running }, 
+                Event::Quit {..} => { break 'running },
+                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { println! ("TO DO!"); }
                 _ => {}
             }
         }
@@ -45,12 +46,12 @@ fn main() {
     }
 }
 
-fn directory_manager () -> std::io::Result<()> {
+fn directory_verifier () -> std::io::Result<()> {
 
     for entry in fs::read_dir("./src")? {
         let entry = entry?;
         if entry.path().to_str().unwrap() == "./src\\Items" { 
-            println! ("Found Items directory.");
+            println! ("Found [Items] directory!");
             return Ok (());
         }        
     }
