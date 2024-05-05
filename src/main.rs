@@ -1,59 +1,44 @@
 //possible required code.
 //use fastrand;
+
 use std::fs;
 //use std::io;
 
 use sdl2::pixels::Color;
-use sdl2::video::GLProfile;
+
 //use sdl2::render::Canvas;
 
-use sdl2::ttf;
+
 //use sdl2::gfx;
 
 use sdl2::event::Event;
 use sdl2::keyboard::*;
 //use sdl2::rect::*;
 
+pub mod window;
+use window::*;
 
 fn main() {
     println!("The box shall open, once again...");
 
-    let sdl2 = sdl2::init().unwrap();
-    let video_subsystem = sdl2.video().unwrap(); 
-
-    let gl_attr = video_subsystem.gl_attr();
-    gl_attr.set_context_profile(GLProfile::Core);
-    gl_attr.set_context_version(3, 2);
-
-    let window = video_subsystem.window("Box", 800, 600)
-        .opengl()        
-        .position_centered()
-        .build().unwrap();
-
-    let mut canvas = window.into_canvas()       
-        .present_vsync()
-        .build().unwrap();
-    let texture_creator = canvas.texture_creator();   
+    let mut sdl_context = SdlContext::init_window(800, 600);
+    let mut display = Display::init_display(sdl_context.window); 
 
     match directory_verifier() {
         Ok (()) => {}
         Err (error) => { println! ("{:?}", error); }
-    };
+    };  
 
-    let ttf = ttf::init().unwrap();
-    let ttf_font = ttf.load_font("./src/main_assets/Fixedsys.ttf", 32).expect("COULD NOT FIND FILE!");
+    let mut steps : i32 = 0;
 
-    //creates the texture for text #TODO! Create a way to do this more intuitive.#
-    let text_texture = ttf_font.render(":)").solid(Color::RGB(150, 150, 165)).unwrap().as_texture(&texture_creator).unwrap();
-
-    let mut event_pump = sdl2.event_pump().unwrap();
     'running: loop {
         
-        canvas.set_draw_color(Color::RGB(20, 20, 20));
-        canvas.clear();
-        let _ = canvas.copy(&text_texture, None, None);
+        display.canvas.set_draw_color(Color::RGB(20, 20, 20));
+        display.canvas.clear();
+        display.create_text(0, (steps * 2) % 600, "i can do anything!", 16);
+        steps += 1;
 
-        for event in event_pump.poll_iter() {
+        for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => { break 'running },
                 Event::KeyDown { keycode: Some(Keycode::Return), .. } => { println! ("TO DO!"); }
@@ -61,7 +46,7 @@ fn main() {
             }
         }
 
-        canvas.present();
+        display.canvas.present();
     }
 }
 
