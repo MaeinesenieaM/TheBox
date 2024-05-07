@@ -2,6 +2,7 @@
 //use fastrand;
 
 use std::fs;
+use std::time::{Duration, Instant};
 //use std::io;
 
 use sdl2::pixels::Color;
@@ -29,23 +30,38 @@ fn main() {
         Err (error) => { println! ("{:?}", error); }
     };  
 
-    let mut steps : i32 = 0;
+    let mut frames = 0;
+    let mut temp_frames = 0;
+    let mut instant = Instant::now();
+
+    let mut conta : i32 = 0;
 
     'running: loop {
         
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
-        display.create_text(0, (steps * 2) % 600, "i can do anything!", 16);
-        steps += 1;
 
         for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => { break 'running },
-                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { println! ("TO DO!"); }
+                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { println! ("TO DO!"); },
+                Event::KeyDown { keycode: Some(Keycode::Down), .. } => { conta -= 1; },
+                Event::KeyDown { keycode: Some(Keycode::Up), .. } => { conta += 1; },
                 _ => {}
             }
         }
 
+        //basic framerate counter.
+        if instant.elapsed() >= Duration::from_secs(1) {
+            temp_frames = frames;
+            frames = 0;
+            instant = Instant::now();
+        }
+
+        display.create_text(400, 300, &conta.to_string(), 16);
+        display.create_text(0, 0, &temp_frames.to_string(), 8);
+
+        frames += 1;
         display.canvas.present();
     }
 }

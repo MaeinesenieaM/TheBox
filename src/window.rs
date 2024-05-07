@@ -7,6 +7,7 @@ use sdl2::video::Window;
 
 use sdl2::render::*;
 use sdl2::video::WindowContext;
+use sdl2::gfx::framerate::FPSManager;
 
 pub struct SdlContext {
 	pub sdl2: Sdl,
@@ -17,6 +18,7 @@ pub struct SdlContext {
 pub struct Display {
 	pub canvas: WindowCanvas,
 	pub texture_creator: TextureCreator <WindowContext>,
+	pub fps_manager: FPSManager,
 }
 
 impl SdlContext {
@@ -44,22 +46,23 @@ impl Display {
 			.present_vsync()
         	.build().unwrap();
         let texture_creator = canvas.texture_creator();
+        let fps_manager = FPSManager::new();
         Display {
         	canvas,
         	texture_creator,
+        	fps_manager,
         }
 	}
 
-	//Creates a texture of a text with the given string.
+	//Draws a text with the given string.
 	pub fn create_text (&mut self, x: i32, y: i32, string: &str, size: u32) {
     	let ttf = ttf::init().unwrap();
     	let ttf_font = ttf.load_font("./src/main_assets/Fixedsys.ttf", 32).expect("COULD NOT FIND FONT!");
 
     	let texture = ttf_font.render(string).solid(Color::RGB(210, 210, 220)).unwrap().as_texture(&self.texture_creator).unwrap();
-
     	let string_len : u32 = string.len().try_into().unwrap();
 
-    	let rectangle = sdl2::rect::Rect::new(x, y, string_len * size, size * 2);
-    	let _ = self.canvas.copy(&texture, None, rectangle);
+    	let area = sdl2::rect::Rect::new(x, y, string_len * size, size * 2);
+    	let _ = self.canvas.copy(&texture, None, area);
 	}
 }
