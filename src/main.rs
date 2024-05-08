@@ -21,8 +21,8 @@ use window::*;
 fn main() {
     println!("The box shall open, once again...");
 
-    let mut sdl_context = SdlContext::init_window(800, 600);
-    let mut display = Display::init_display(sdl_context.window); 
+    let mut sdl_context = SdlContext::init_context();
+    let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600); 
 
     match directory_verifier() {
         Ok (()) => {}
@@ -33,21 +33,26 @@ fn main() {
     let mut temp_frames = 0;
     let mut instant = Instant::now();
 
-    let mut conta : i32 = 0;
+    let mut count : i32 = 0;
+    let mut enter : u16 = 0;
 
     'running: loop {
         
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
-        display.canvas.clear();
 
         for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => { break 'running },
-                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { items::select_item(conta); },
-                Event::KeyDown { keycode: Some(Keycode::Down), .. } => { conta -= 1; },
-                Event::KeyDown { keycode: Some(Keycode::Up), .. } => { conta += 1; },
+                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { enter = 1; },
+                Event::KeyDown { keycode: Some(Keycode::Down), .. } => { count -= 1; },
+                Event::KeyDown { keycode: Some(Keycode::Up), .. } => { count += 1; },
                 _ => {}
             }
+        }
+
+        if enter == 1 {
+            items::select_item(count, &mut display, &mut sdl_context.event_pump);
+            enter = 0;
         }
 
         //basic framerate counter.
@@ -57,7 +62,10 @@ fn main() {
             instant = Instant::now();
         }
 
-        display.create_text(400, 300, &conta.to_string(), 16);
+        
+        display.canvas.clear();
+
+        display.create_text_centered(400, 300, &count.to_string(), 16);
         display.create_text(0, 0, &temp_frames.to_string(), 8);
 
         frames += 1;
