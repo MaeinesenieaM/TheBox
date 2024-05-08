@@ -8,8 +8,6 @@ use std::time::{Duration, Instant};
 use sdl2::pixels::Color;
 
 //use sdl2::render::Canvas;
-
-
 //use sdl2::gfx;
 
 use sdl2::event::Event;
@@ -17,6 +15,7 @@ use sdl2::keyboard::*;
 //use sdl2::rect::*;
 
 pub mod window;
+pub mod items;
 use window::*;
 
 fn main() {
@@ -44,7 +43,7 @@ fn main() {
         for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => { break 'running },
-                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { println! ("TO DO!"); },
+                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { items::select_item(conta); },
                 Event::KeyDown { keycode: Some(Keycode::Down), .. } => { conta -= 1; },
                 Event::KeyDown { keycode: Some(Keycode::Up), .. } => { conta += 1; },
                 _ => {}
