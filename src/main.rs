@@ -27,7 +27,10 @@ fn main() {
     match directory_verifier() {
         Ok (()) => {}
         Err (error) => { println! ("{:?}", error); }
-    };  
+    };
+
+    let ttf = sdl2::ttf::init().unwrap();
+    let mut write = Write::init_write(&ttf);
 
     let mut frames = 0;
     let mut temp_frames = 0;
@@ -37,9 +40,7 @@ fn main() {
     let mut enter : u16 = 0;
 
     'running: loop {
-        
-        display.canvas.set_draw_color(Color::RGB(20, 20, 20));
-
+                
         for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => { break 'running },
@@ -51,7 +52,7 @@ fn main() {
         }
 
         if enter == 1 {
-            items::select_item(count, &mut display, &mut sdl_context.event_pump);
+            items::select_item(count, &mut display, &mut sdl_context.event_pump, &mut write);
             enter = 0;
         }
 
@@ -62,11 +63,11 @@ fn main() {
             instant = Instant::now();
         }
 
-        
+        display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
 
-        display.create_text_centered(400, 300, &count.to_string(), 16);
-        display.create_text(0, 0, &temp_frames.to_string(), 8);
+        display.draw_text_centered(400, 300, &write, &count.to_string(), 16);
+        display.draw_text(0, 0, &write, &temp_frames.to_string(), 8);
 
         frames += 1;
         display.canvas.present();

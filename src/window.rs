@@ -20,6 +20,12 @@ pub struct Display {
 	pub fps_manager: FPSManager,
 }
 
+pub struct Write<'t, 'f> {
+	pub ttf : &'t ttf::Sdl2TtfContext,
+	pub font : ttf::Font<'t, 'f>,
+	pub color : Color,
+}
+
 impl SdlContext {
 	pub fn init_context() -> SdlContext {
 		let sdl2 = sdl2::init().unwrap();
@@ -55,11 +61,8 @@ impl Display {
 	}
 
 	//Draws a text with the given string.
-	pub fn create_text (&mut self, x: i32, y: i32, string: &str, size: u32) {
-    	let ttf = ttf::init().unwrap();
-    	let ttf_font = ttf.load_font("./src/main_assets/Fixedsys.ttf", 32).expect("COULD NOT FIND FONT!");
-
-    	let texture = ttf_font.render(string).solid(Color::RGB(210, 210, 220)).unwrap().as_texture(&self.texture_creator).unwrap();
+	pub fn draw_text (&mut self, x: i32, y: i32, write: &Write, string: &str, size: u32) {
+    	let texture = write.create_text(&self.texture_creator, string);
     	let string_len : u32 = string.len().try_into().unwrap();
 
     	let area = sdl2::rect::Rect::new(x, y, string_len * size, size * 2);
@@ -67,17 +70,37 @@ impl Display {
 	}
 
 	//Same as above but cetered.
-	pub fn create_text_centered (&mut self, x: i32, y: i32, string: &str, size: u32) {
-    	let ttf = ttf::init().unwrap();
-    	let ttf_font = ttf.load_font("./src/main_assets/Fixedsys.ttf", 32).expect("COULD NOT FIND FONT!");
-
-    	let texture = ttf_font.render(string).solid(Color::RGB(210, 210, 220)).unwrap().as_texture(&self.texture_creator).unwrap();
+	pub fn draw_text_centered (&mut self, x: i32, y: i32, write: &Write, string: &str, size: u32) {
+    	let texture = write.create_text(&self.texture_creator, string);
     	let string_len : u32 = string.len().try_into().unwrap();
 
-    	//I hate this middle variable.
-    	let middle : i32 = ((string_len * size ) / 2).try_into().unwrap();
+    	let middle : i32 = ((string_len * size) / 2).try_into().unwrap();	//I hate this middle variable.
 
     	let area = sdl2::rect::Rect::new(x - middle, y, string_len * size, size * 2);
     	let _ = self.canvas.copy(&texture, None, area);
+	}
+}
+
+impl Write<'_, '_> {
+	pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext) -> Write<'t, 'f> {
+		let font: ttf::Font<'t, 'f> = ttf.load_font("./src/main_assets/Fixedsys.ttf", 32).expect("COULD NOT FIND FONT!");
+		let color = Color::RGB(210, 210, 220);
+		Write {
+			ttf,
+			font,
+			color,
+		}
+	}
+
+	pub fn create_text<'b>(& self, texture_creator: &'b TextureCreator<WindowContext>, string: &str) -> Texture<'b> {
+		self.font.render(string).solid(self.color).unwrap().as_texture(texture_creator).unwrap()
+	}
+
+	pub fn set_font(&mut self, path: &str) {
+		self.font = self.ttf.load_font(path, 32).expect("COULD NOT FIND FONT!");
+	}
+
+	pub fn set_draw_color(&mut self, r: u8, g: u8, b: u8) {
+		self.color = Color::RGB(r, g, b);
 	}
 }
