@@ -10,6 +10,9 @@ pub fn start (display: &mut Display, event_pump: &mut sdl2::EventPump, write: &m
 	
 	let radius : i16 = 100;
 
+	let mut blue : u8 = 120;
+	let mut over : bool = false;
+
 	let mut angle : f32 = 0.0;
 	
 	let circle_color : Color = Color::RGB(120, 120, 120);
@@ -35,14 +38,21 @@ pub fn start (display: &mut Display, event_pump: &mut sdl2::EventPump, write: &m
 		display.canvas.set_draw_color(Color::RGB(20, 20, 20));
 		display.canvas.clear();
 
-		display.draw_text_centered(400, 500, &write, "ORBIT!", 16);
+		write.set_draw_color_rgb(120, 120, blue);
+		display.draw_text_centered(&write, 400, 500, "ORBIT!", 16);
 
 		let _ = display.canvas.aa_circle(400, 300, radius, circle_color);
 		let _ = display.canvas.filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);
 
+		if blue == 255 || blue == 0 {over = !over};
+
+		if over == true {blue  += 1}
+		else {blue -= 1};
 		angle += 0.02;
 
 		display.canvas.present();
 	}
+
+	write.set_draw_color(super::super::DEFAULT_COLOR);
 }
 

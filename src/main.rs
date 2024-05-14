@@ -3,20 +3,18 @@
 
 use std::fs;
 use std::time::{Duration, Instant};
-//use std::io;
 
 use sdl2::pixels::Color;
 
-//use sdl2::render::Canvas;
-//use sdl2::gfx;
-
 use sdl2::event::Event;
 use sdl2::keyboard::*;
-//use sdl2::rect::*;
 
 pub mod window;
 pub mod items;
 use window::*;
+
+pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
+pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
 fn main() {
     println!("The box shall open, once again...");
@@ -30,7 +28,7 @@ fn main() {
     };
 
     let ttf = sdl2::ttf::init().unwrap();
-    let mut write = Write::init_write(&ttf);
+    let mut write = Write::init_write(&ttf, DEFAULT_COLOR);
 
     let mut frames = 0;
     let mut temp_frames = 0;
@@ -63,11 +61,11 @@ fn main() {
             instant = Instant::now();
         }
 
-        display.canvas.set_draw_color(Color::RGB(20, 20, 20));
+        display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
-        display.draw_text_centered(400, 300, &write, &count.to_string(), 16);
-        display.draw_text(0, 0, &write, &temp_frames.to_string(), 8);
+        display.draw_text_centered(&write, 400, 300, &count.to_string(), 16);
+        display.draw_text(&write, 0, 0,  &temp_frames.to_string(), 8);
 
         frames += 1;
         display.canvas.present();

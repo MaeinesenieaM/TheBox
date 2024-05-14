@@ -61,7 +61,7 @@ impl Display {
 	}
 
 	//Draws a text with the given string.
-	pub fn draw_text (&mut self, x: i32, y: i32, write: &Write, string: &str, size: u32) {
+	pub fn draw_text (&mut self, write: &Write, x: i32, y: i32,  string: &str, size: u32) {
     	let texture = write.create_text(&self.texture_creator, string);
     	let string_len : u32 = string.len().try_into().unwrap();
 
@@ -70,7 +70,7 @@ impl Display {
 	}
 
 	//Same as above but cetered.
-	pub fn draw_text_centered (&mut self, x: i32, y: i32, write: &Write, string: &str, size: u32) {
+	pub fn draw_text_centered (&mut self, write: &Write, x: i32, y: i32, string: &str, size: u32) {
     	let texture = write.create_text(&self.texture_creator, string);
     	let string_len : u32 = string.len().try_into().unwrap();
 
@@ -82,9 +82,9 @@ impl Display {
 }
 
 impl Write<'_, '_> {
-	pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext) -> Write<'t, 'f> {
+	pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext, color: Color) -> Write<'t, 'f> {
 		let font: ttf::Font<'t, 'f> = ttf.load_font("./src/main_assets/Fixedsys.ttf", 32).expect("COULD NOT FIND FONT!");
-		let color = Color::RGB(210, 210, 220);
+		let color = color;
 		Write {
 			ttf,
 			font,
@@ -100,7 +100,11 @@ impl Write<'_, '_> {
 		self.font = self.ttf.load_font(path, 32).expect("COULD NOT FIND FONT!");
 	}
 
-	pub fn set_draw_color(&mut self, r: u8, g: u8, b: u8) {
+	pub fn set_draw_color_rgb(&mut self, r: u8, g: u8, b: u8) {
 		self.color = Color::RGB(r, g, b);
+	}
+
+	pub fn set_draw_color(&mut self, color: Color) {
+		self.color = color;
 	}
 }
