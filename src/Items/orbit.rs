@@ -1,58 +1,71 @@
 use sdl2::event::Event;
-use sdl2::pixels::Color;
 use sdl2::keyboard::*;
+use sdl2::pixels::Color;
 
 use sdl2::gfx::primitives::DrawRenderer;
 
 use crate::window::{Display, Write};
 
-pub fn start (display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
-	
-	let radius : i16 = 100;
+pub const NAME : &str = "Orbit";
+pub const ID : u8 = 1;
 
-	let mut blue : u8 = 120;
-	let mut over : bool = false;
+pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
+    let radius: i16 = 100;
 
-	let mut angle : f32 = 0.0;
-	
-	let circle_color : Color = Color::RGB(120, 120, 120);
+    let mut blue: u8 = 120;
+    let mut over: bool = false;
 
-	'repeat: loop {
-
-		let circle_cos_y : i16 = unsafe { (400.0 + (100.0 * angle.cos()).ceil()).to_int_unchecked() };
-		let circle_sin_x : i16 = unsafe { (300.0 + (100.0 * angle.sin()).ceil()).to_int_unchecked() };
+    let mut angle: f32 = 0.0;
 
 
-		for event in event_pump.poll_iter() {
-			match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => { 
-                	break 'repeat 
-                },
+    let windowref = display.canvas.window();
+
+    let (window_x, window_y) = windowref.size();
+    let window_x_middle: i16 = (window_x / 2).try_into().unwrap();
+    let window_y_middle: i16 = (window_y / 2).try_into().unwrap();
+
+    let circle_color: Color = Color::RGB(120, 120, 120);
+
+    'repeat: loop {
+        let circle_cos_y: i16 =
+            unsafe { window_x_middle + (100.0 * angle.cos()).to_int_unchecked::<i16>()};
+        let circle_sin_x: i16 =
+            unsafe { window_y_middle + (100.0 * angle.sin()).to_int_unchecked::<i16>()};
+
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'repeat,
                 _ => {}
             }
-		}
+        }
 
-		println!("cos: {} sin: {} angle: {}", circle_cos_y, circle_sin_x, angle);
+        display.canvas.set_draw_color(Color::RGB(20, 20, 20));
+        display.canvas.clear();
 
-		display.canvas.set_draw_color(Color::RGB(20, 20, 20));
-		display.canvas.clear();
+        write.set_draw_color_rgb(120, 120, blue);
+        display.draw_text_centered(&write, window_x_middle.into(), (window_y_middle + 100).into(), "ORBIT!", 16);
 
-		write.set_draw_color_rgb(120, 120, blue);
-		display.draw_text_centered(&write, 400, 500, "ORBIT!", 16);
+        let _ = display.canvas.aa_circle(window_x_middle, window_y_middle, radius, circle_color);
+        let _ = display.canvas.filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);
 
-		let _ = display.canvas.aa_circle(400, 300, radius, circle_color);
-		let _ = display.canvas.filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);
+        if blue == 255 || blue == 0 {
+            over = !over
+        };
 
-		if blue == 255 || blue == 0 {over = !over};
+        if over == true {
+            blue += 1
+        } else {
+            blue -= 1
+        };
 
-		if over == true {blue  += 1}
-		else {blue -= 1};
-		angle += 0.02;
+        angle += 0.02;
 
-		display.canvas.present();
-	}
+        display.canvas.present();
+    }
 
-	write.set_draw_color(super::super::DEFAULT_COLOR);
+    write.set_draw_color(super::super::DEFAULT_COLOR);
 }
-

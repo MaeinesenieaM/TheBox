@@ -9,8 +9,8 @@ use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::*;
 
-pub mod window;
 pub mod items;
+pub mod window;
 use window::*;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
@@ -20,11 +20,13 @@ fn main() {
     println!("The box shall open, once again...");
 
     let mut sdl_context = SdlContext::init_context();
-    let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600); 
+    let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600);
 
     match directory_verifier() {
-        Ok (()) => {}
-        Err (error) => { println! ("{:?}", error); }
+        Ok(()) => {}
+        Err(error) => {
+            println!("{:?}", error);
+        }
     };
 
     let ttf = sdl2::ttf::init().unwrap();
@@ -34,17 +36,35 @@ fn main() {
     let mut temp_frames = 0;
     let mut instant = Instant::now();
 
-    let mut count : i32 = 0;
-    let mut enter : u16 = 0;
+    let mut count: i32 = 1;
+    let mut enter: u16 = 0;
 
     'running: loop {
-                
         for event in sdl_context.event_pump.poll_iter() {
             match event {
-                Event::Quit {..} => { break 'running },
-                Event::KeyDown { keycode: Some(Keycode::Return), .. } => { enter = 1; },
-                Event::KeyDown { keycode: Some(Keycode::Down), .. } => { count -= 1; },
-                Event::KeyDown { keycode: Some(Keycode::Up), .. } => { count += 1; },
+                Event::Quit { .. } |
+                Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Return),
+                    ..
+                } => {
+                    enter = 1;
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Down),
+                    ..
+                } => {
+                    count -= 1;
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Up),
+                    ..
+                } => {
+                    count += 1;
+                }
                 _ => {}
             }
         }
@@ -64,26 +84,25 @@ fn main() {
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
-        display.draw_text_centered(&write, 400, 300, &count.to_string(), 16);
-        display.draw_text(&write, 0, 0,  &temp_frames.to_string(), 8);
+        display.draw_text_centered(&write, 400, 300, items::name_item(count), 16);
+        display.draw_text(&write, 0, 0, &temp_frames.to_string(), 8);
 
         frames += 1;
         display.canvas.present();
     }
 }
 
-fn directory_verifier () -> std::io::Result<()> {
-
+fn directory_verifier() -> std::io::Result<()> {
     for entry in fs::read_dir("./src")? {
         let entry = entry?;
-        if entry.path().to_str().unwrap() == "./src\\Items" { 
-            println! ("Found [Items] directory!");
-            return Ok (());
-        }        
+        if entry.path().to_str().unwrap() == "./src\\Items" {
+            println!("Found [Items] directory!");
+            return Ok(());
+        }
     }
-    println! ("[Items] directory not found.\nCreating [Items] directory...");
+    println!("[Items] directory not found.\nCreating [Items] directory...");
     fs::create_dir("./src/Items")?;
-    println! ("[Items] created!");
+    println!("[Items] created!");
 
-    Ok (())
+    Ok(())
 }

@@ -6,8 +6,8 @@ use sdl2::keyboard::*;
 
 use crate::window::{Display, Write};
 
-pub const NAME : &str = "Rays";
-pub const ID : u8 = 2;
+pub const NAME : &str = "Audio";
+pub const ID : u8 = 5;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
     'repeat: loop {
@@ -28,7 +28,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             &write,
             400,
             550,
-            "This section will be focused on making rays that bounces on the walls.",
+            "There will be audio playing here at some point.",
             8,
         );
 
