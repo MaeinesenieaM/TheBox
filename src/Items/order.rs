@@ -1,39 +1,59 @@
 use sdl2::event::Event;
 use sdl2::rect::*;
 use sdl2::pixels::Color;
+
 use sdl2::keyboard::*;
+use sdl2::mouse::*;
 
 //use sdl2::gfx::primitives::DrawRenderer;
-
+/*
+struct Entity {
+    fill: bool,
+    data: i32,
+    pos_x: i16,
+    pos_y: i16,
+}
+*/
 use crate::window::{Display, Write};
 
 pub const NAME : &str = "Order";
 pub const ID : u8 = 3;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
-
 	let window = display.canvas.window();
 
 	let points = grid_points(window.size(), 16);
+
     'repeat: loop {
+        let _mouse = MouseState::new(&event_pump);
+
     	display.canvas.set_draw_color(super::super::DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
+                Event::Quit { .. } | 
+                Event::KeyDown {
+                    keycode: Some(Keycode::Escape), ..
                 } => break 'repeat,
                 _ => {}
             }
         }
 
+        let mut count = 0;
+
         for point in points.iter() {
-        	display.canvas.set_draw_color(Color::RGB(100, 100, 100));
-        	let _ = display.canvas.draw_point(*point);
+            count = count + 1;
+        	let pos: (i32, i32) = sdl2::rect::Point::from(*point.clone()).into();
+            let rectangle = Rect::new(pos.0, pos.1, 16, 16);
+            display.canvas.set_draw_color(Color::RGB(100, 120, 100));
+            let _ = display.canvas.draw_rect(rectangle);
+            display.canvas.set_draw_color(Color::RGB(200, 200, 200));
+            let _ = display.canvas.draw_point(*point);
+        	
         }
+
+
 
         display.draw_text_centered(
             &write,

@@ -27,10 +27,8 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     let circle_color: Color = Color::RGB(120, 120, 120);
 
     'repeat: loop {
-        let circle_cos_y: i16 =
-            unsafe { window_x_middle + (100.0 * angle.cos()).to_int_unchecked::<i16>()};
-        let circle_sin_x: i16 =
-            unsafe { window_y_middle + (100.0 * angle.sin()).to_int_unchecked::<i16>()};
+        let circle_sin_x: i16 = window_y_middle + (100.0 * angle.sin()) as i16;
+        let circle_cos_y: i16 = window_x_middle + (100.0 * angle.cos()) as i16;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -47,7 +45,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         display.canvas.clear();
 
         write.set_draw_color_rgb(120, 120, blue);
-        display.draw_text_centered(&write, window_x_middle.into(), (window_y_middle + 100).into(), "ORBIT!", 16);
+        display.draw_text_centered(&write, window_x_middle as i32, (window_y_middle + 100) as i32, "ORBIT!", 16);
 
         let _ = display.canvas.aa_circle(window_x_middle, window_y_middle, radius, circle_color);
         let _ = display.canvas.filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);

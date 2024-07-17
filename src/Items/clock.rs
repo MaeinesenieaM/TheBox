@@ -31,7 +31,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
-        let _ = display.canvas.circle(window_x / 2, window_y / 2, 200, Color::WHITE);
+        let _ = display.canvas.circle(window_x / 2, window_y / 2, 150, Color::WHITE);
 
         display.draw_text_centered(
             &write,

@@ -85,6 +85,7 @@ fn main() {
         display.canvas.clear();
 
         display.draw_text_centered(&write, 400, 300, items::name_item(count), 16);
+        display.draw_text_centered(&write, 400, 332, &count.to_string(), 8);
         display.draw_text(&write, 0, 0, &temp_frames.to_string(), 8);
 
         frames += 1;
