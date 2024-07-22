@@ -82,9 +82,13 @@ impl Display {
 
 impl Write<'_, '_> {
     pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext, color: Color) -> Write<'t, 'f> {
-        let font: ttf::Font<'t, 'f> = ttf
-            .load_font("./src/main_assets/Fixedsys.ttf", 32)
-            .expect("COULD NOT FIND FONT!");
+        let font = match ttf.load_font("./src/main_assets/Fixedsys.ttf", 32) {
+            Ok(font_src) => { font_src },
+            Err(_) => match ttf.load_font("./main_assets/Fixedsys.ttf", 32) {
+                Ok(font_ass) => { font_ass },
+                Err(damn) => { panic!("ERROR: {}", &damn) }
+            }
+        };
         let color = color;
         Write { ttf, font, color }
     }
