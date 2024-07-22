@@ -62,6 +62,14 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
         angle += 0.02;
 
+        display.draw_text(
+            &write,
+            0,
+            0,
+            &angle.to_string(),
+            8,
+        );
+
         display.canvas.present();
     }
 
