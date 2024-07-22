@@ -96,15 +96,6 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             pos_end_x = temp_x;
             pos_end_y = temp_y;
         };
-
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "This section will be focused on making rays that bounces on the walls.",
-            8,
-        );
-
         display.draw_text(
             &write,
             0,

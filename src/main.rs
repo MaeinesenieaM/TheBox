@@ -1,7 +1,5 @@
 //possible required code.
 //use fastrand;
-
-use std::fs;
 use std::time::{Duration, Instant};
 
 use sdl2::pixels::Color;
@@ -21,13 +19,6 @@ fn main() {
 
     let mut sdl_context = SdlContext::init_context();
     let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600);
-
-    match directory_verifier() {
-        Ok(()) => {}
-        Err(error) => {
-            println!("{:?}", error);
-        }
-    };
 
     let ttf = sdl2::ttf::init().unwrap();
     let mut write = Write::init_write(&ttf, DEFAULT_COLOR);
@@ -91,19 +82,4 @@ fn main() {
         frames += 1;
         display.canvas.present();
     }
-}
-
-fn directory_verifier() -> std::io::Result<()> {
-    for entry in fs::read_dir("./src")? {
-        let entry = entry?;
-        if entry.path().to_str().unwrap() == "./src\\Items" {
-            println!("Found [Items] directory!");
-            return Ok(());
-        }
-    }
-    println!("[Items] directory not found.\nCreating [Items] directory...");
-    fs::create_dir("./src/Items")?;
-    println!("[Items] created!");
-
-    Ok(())
 }
