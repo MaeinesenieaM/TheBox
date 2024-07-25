@@ -5,7 +5,7 @@ use sdl2::keyboard::*;
 
 //use sdl2::gfx::primitives::DrawRenderer;
 
-use crate::window::{Display, Write};
+use thebox::{Display, Write};
 use std::f32::consts::PI;
 
 pub const NAME : &str = "Rays";
@@ -27,7 +27,6 @@ struct ButtonState {
 }
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
-
 
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();

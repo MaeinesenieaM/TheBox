@@ -4,7 +4,7 @@ use sdl2::pixels::Color;
 
 use sdl2::gfx::primitives::DrawRenderer;
 
-use crate::window::{Display, Write};
+use thebox::{Display, Write};
 
 pub const NAME : &str = "Orbit";
 pub const ID : u8 = 1;

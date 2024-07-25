@@ -14,7 +14,8 @@ struct Entity {
     pos_y: i16,
 }
 */
-use crate::window::{Display, Write};
+
+use thebox::{Display, Write};
 
 pub const NAME : &str = "Order";
 pub const ID : u8 = 3;

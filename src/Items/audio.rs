@@ -4,7 +4,7 @@ use sdl2::keyboard::*;
 
 //use sdl2::gfx::primitives::DrawRenderer;
 
-use crate::window::{Display, Write};
+use thebox::{Display, Write};
 
 pub const NAME : &str = "Audio";
 pub const ID : u8 = 5;

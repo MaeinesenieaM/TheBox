@@ -5,7 +5,7 @@ pub mod textures;
 pub mod audio;
 pub mod clock;
 
-use crate::window::{Display, Write};
+use thebox::{Display, Write};
 
 pub fn select_item(
     choice: i32,
