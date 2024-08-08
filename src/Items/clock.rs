@@ -6,8 +6,8 @@ use sdl2::gfx::primitives::DrawRenderer;
 
 use thebox::{Display, Write};
 
-pub const NAME : &str = "Clock";
-pub const ID : u8 = 6;
+pub const NAME: &str = "Clock";
+pub const ID: u8 = 6;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
 

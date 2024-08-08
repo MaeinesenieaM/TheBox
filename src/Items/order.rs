@@ -17,8 +17,8 @@ struct Entity {
 
 use thebox::{Display, Write};
 
-pub const NAME : &str = "Order";
-pub const ID : u8 = 3;
+pub const NAME: &str = "Order";
+pub const ID: u8 = 3;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
 	let window = display.canvas.window();
@@ -70,13 +70,13 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
 //Calculates the grid and return the Points.
 fn grid_points(size: (u32, u32), difference: i32) -> Vec<Point> {
-	let width : i32 = i32::try_from(size.0).unwrap();
-	let height : i32 = i32::try_from(size.1).unwrap();
+	let width: i32 = i32::try_from(size.0).unwrap();
+	let height: i32 = i32::try_from(size.1).unwrap();
 
-	let ammount_x : i32 = width / difference;
-	let ammount_y : i32 = height / difference;
+	let ammount_x: i32 = width / difference;
+	let ammount_y: i32 = height / difference;
 
-	let mut points : Vec<Point> = Vec::new();
+	let mut points: Vec<Point> = Vec::new();
 
 	for i in 0..ammount_y {
 		for j in 0..ammount_x {

@@ -1,19 +1,16 @@
 use sdl2::event::Event;
 use sdl2::pixels::Color;
-//use sdl2::rect::Point;
 use sdl2::keyboard::*;
 
-//use sdl2::gfx::primitives::DrawRenderer;
-
-use thebox::{Display, Write};
+use thebox::*;
 use std::f32::consts::PI;
 
-pub const NAME : &str = "Rays";
-pub const ID : u8 = 2;
+pub const NAME: &str = "Rays";
+pub const ID: u8 = 2;
 
-const RAY_LENGHT : f32 = 600.0;
-const RAY_PRECISION : u32 = 150;
-const RAY_CYCLES : i32 = 32;
+const RAY_LENGHT: f32 = 600.0;
+const RAY_PRECISION: u32 = 150;
+const RAY_CYCLES: i32 = 32;
 
 struct Arrow {
     angle: f32, //0.0 = 0, 0.25 = 45, 0.5 = 90 and so on. 

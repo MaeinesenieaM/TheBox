@@ -2,12 +2,10 @@ use sdl2::event::Event;
 //use sdl2::pixels::Color;
 use sdl2::keyboard::*;
 
-//use sdl2::gfx::primitives::DrawRenderer;
-
 use thebox::{Display, Write};
 
-pub const NAME : &str = "Textures";
-pub const ID : u8 = 4;
+pub const NAME: &str = "Textures";
+pub const ID: u8 = 4;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
     'repeat: loop {
