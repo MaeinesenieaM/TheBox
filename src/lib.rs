@@ -26,6 +26,21 @@ pub struct Write<'t, 'f> {
     pub color: Color,
 }
 
+enum SliderType {
+    SliderHorizontal,
+    SliderVertical,
+}
+
+pub struct Slider<T> {
+    pub value: T,
+    pub min: T,
+    pub max: T,
+    pub fill: f32, //Fill should be 1 <= 0 only.
+    pub pos_x: i32,
+    pub pos_y: i32,
+    pub slide_type: SliderType,
+}
+
 impl SdlContext {
     pub fn init_context() -> SdlContext {
         let sdl2 = sdl2::init().unwrap();
@@ -116,5 +131,25 @@ impl Write<'_, '_> {
 
     pub fn set_draw_color(&mut self, color: Color) {
         self.color = color;
+    }
+}
+
+impl<T> Slider<T> {
+    fn new<T> (
+        min: T,
+        max: T,
+        x: i32,
+        y: i32,
+        slide_type: SliderType
+    )  -> Slider {
+        Slider {
+            let mut value: T = min;
+            let min: T = min;
+            let max: T = max;
+            let fill: f32 = 0.0;
+            let mut pos_x: i32,
+            let mut pos_y: i32,
+            let slide_type: SliderType
+        }
     }
 }
