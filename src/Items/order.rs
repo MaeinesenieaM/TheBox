@@ -5,6 +5,8 @@ use sdl2::pixels::Color;
 use sdl2::keyboard::*;
 use sdl2::mouse::*;
 
+use thebox::*;
+
 //use sdl2::gfx::primitives::DrawRenderer;
 /*
 struct Entity {
