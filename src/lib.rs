@@ -12,6 +12,9 @@ use sdl2::rect::*;
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
+pub const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
+pub const SLIDER_PIVOT_SIZE: u32 = 30;
+
 pub struct SdlContext {
     pub sdl2: Sdl,
     pub event_pump: EventPump,
@@ -99,6 +102,7 @@ impl Display {
         let _ = self.canvas.copy(&texture, None, area);
     }
 
+    //Draws a Slider on screen according to its values.
     pub fn draw_slider<T: Copy + std::cmp::PartialOrd> (&mut self, slider: &Slider<T>) -> Result<(), String>
     where f32: 
         From<T> 
@@ -107,17 +111,16 @@ impl Display {
         match &slider.slider_type {
             SliderType::SliderHorizontal => {
                 self.canvas.fill_rect(Rect::new(slider.x, slider.y - 10, slider.length as u32, 20))?;
-                self.canvas.fill_rect(Rect::new(pivot.x, pivot.y, 30, 30))?;
-                Ok(())
             }, 
             SliderType::SliderVertical => {
                 self.canvas.fill_rect(Rect::new(slider.x - 10, slider.y, 20, slider.length as u32))?;
-                self.canvas.fill_rect(Rect::new(pivot.x, pivot.y, 30, 30))?;
-                Ok(()) 
             }
         }
+        self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
+        self.canvas.fill_rect(Rect::new(pivot.x, pivot.y, SLIDER_PIVOT_SIZE, SLIDER_PIVOT_SIZE))?;
+        self.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
     }
-
 }
 
 impl Write<'_, '_> {
@@ -178,18 +181,6 @@ impl<T: Copy + std::cmp::PartialOrd> Slider<T> where f32: From<T> {
             length,
             slider_type
         }
-    }
-
-    pub fn x(&self) -> i32 {
-        self.x
-    }
-
-    pub fn y(&self) -> i32 {
-        self.y
-    }
-
-    pub fn length(&self) -> i32 {
-        self.length
     }
 
     pub fn set_value(&mut self, value: T) {
