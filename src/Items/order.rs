@@ -28,7 +28,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     'repeat: loop {
         let _mouse = MouseState::new(&event_pump);
 
-    	display.canvas.set_draw_color(super::super::DEFAULT_CLEAR_COLOR);
+    	display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
         for event in event_pump.poll_iter() {

@@ -2,7 +2,7 @@
 //use fastrand;
 use std::time::{Duration, Instant};
 
-use sdl2::pixels::Color;
+//use sdl2::pixels::Color;
 
 use sdl2::event::Event;
 use sdl2::keyboard::*;
@@ -10,9 +10,6 @@ use sdl2::keyboard::*;
 use thebox::*;
 
 pub mod items;
-
-pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
-pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
 fn main() {
     println!("The box shall open, once again...");

@@ -7,6 +7,10 @@ use sdl2::{EventPump, VideoSubsystem};
 use sdl2::gfx::framerate::FPSManager;
 use sdl2::render::*;
 use sdl2::video::WindowContext;
+use sdl2::rect::*;
+
+pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
+pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
 pub struct SdlContext {
     pub sdl2: Sdl,
@@ -26,19 +30,20 @@ pub struct Write<'t, 'f> {
     pub color: Color,
 }
 
-enum SliderType {
+pub enum SliderType {
     SliderHorizontal,
     SliderVertical,
 }
 
+//The slider is a user input element, where the user moves a pivot o control the value.
 pub struct Slider<T> {
     pub value: T,
     pub min: T,
     pub max: T,
-    pub fill: f32, //Fill should be 1 <= 0 only.
-    pub pos_x: i32,
-    pub pos_y: i32,
-    pub slide_type: SliderType,
+    pub x: i32,
+    pub y: i32,
+    pub length: i32,
+    pub slider_type: SliderType,
 }
 
 impl SdlContext {
@@ -83,7 +88,7 @@ impl Display {
         let _ = self.canvas.copy(&texture, None, area);
     }
 
-    //Same as above but cetered.
+    //Same as above but centered.
     pub fn draw_text_centered(&mut self, write: &Write, x: i32, y: i32, string: &str, size: u32) {
         let texture = write.create_text(&self.texture_creator, string);
         let string_len: u32 = string.len().try_into().unwrap();
@@ -93,6 +98,26 @@ impl Display {
         let area = sdl2::rect::Rect::new(x - middle, y, string_len * size, size * 2);
         let _ = self.canvas.copy(&texture, None, area);
     }
+
+    pub fn draw_slider<T: Copy + std::cmp::PartialOrd> (&mut self, slider: &Slider<T>) -> Result<(), String>
+    where f32: 
+        From<T> 
+    {
+        let pivot: Point = slider.pivot();
+        match &slider.slider_type {
+            SliderType::SliderHorizontal => {
+                self.canvas.fill_rect(Rect::new(slider.x, slider.y - 10, slider.length as u32, 20))?;
+                self.canvas.fill_rect(Rect::new(pivot.x, pivot.y, 30, 30))?;
+                Ok(())
+            }, 
+            SliderType::SliderVertical => {
+                self.canvas.fill_rect(Rect::new(slider.x - 10, slider.y, 20, slider.length as u32))?;
+                self.canvas.fill_rect(Rect::new(pivot.x, pivot.y, 30, 30))?;
+                Ok(()) 
+            }
+        }
+    }
+
 }
 
 impl Write<'_, '_> {
@@ -108,7 +133,8 @@ impl Write<'_, '_> {
         Write { ttf, font, color }
     }
 
-    pub fn create_text<'b>(
+    //This should be only used by the Display for now.
+    fn create_text<'b>(
         &self,
         texture_creator: &'b TextureCreator<WindowContext>,
         string: &str,
@@ -134,22 +160,59 @@ impl Write<'_, '_> {
     }
 }
 
-impl<T> Slider<T> {
-    fn new<T> (
+impl<T: Copy + std::cmp::PartialOrd> Slider<T> where f32: From<T> {
+    pub fn new(
         min: T,
         max: T,
         x: i32,
         y: i32,
-        slide_type: SliderType
-    )  -> Slider {
+        length: i32,
+        slider_type: SliderType
+    )  -> Slider<T> {
         Slider {
-            let mut value: T = min;
-            let min: T = min;
-            let max: T = max;
-            let fill: f32 = 0.0;
-            let mut pos_x: i32,
-            let mut pos_y: i32,
-            let slide_type: SliderType
+            min,
+            max,
+            value: min,
+            x,
+            y,
+            length,
+            slider_type
+        }
+    }
+
+    pub fn x(&self) -> i32 {
+        self.x
+    }
+
+    pub fn y(&self) -> i32 {
+        self.y
+    }
+
+    pub fn length(&self) -> i32 {
+        self.length
+    }
+
+    pub fn set_value(&mut self, value: T) {
+        self.value = value;
+    }
+
+    //Recommended for controled values.
+    pub fn set_value_limited(&mut self, value: T) {
+        if value < self.min { self.value = self.min }
+        else if value > self.max { self.value = self.max }
+        else { self.value = value };
+    }
+
+    //Returns how filled is the slider.
+    pub fn percentage(&self) -> f32 {
+        f32::from(self.value) / f32::from(self.max)
+    }
+
+    //Calculates and returns the position of the pivot.
+    pub fn pivot(&self) -> Point {
+        match &self.slider_type {
+            SliderType::SliderHorizontal => { Point::new((self.x as f32 * self.percentage()) as i32, self.y) },
+            SliderType::SliderVertical => { Point::new(self.x, (self.y as f32 * self.percentage()) as i32) }
         }
     }
 }

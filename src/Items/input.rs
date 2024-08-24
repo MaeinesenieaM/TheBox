@@ -27,7 +27,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             400,
             550,
             "SLIDERS! This will be an example of some user input tools.",
-            16,
+            8,
         );
 
         display.canvas.present();
