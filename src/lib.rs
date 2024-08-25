@@ -12,8 +12,9 @@ use sdl2::rect::*;
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
-pub const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
-pub const SLIDER_PIVOT_SIZE: u32 = 30;
+const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
+const SLIDER_PIVOT_SIZE: u32 = 14;
+const SLIDER_BAR_SIZE: u32 = 8;
 
 pub struct SdlContext {
     pub sdl2: Sdl,
@@ -39,13 +40,13 @@ pub enum SliderType {
 }
 
 //The slider is a user input element, where the user moves a pivot o control the value.
-pub struct Slider<T> {
-    pub value: T,
-    pub min: T,
-    pub max: T,
+pub struct Slider {
+    pub value: i16,
+    pub min: i16,
+    pub max: i16,
     pub x: i32,
     pub y: i32,
-    pub length: i32,
+    pub length: u32,
     pub slider_type: SliderType,
 }
 
@@ -103,21 +104,10 @@ impl Display {
     }
 
     //Draws a Slider on screen according to its values.
-    pub fn draw_slider<T: Copy + std::cmp::PartialOrd> (&mut self, slider: &Slider<T>) -> Result<(), String>
-    where f32: 
-        From<T> 
-    {
-        let pivot: Point = slider.pivot();
-        match &slider.slider_type {
-            SliderType::SliderHorizontal => {
-                self.canvas.fill_rect(Rect::new(slider.x, slider.y - 10, slider.length as u32, 20))?;
-            }, 
-            SliderType::SliderVertical => {
-                self.canvas.fill_rect(Rect::new(slider.x - 10, slider.y, 20, slider.length as u32))?;
-            }
-        }
+    pub fn draw_slider (&mut self, slider: &Slider) -> Result<(), String> {
+        self.canvas.fill_rect(slider.bar_rect())?;
         self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
-        self.canvas.fill_rect(Rect::new(pivot.x, pivot.y, SLIDER_PIVOT_SIZE, SLIDER_PIVOT_SIZE))?;
+        self.canvas.fill_rect(slider.pivot_rect())?;
         self.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
@@ -163,15 +153,15 @@ impl Write<'_, '_> {
     }
 }
 
-impl<T: Copy + std::cmp::PartialOrd> Slider<T> where f32: From<T> {
+impl Slider {
     pub fn new(
-        min: T,
-        max: T,
+        min: i16,
+        max: i16,
         x: i32,
         y: i32,
-        length: i32,
+        length: u32,
         slider_type: SliderType
-    )  -> Slider<T> {
+    )  -> Slider {
         Slider {
             min,
             max,
@@ -183,12 +173,12 @@ impl<T: Copy + std::cmp::PartialOrd> Slider<T> where f32: From<T> {
         }
     }
 
-    pub fn set_value(&mut self, value: T) {
+    pub fn set_value(&mut self, value: i16) {
         self.value = value;
     }
 
     //Recommended for controled values.
-    pub fn set_value_limited(&mut self, value: T) {
+    pub fn set_value_limited(&mut self, value: i16) {
         if value < self.min { self.value = self.min }
         else if value > self.max { self.value = self.max }
         else { self.value = value };
@@ -196,7 +186,7 @@ impl<T: Copy + std::cmp::PartialOrd> Slider<T> where f32: From<T> {
 
     //Returns how filled is the slider.
     pub fn percentage(&self) -> f32 {
-        f32::from(self.value) / f32::from(self.max)
+        self.value as f32 / self.max as f32
     }
 
     //Calculates and returns the position of the pivot.
@@ -206,4 +196,80 @@ impl<T: Copy + std::cmp::PartialOrd> Slider<T> where f32: From<T> {
             SliderType::SliderVertical => { Point::new(self.x, (self.y as f32 * self.percentage()) as i32) }
         }
     }
+
+    //Returns the Rect of the pivot.
+    pub fn pivot_rect(&self) -> Rect {
+        let half_size: i32 = (SLIDER_PIVOT_SIZE / 2) as i32;
+        match self.slider_type {
+            SliderType::SliderHorizontal => { 
+                Rect::new(
+                    self.x + (self.length as f32 * self.percentage()) as i32 - half_size, 
+                    self.y - half_size,
+                    SLIDER_PIVOT_SIZE,
+                    SLIDER_PIVOT_SIZE
+                )
+            },
+            SliderType::SliderVertical => { 
+                Rect::new(
+                    self.x - half_size,
+                    self.y + (self.length as f32 * self.percentage()) as i32 - half_size,
+                    SLIDER_PIVOT_SIZE,
+                    SLIDER_PIVOT_SIZE
+                ) 
+            }
+        }
+    }
+
+    //Returns the Rect of the Bar.
+    pub fn bar_rect(&self) -> Rect {
+        match self.slider_type {
+            SliderType::SliderHorizontal => {
+                Rect::new(
+                    self.x,
+                    self.y - SLIDER_BAR_SIZE as i32 / 2,
+                    self.length,
+                    SLIDER_BAR_SIZE
+                )
+            }, 
+            SliderType::SliderVertical => {
+                Rect::new(
+                    self.x - SLIDER_BAR_SIZE as i32 / 2,
+                    self.y,
+                    SLIDER_BAR_SIZE,
+                    self.length
+                )
+            }
+        }
+    }
+
+    pub fn update_from_pos<P: Into<Point>>(&mut self, point: P) {
+        let point = point.into();
+        let distance: i32;
+
+        match self.slider_type {
+            SliderType::SliderHorizontal => { distance = point.x() - self.x },
+            SliderType::SliderVertical => { distance = point.y() - self.y }
+        }
+        println!("{distance}");
+        self.set_value_limited(
+            int_from_percentage(
+                &(self.max as i32),
+                &percentage_from_int(&distance, &(self.length as i32))
+            ).try_into().unwrap()    
+        );
+    }
+}
+
+//return the percentage from 0 to 100 in a value with a int.
+//WARNING: DON'T USE FLOAT IN THIS!
+pub fn percentage_from_int(value: &i32, max: &i32) -> u8
+{
+    if *value < 1 { return 0; }
+    (*value * 100 / *max) as u8
+}
+
+//Takes a precentage from 0 to 100 and return the possible value.
+pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32
+{
+    *value * *percentage as i32 / 100
 }
