@@ -26,12 +26,23 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
     sliders.push(Slider::new(
         0,
-        128,
+        100,
         (window_width / 2) as i32 + 120,
         (window_height / 2) as i32,
-        120,
+        100,
         SliderType::SliderVertical
     ));
+
+    sliders.push(Slider::new(
+        0,
+        1000,
+        40,
+        40,
+        (window_width - 100) as u32,
+        SliderType::SliderHorizontal
+    ));
+
+    let mut slider_id: usize = 0;
 
     'repeat: loop {
 
@@ -51,25 +62,31 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
+        if mouse.left() && slider_id == 0 {
+            for slider in sliders.iter_mut().enumerate() {                
+                if slider.1.bar_rect().contains_point((mouse.x(), mouse.y())) {
+                    slider_id = slider.0 + 1;
+                }
+            }        
+        } else if mouse.left() == false { slider_id = 0;}
 
+        if slider_id != 0 {
+            sliders.iter_mut().nth(slider_id - 1)
+                .expect("Something went wrong on reading the Slider Iter.")
+                .update_from_pos((mouse.x(), mouse.y()));
+        }
+
+        //This draws the sliders.
         for slider in sliders.iter() {
             display.draw_text_centered(
                 &write,
                 slider.x - 20,
-                slider.y + 20,
+                slider.y - 8,
                 &slider.value.to_string(),
                 8
             );
             display.canvas.set_draw_color(Color::RGB(130, 195, 60));
             let _ = display.draw_slider(slider);
-        }
-
-        if mouse.left() {
-            for slider in sliders.iter_mut() {                
-                if slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
-                    slider.update_from_pos((mouse.x(), mouse.y()));
-                }
-            }        
         }
 
         display.draw_text(

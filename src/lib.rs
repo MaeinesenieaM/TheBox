@@ -265,7 +265,9 @@ impl Slider {
 pub fn percentage_from_int(value: &i32, max: &i32) -> u8
 {
     if *value < 1 { return 0; }
-    (*value * 100 / *max) as u8
+    let over = *value * 100 / *max; //The over value is used to check if is bigger than 100;
+    if over <= 100 { over as u8 }
+    else { 100 }
 }
 
 //Takes a precentage from 0 to 100 and return the possible value.
