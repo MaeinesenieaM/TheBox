@@ -6,7 +6,7 @@ use sdl2::mouse::*;
 use thebox::*;
 
 pub const NAME: &str = "Input";
-pub const ID: u8 = 8;
+pub const ID: u8 = 3;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
 
@@ -17,7 +17,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
     sliders.push(Slider::new(
         0,
-        255,
+        256,
         (window_width / 2) as i32 - 60,
         (window_height / 2) as i32,
         120,
@@ -27,15 +27,15 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     sliders.push(Slider::new(
         0,
         100,
-        (window_width / 2) as i32 + 120,
-        (window_height / 2) as i32,
-        100,
+        40,
+        60,
+        (window_height - 100) as u32,
         SliderType::SliderVertical
     ));
 
     sliders.push(Slider::new(
         0,
-        1000,
+        100,
         40,
         40,
         (window_width - 100) as u32,
@@ -44,7 +44,14 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
     let mut slider_id: usize = 0;
 
+    let mut blue: u8 = 65;
+    let mut add: bool = true;
+
     'repeat: loop {
+        if blue < 65 { add = true }
+        else if blue > 185 { add = false };
+        if add == true { blue = blue + 1 }
+        else { blue = blue - 1 };
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
@@ -78,6 +85,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
         //This draws the sliders.
         for slider in sliders.iter() {
+
             display.draw_text_centered(
                 &write,
                 slider.x - 20,
@@ -85,8 +93,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
                 &slider.value.to_string(),
                 8
             );
-            display.canvas.set_draw_color(Color::RGB(130, 195, 60));
-            let _ = display.draw_slider(slider);
+            let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
         }
 
         display.draw_text(

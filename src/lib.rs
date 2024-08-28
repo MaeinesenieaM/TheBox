@@ -41,9 +41,9 @@ pub enum SliderType {
 
 //The slider is a user input element, where the user moves a pivot o control the value.
 pub struct Slider {
-    pub value: i16,
-    pub min: i16,
-    pub max: i16,
+    pub value: u16,
+    pub min: u16,
+    pub max: u16,
     pub x: i32,
     pub y: i32,
     pub length: u32,
@@ -111,6 +111,16 @@ impl Display {
         self.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
+
+    //Same as above, but is drawn with a predefined color.
+    pub fn draw_slider_cl (&mut self, slider: &Slider, color: Color) -> Result<(), String> {
+        self.canvas.set_draw_color(color);
+        self.canvas.fill_rect(slider.bar_rect())?;
+        self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
+        self.canvas.fill_rect(slider.pivot_rect())?;
+        self.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
 }
 
 impl Write<'_, '_> {
@@ -155,8 +165,8 @@ impl Write<'_, '_> {
 
 impl Slider {
     pub fn new(
-        min: i16,
-        max: i16,
+        min: u16,
+        max: u16,
         x: i32,
         y: i32,
         length: u32,
@@ -173,12 +183,12 @@ impl Slider {
         }
     }
 
-    pub fn set_value(&mut self, value: i16) {
+    pub fn set_value(&mut self, value: u16) {
         self.value = value;
     }
 
     //Recommended for controled values.
-    pub fn set_value_limited(&mut self, value: i16) {
+    pub fn set_value_limited(&mut self, value: u16) {
         if value < self.min { self.value = self.min }
         else if value > self.max { self.value = self.max }
         else { self.value = value };
@@ -250,7 +260,6 @@ impl Slider {
             SliderType::SliderHorizontal => { distance = point.x() - self.x },
             SliderType::SliderVertical => { distance = point.y() - self.y }
         }
-        println!("{distance}");
         self.set_value_limited(
             int_from_percentage(
                 &(self.max as i32),

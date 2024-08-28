@@ -20,7 +20,7 @@ struct Entity {
 use thebox::{Display, Write};
 
 pub const NAME: &str = "Order";
-pub const ID: u8 = 3;
+pub const ID: u8 = 9;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
 	let window = display.canvas.window();
