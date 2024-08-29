@@ -16,6 +16,11 @@ const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
 const SLIDER_PIVOT_SIZE: u32 = 14;
 const SLIDER_BAR_SIZE: u32 = 8;
 
+const BUTTON_STATE_TRUE: Color = Color::RGB(120, 195, 65);
+const BUTTON_STATE_FALSE: Color = Color::RGB(195, 120, 65);
+const BUTOON_DEFAULT_COLOR: Color = Color::RGB(120, 120, 120);
+const BUTTON_RECT_SIZE: u32 = 12;
+
 pub struct SdlContext {
     pub sdl2: Sdl,
     pub event_pump: EventPump,
@@ -48,6 +53,12 @@ pub struct Slider {
     pub y: i32,
     pub length: u32,
     pub slider_type: SliderType,
+}
+
+pub struct Button {
+    pub state: bool,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl SdlContext {
@@ -118,6 +129,15 @@ impl Display {
         self.canvas.fill_rect(slider.bar_rect())?;
         self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
         self.canvas.fill_rect(slider.pivot_rect())?;
+        self.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
+
+    pub fn draw_button (&mut self, button: &Button) -> Result<(), String> {
+        self.canvas.set_draw_color(BUTOON_DEFAULT_COLOR);
+        self.canvas.fill_rect(button.rect())?;
+        self.canvas.set_draw_color(button.get_state_color());
+        self.canvas.fill_rect(button.state_rect())?;
         self.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
@@ -269,8 +289,62 @@ impl Slider {
     }
 }
 
+impl Button {
+    pub fn new (
+        state: bool,
+        x: i32,
+        y: i32,
+    ) -> Button {
+        Button {
+            state,
+            x,
+            y,
+        }
+    }
+
+    pub fn set_state(&mut self, state: bool) {
+        self.state = state;
+    }
+
+    pub fn get_state(&self) -> bool {
+        self.state
+    }
+
+    pub fn get_state_color(&self) -> Color {
+        if self.state { BUTTON_STATE_TRUE }
+        else { BUTTON_STATE_FALSE }
+    }
+
+    pub fn set_pos<P: Into<Point>>(&mut self, point: P) {
+        let point = point.into();
+        self.x = point.x();
+        self.y = point.y();
+    }
+
+    pub fn toggle(&mut self) {
+        self.state = !self.state;
+    }
+
+    pub fn rect(&self) -> Rect {
+        Rect::new(
+            self.x - BUTTON_RECT_SIZE as i32 / 2,
+            self.y - BUTTON_RECT_SIZE as i32 / 2,
+            BUTTON_RECT_SIZE,
+            BUTTON_RECT_SIZE,
+        )
+    }
+
+    pub fn state_rect(&self) -> Rect {
+        Rect::new(
+            self.x - BUTTON_RECT_SIZE as i32 / 2 + 2,
+            self.y - BUTTON_RECT_SIZE as i32 / 2 + 2,
+            BUTTON_RECT_SIZE - 2,
+            BUTTON_RECT_SIZE - 2,
+        )
+    }
+}
+
 //return the percentage from 0 to 100 in a value with a int.
-//WARNING: DON'T USE FLOAT IN THIS!
 pub fn percentage_from_int(value: &i32, max: &i32) -> u8
 {
     if *value < 1 { return 0; }
