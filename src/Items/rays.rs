@@ -65,7 +65,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     modifiers.push(Modifier {
         name: String::from("Rays Lengths"),
         slider: Slider::new(
-        50,
+        10,
         1000,
         60,
         (window_height - 80) as i32,
@@ -74,7 +74,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         )
     });
     modifiers.push(Modifier {
-        name: String::from("Rays Quantityt"),
+        name: String::from("Rays Quantity"),
         slider: Slider::new(
         0,
         100,
