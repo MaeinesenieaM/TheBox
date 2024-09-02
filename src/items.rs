@@ -19,13 +19,13 @@ pub fn select_item(
     write: &mut Write,
 ) {
     match choice {
-        1 => orbit::start(display, event_pump, write),
+        0 => orbit::start(display, event_pump, write),
+        1 => input::start(display, event_pump, write),
         2 => rays::start(display, event_pump, write),
-        3 => input::start(display, event_pump, write),
+        3 => tree::start(display, event_pump, write),
         4 => textures::start(display, event_pump, write),
         5 => audio::start(display, event_pump, write),
         6 => clock::start(display, event_pump, write),
-        7 => tree::start(display, event_pump, write),
         9 => order::start(display, event_pump, write),
         _ => {
             println!("COULD NOT FIND ANYTHING!");
@@ -35,13 +35,13 @@ pub fn select_item(
 
 pub fn name_item (choice: i32) -> &'static str {
 	match choice {
-		1 => orbit::NAME,
+		0 => orbit::NAME,
+        1 => input::NAME,
         2 => rays::NAME,
-        3 => input::NAME,
+        3 => tree::NAME,
         4 => textures::NAME,
         5 => audio::NAME,
         6 => clock::NAME,
-        7 => tree::NAME,
         9 => order::NAME,
         _ => {
             "<NOTHING>"

@@ -105,9 +105,9 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
         //Responsible for updating values.
         let mut set_iter = modifiers.iter();
-        from_slider(&set_iter.next().unwrap().slider, &mut ray_precision);
-        from_slider(&set_iter.next().unwrap().slider, &mut ray_length);
-        from_slider(&set_iter.next().unwrap().slider, &mut ray_cycles);
+        set_iter.next().unwrap().slider.mut_from_value(&mut ray_precision);
+        set_iter.next().unwrap().slider.mut_from_value(&mut ray_length);
+        set_iter.next().unwrap().slider.mut_from_value(&mut ray_cycles);
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
@@ -188,7 +188,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
                 &write,
                 modifier.slider.x - 20,
                 modifier.slider.y - 8,
-                &modifier.slider.value.to_string(),
+                &modifier.slider.get_value_ref().to_string(),
                 8
             );
             display.draw_text(
@@ -242,12 +242,6 @@ fn ray_corner(
     }
 
     angle_pos(x, y, *angle, ray_length)
-}
-
-fn from_slider<T>(slider: &Slider, value: &mut T) where
-    T: From<u16>
- {
-    *value = T::from(slider.value);
 }
 
 impl Arrow {

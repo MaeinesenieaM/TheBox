@@ -46,13 +46,13 @@ pub enum SliderType {
 
 //The slider is a user input element, where the user moves a pivot o control the value.
 pub struct Slider {
-    pub value: u16,
-    pub min: u16,
-    pub max: u16,
+    value: u16,
+    min: u16,
+    max: u16,
     pub x: i32,
     pub y: i32,
-    pub length: u32,
-    pub slider_type: SliderType,
+    length: u32,
+    slider_type: SliderType,
 }
 
 pub struct Button {
@@ -212,6 +212,27 @@ impl Slider {
         if value < self.min { self.value = self.min }
         else if value > self.max { self.value = self.max }
         else { self.value = value };
+    }
+
+    pub fn get_value_ref(&self) -> &u16 {
+        &self.value
+    }
+
+    pub fn from_value<T>(&self) -> T where 
+        T: From<u16>
+    {
+        T::from(self.value)
+    }
+
+    //Mutate the given value from the value of the slider.
+    pub fn mut_from_value<T>(&self, value: &mut T) where
+        T: From<u16>
+    {
+        *value = T::from(self.value);
+    }
+
+    pub fn get_type(&self) -> &SliderType {
+        &self.slider_type
     }
 
     //Returns how filled is the slider.

@@ -6,7 +6,7 @@ use sdl2::mouse::*;
 use thebox::*;
 
 pub const NAME: &str = "Input";
-pub const ID: u8 = 3;
+pub const ID: u8 = 1;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
 
@@ -90,7 +90,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
                 &write,
                 slider.x - 20,
                 slider.y - 8,
-                &slider.value.to_string(),
+                &slider.get_value_ref().to_string(),
                 8
             );
             let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
