@@ -1,7 +1,7 @@
 use sdl2::event::Event;
-use sdl2::pixels::Color;
 use sdl2::keyboard::*;
 use sdl2::mouse::*;
+use sdl2::pixels::Color;
 
 use thebox::*;
 
@@ -9,7 +9,6 @@ pub const NAME: &str = "Input";
 pub const ID: u8 = 1;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
-
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
@@ -21,7 +20,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         (window_width / 2) as i32 - 60,
         (window_height / 2) as i32,
         120,
-        SliderType::SliderHorizontal
+        SliderType::SliderHorizontal,
     ));
 
     sliders.push(Slider::new(
@@ -30,7 +29,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         40,
         60,
         (window_height - 100) as u32,
-        SliderType::SliderVertical
+        SliderType::SliderVertical,
     ));
 
     sliders.push(Slider::new(
@@ -39,7 +38,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         40,
         40,
         (window_width - 100) as u32,
-        SliderType::SliderHorizontal
+        SliderType::SliderHorizontal,
     ));
 
     let mut slider_id: usize = 0;
@@ -48,10 +47,16 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     let mut add: bool = true;
 
     'repeat: loop {
-        if blue < 65 { add = true }
-        else if blue > 185 { add = false };
-        if add == true { blue = blue + 1 }
-        else { blue = blue - 1 };
+        if blue < 65 {
+            add = true
+        } else if blue > 185 {
+            add = false
+        };
+        if add == true {
+            blue = blue + 1
+        } else {
+            blue = blue - 1
+        };
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
@@ -70,39 +75,36 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         }
 
         if mouse.left() && slider_id == 0 {
-            for slider in sliders.iter_mut().enumerate() {                
+            for slider in sliders.iter_mut().enumerate() {
                 if slider.1.bar_rect().contains_point((mouse.x(), mouse.y())) {
                     slider_id = slider.0 + 1;
                 }
-            }        
-        } else if mouse.left() == false { slider_id = 0;}
+            }
+        } else if mouse.left() == false {
+            slider_id = 0;
+        }
 
         if slider_id != 0 {
-            sliders.iter_mut().nth(slider_id - 1)
+            sliders
+                .iter_mut()
+                .nth(slider_id - 1)
                 .expect("Something went wrong on reading the Slider Iter.")
                 .update_from_pos((mouse.x(), mouse.y()));
         }
 
         //This draws the sliders.
         for slider in sliders.iter() {
-
             display.draw_text_centered(
                 &write,
                 slider.x - 20,
                 slider.y - 8,
                 &slider.get_value_ref().to_string(),
-                8
+                8,
             );
             let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
         }
 
-        display.draw_text(
-            &write,
-            0,
-            0,
-            &mouse.x().to_string(),
-            8
-        );
+        display.draw_text(&write, 0, 0, &mouse.x().to_string(), 8);
 
         display.draw_text_centered(
             &write,

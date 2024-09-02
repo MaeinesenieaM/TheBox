@@ -22,13 +22,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "FUNNY TEXTURES!",
-            16,
-        );
+        display.draw_text_centered(&write, 400, 550, "FUNNY TEXTURES!", 16);
 
         display.canvas.present();
     }

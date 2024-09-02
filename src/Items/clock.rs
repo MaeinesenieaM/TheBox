@@ -1,6 +1,6 @@
 use sdl2::event::Event;
-use sdl2::pixels::Color;
 use sdl2::keyboard::*;
+use sdl2::pixels::Color;
 
 use sdl2::gfx::primitives::DrawRenderer;
 
@@ -10,11 +10,10 @@ pub const NAME: &str = "Clock";
 pub const ID: u8 = 6;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
+    let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
-    let (window_x, window_y) : (u32, u32) = display.canvas.window().size();
-
-    let window_x : i16 = window_x.try_into().unwrap();
-    let window_y : i16 = window_y.try_into().unwrap();
+    let window_x: i16 = window_x.try_into().unwrap();
+    let window_y: i16 = window_y.try_into().unwrap();
 
     'repeat: loop {
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
@@ -31,7 +30,9 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
-        let _ = display.canvas.circle(window_x / 2, window_y / 2, 150, Color::WHITE);
+        let _ = display
+            .canvas
+            .circle(window_x / 2, window_y / 2, 150, Color::WHITE);
 
         display.draw_text_centered(
             &write,

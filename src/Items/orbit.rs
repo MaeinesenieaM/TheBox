@@ -17,7 +17,6 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
     let mut angle: f32 = 0.0;
 
-
     let windowref = display.canvas.window();
 
     let (window_x, window_y) = windowref.size();
@@ -45,10 +44,20 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         display.canvas.clear();
 
         write.set_draw_color_rgb(120, 120, blue);
-        display.draw_text_centered(&write, window_x_middle as i32, (window_y_middle + 100) as i32, "ORBIT!", 16);
+        display.draw_text_centered(
+            &write,
+            window_x_middle as i32,
+            (window_y_middle + 100) as i32,
+            "ORBIT!",
+            16,
+        );
 
-        let _ = display.canvas.aa_circle(window_x_middle, window_y_middle, radius, circle_color);
-        let _ = display.canvas.filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);
+        let _ = display
+            .canvas
+            .aa_circle(window_x_middle, window_y_middle, radius, circle_color);
+        let _ = display
+            .canvas
+            .filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);
 
         if blue == 255 || blue == 0 {
             over = !over
@@ -62,13 +71,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
         angle += 0.02;
 
-        display.draw_text(
-            &write,
-            0,
-            0,
-            &angle.to_string(),
-            8,
-        );
+        display.draw_text(&write, 0, 0, &angle.to_string(), 8);
 
         display.canvas.present();
     }

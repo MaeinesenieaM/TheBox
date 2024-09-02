@@ -5,9 +5,9 @@ use sdl2::Sdl;
 use sdl2::{EventPump, VideoSubsystem};
 
 use sdl2::gfx::framerate::FPSManager;
+use sdl2::rect::*;
 use sdl2::render::*;
 use sdl2::video::WindowContext;
-use sdl2::rect::*;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
@@ -115,7 +115,7 @@ impl Display {
     }
 
     //Draws a Slider on screen according to its values.
-    pub fn draw_slider (&mut self, slider: &Slider) -> Result<(), String> {
+    pub fn draw_slider(&mut self, slider: &Slider) -> Result<(), String> {
         self.canvas.fill_rect(slider.bar_rect())?;
         self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
         self.canvas.fill_rect(slider.pivot_rect())?;
@@ -124,7 +124,7 @@ impl Display {
     }
 
     //Same as above, but is drawn with a predefined color.
-    pub fn draw_slider_cl (&mut self, slider: &Slider, color: Color) -> Result<(), String> {
+    pub fn draw_slider_cl(&mut self, slider: &Slider, color: Color) -> Result<(), String> {
         self.canvas.set_draw_color(color);
         self.canvas.fill_rect(slider.bar_rect())?;
         self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -133,7 +133,7 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_button (&mut self, button: &Button) -> Result<(), String> {
+    pub fn draw_button(&mut self, button: &Button) -> Result<(), String> {
         self.canvas.set_draw_color(BUTOON_DEFAULT_COLOR);
         self.canvas.fill_rect(button.rect())?;
         self.canvas.set_draw_color(button.get_state_color());
@@ -146,11 +146,13 @@ impl Display {
 impl Write<'_, '_> {
     pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext, color: Color) -> Write<'t, 'f> {
         let font = match ttf.load_font("./src/main_assets/Fixedsys.ttf", 32) {
-            Ok(font_src) => { font_src },
+            Ok(font_src) => font_src,
             Err(_) => match ttf.load_font("./main_assets/Fixedsys.ttf", 32) {
-                Ok(font_ass) => { font_ass },
-                Err(damn) => { panic!("ERROR: {}", &damn) }
-            }
+                Ok(font_ass) => font_ass,
+                Err(damn) => {
+                    panic!("ERROR: {}", &damn)
+                }
+            },
         };
         let color = color;
         Write { ttf, font, color }
@@ -184,14 +186,7 @@ impl Write<'_, '_> {
 }
 
 impl Slider {
-    pub fn new(
-        min: u16,
-        max: u16,
-        x: i32,
-        y: i32,
-        length: u32,
-        slider_type: SliderType
-    )  -> Slider {
+    pub fn new(min: u16, max: u16, x: i32, y: i32, length: u32, slider_type: SliderType) -> Slider {
         Slider {
             min,
             max,
@@ -199,7 +194,7 @@ impl Slider {
             x,
             y,
             length,
-            slider_type
+            slider_type,
         }
     }
 
@@ -209,24 +204,30 @@ impl Slider {
 
     //Recommended for controled values.
     pub fn set_value_limited(&mut self, value: u16) {
-        if value < self.min { self.value = self.min }
-        else if value > self.max { self.value = self.max }
-        else { self.value = value };
+        if value < self.min {
+            self.value = self.min
+        } else if value > self.max {
+            self.value = self.max
+        } else {
+            self.value = value
+        };
     }
 
     pub fn get_value_ref(&self) -> &u16 {
         &self.value
     }
 
-    pub fn from_value<T>(&self) -> T where 
-        T: From<u16>
+    pub fn from_value<T>(&self) -> T
+    where
+        T: From<u16>,
     {
         T::from(self.value)
     }
 
     //Mutate the given value from the value of the slider.
-    pub fn mut_from_value<T>(&self, value: &mut T) where
-        T: From<u16>
+    pub fn mut_from_value<T>(&self, value: &mut T)
+    where
+        T: From<u16>,
     {
         *value = T::from(self.value);
     }
@@ -243,8 +244,12 @@ impl Slider {
     //Calculates and returns the position of the pivot.
     pub fn pivot(&self) -> Point {
         match &self.slider_type {
-            SliderType::SliderHorizontal => { Point::new((self.x as f32 * self.percentage()) as i32, self.y) },
-            SliderType::SliderVertical => { Point::new(self.x, (self.y as f32 * self.percentage()) as i32) }
+            SliderType::SliderHorizontal => {
+                Point::new((self.x as f32 * self.percentage()) as i32, self.y)
+            }
+            SliderType::SliderVertical => {
+                Point::new(self.x, (self.y as f32 * self.percentage()) as i32)
+            }
         }
     }
 
@@ -252,44 +257,36 @@ impl Slider {
     pub fn pivot_rect(&self) -> Rect {
         let half_size: i32 = (SLIDER_PIVOT_SIZE / 2) as i32;
         match self.slider_type {
-            SliderType::SliderHorizontal => { 
-                Rect::new(
-                    self.x + (self.length as f32 * self.percentage()) as i32 - half_size, 
-                    self.y - half_size,
-                    SLIDER_PIVOT_SIZE,
-                    SLIDER_PIVOT_SIZE
-                )
-            },
-            SliderType::SliderVertical => { 
-                Rect::new(
-                    self.x - half_size,
-                    self.y + (self.length as f32 * self.percentage()) as i32 - half_size,
-                    SLIDER_PIVOT_SIZE,
-                    SLIDER_PIVOT_SIZE
-                ) 
-            }
+            SliderType::SliderHorizontal => Rect::new(
+                self.x + (self.length as f32 * self.percentage()) as i32 - half_size,
+                self.y - half_size,
+                SLIDER_PIVOT_SIZE,
+                SLIDER_PIVOT_SIZE,
+            ),
+            SliderType::SliderVertical => Rect::new(
+                self.x - half_size,
+                self.y + (self.length as f32 * self.percentage()) as i32 - half_size,
+                SLIDER_PIVOT_SIZE,
+                SLIDER_PIVOT_SIZE,
+            ),
         }
     }
 
     //Returns the Rect of the Bar.
     pub fn bar_rect(&self) -> Rect {
         match self.slider_type {
-            SliderType::SliderHorizontal => {
-                Rect::new(
-                    self.x,
-                    self.y - SLIDER_BAR_SIZE as i32 / 2,
-                    self.length,
-                    SLIDER_BAR_SIZE
-                )
-            }, 
-            SliderType::SliderVertical => {
-                Rect::new(
-                    self.x - SLIDER_BAR_SIZE as i32 / 2,
-                    self.y,
-                    SLIDER_BAR_SIZE,
-                    self.length
-                )
-            }
+            SliderType::SliderHorizontal => Rect::new(
+                self.x,
+                self.y - SLIDER_BAR_SIZE as i32 / 2,
+                self.length,
+                SLIDER_BAR_SIZE,
+            ),
+            SliderType::SliderVertical => Rect::new(
+                self.x - SLIDER_BAR_SIZE as i32 / 2,
+                self.y,
+                SLIDER_BAR_SIZE,
+                self.length,
+            ),
         }
     }
 
@@ -298,29 +295,23 @@ impl Slider {
         let distance: i32;
 
         match self.slider_type {
-            SliderType::SliderHorizontal => { distance = point.x() - self.x },
-            SliderType::SliderVertical => { distance = point.y() - self.y }
+            SliderType::SliderHorizontal => distance = point.x() - self.x,
+            SliderType::SliderVertical => distance = point.y() - self.y,
         }
         self.set_value_limited(
             int_from_percentage(
                 &(self.max as i32),
-                &percentage_from_int(&distance, &(self.length as i32))
-            ).try_into().unwrap()    
+                &percentage_from_int(&distance, &(self.length as i32)),
+            )
+            .try_into()
+            .unwrap(),
         );
     }
 }
 
 impl Button {
-    pub fn new (
-        state: bool,
-        x: i32,
-        y: i32,
-    ) -> Button {
-        Button {
-            state,
-            x,
-            y,
-        }
+    pub fn new(state: bool, x: i32, y: i32) -> Button {
+        Button { state, x, y }
     }
 
     pub fn set_state(&mut self, state: bool) {
@@ -332,8 +323,11 @@ impl Button {
     }
 
     pub fn get_state_color(&self) -> Color {
-        if self.state { BUTTON_STATE_TRUE }
-        else { BUTTON_STATE_FALSE }
+        if self.state {
+            BUTTON_STATE_TRUE
+        } else {
+            BUTTON_STATE_FALSE
+        }
     }
 
     pub fn set_pos<P: Into<Point>>(&mut self, point: P) {
@@ -366,16 +360,19 @@ impl Button {
 }
 
 //return the percentage from 0 to 100 in a value with a int.
-pub fn percentage_from_int(value: &i32, max: &i32) -> u8
-{
-    if *value < 1 { return 0; }
+pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
+    if *value < 1 {
+        return 0;
+    }
     let over = *value * 100 / *max; //The over value is used to check if is bigger than 100;
-    if over <= 100 { over as u8 }
-    else { 100 }
+    if over <= 100 {
+        over as u8
+    } else {
+        100
+    }
 }
 
 //Takes a precentage from 0 to 100 and return the possible value.
-pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32
-{
+pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
     *value * *percentage as i32 / 100
 }

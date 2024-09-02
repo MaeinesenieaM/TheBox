@@ -30,8 +30,8 @@ fn main() {
     'running: loop {
         for event in sdl_context.event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } |
-                Event::KeyDown {
+                Event::Quit { .. }
+                | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
