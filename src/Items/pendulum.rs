@@ -2,12 +2,10 @@ use sdl2::event::Event;
 //use sdl2::pixels::Color;
 use sdl2::keyboard::*;
 
-//use sdl2::gfx::primitives::DrawRenderer;
-
 use thebox::{Display, Write};
 
-pub const NAME: &str = "Audio";
-pub const ID: u8 = 6;
+pub const NAME: &str = "Double Pendulum";
+pub const ID: u8 = 3;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
     'repeat: loop {
@@ -24,13 +22,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "There will be audio playing here at some point.",
-            8,
-        );
+        display.draw_text_centered(&write, 400, 550, "Will simulate a double pendulum.", 16);
 
         display.canvas.present();
     }
