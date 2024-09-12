@@ -13,6 +13,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
     let mut sliders: Vec<Slider> = Vec::new();
+    let mut buttons: Vec<Button> = Vec::new();
 
     sliders.push(Slider::new(
         0,
@@ -41,10 +42,20 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         SliderType::SliderHorizontal,
     ));
 
+    buttons.push(Button::new(
+        false,
+        (window_width - 64) as i32,
+        (window_height - 64) as i32
+    ));
+
     let mut slider_id: usize = 0;
+
+
 
     let mut blue: u8 = 65;
     let mut add: bool = true;
+
+    let mut last_mouse_state: bool = false;
 
     'repeat: loop {
         if blue < 65 {
@@ -84,6 +95,14 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             slider_id = 0;
         }
 
+        if mouse.left() && last_mouse_state == false {
+            for button in buttons.iter_mut() {
+                if button.state_rect().contains_point((mouse.x(), mouse.y())) {
+                    button.toggle();
+                }
+            }
+        }
+
         if slider_id != 0 {
             sliders
                 .iter_mut()
@@ -104,6 +123,13 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
         }
 
+        for button in buttons.iter() {
+            if button.rect().contains_point((mouse.x(), mouse.y())) {
+                let _ = display.draw_outline(&button.rect());
+            }
+            let _ = display.draw_button(button);
+        }
+
         display.draw_text(&write, 0, 0, &mouse.x().to_string(), 8);
 
         display.draw_text_centered(
@@ -113,6 +139,8 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             "SLIDERS! This will be an example of some user input tools.",
             8,
         );
+
+        last_mouse_state = mouse.left();
 
         display.canvas.present();
     }

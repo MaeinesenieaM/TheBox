@@ -11,15 +11,17 @@ use sdl2::video::WindowContext;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
+pub const COLOR_WHITE: Color = Color::RGB(194, 194, 194);
 
 const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
 const SLIDER_PIVOT_SIZE: u32 = 14;
 const SLIDER_BAR_SIZE: u32 = 8;
 
-const BUTTON_STATE_TRUE: Color = Color::RGB(120, 195, 65);
-const BUTTON_STATE_FALSE: Color = Color::RGB(195, 120, 65);
+const BUTTON_STATE_TRUE: Color = Color::RGB(30, 165, 30);
+const BUTTON_STATE_FALSE: Color = Color::RGB(165, 30, 30);
 const BUTOON_DEFAULT_COLOR: Color = Color::RGB(120, 120, 120);
-const BUTTON_RECT_SIZE: u32 = 12;
+const BUTTON_RECT_SIZE: u32 = 24;
+const BUTTON_RECT_STATE_SIZE: u32 = 16;
 
 pub struct SdlContext {
     pub sdl2: Sdl,
@@ -112,6 +114,18 @@ impl Display {
 
         let area = sdl2::rect::Rect::new(x - middle, y, string_len * size, size * 2);
         let _ = self.canvas.copy(&texture, None, area);
+    }
+
+    pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), String> {        
+        let outline: Rect = Rect::new(
+            rect.x() - 2,
+            rect.y() - 2,
+            rect.width() + 4,
+            rect.height() + 4,
+        );
+        self.canvas.set_draw_color(COLOR_WHITE);
+        self.canvas.fill_rect(outline)?;
+        Ok(())
     }
 
     //Draws a Slider on screen according to its values.
@@ -351,10 +365,10 @@ impl Button {
 
     pub fn state_rect(&self) -> Rect {
         Rect::new(
-            self.x - BUTTON_RECT_SIZE as i32 / 2 + 2,
-            self.y - BUTTON_RECT_SIZE as i32 / 2 + 2,
-            BUTTON_RECT_SIZE - 2,
-            BUTTON_RECT_SIZE - 2,
+            self.x - BUTTON_RECT_STATE_SIZE as i32 / 2,
+            self.y - BUTTON_RECT_STATE_SIZE as i32 / 2,
+            BUTTON_RECT_STATE_SIZE,
+            BUTTON_RECT_STATE_SIZE,
         )
     }
 }
