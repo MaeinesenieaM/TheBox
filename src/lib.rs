@@ -9,6 +9,8 @@ use sdl2::rect::*;
 use sdl2::render::*;
 use sdl2::video::WindowContext;
 
+use std::f32::consts::PI;
+
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 pub const COLOR_WHITE: Color = Color::RGB(194, 194, 194);
@@ -389,4 +391,15 @@ pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
 //Takes a precentage from 0 to 100 and return the possible value.
 pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
     *value * *percentage as i32 / 100
+}
+
+//Return a point based mainly on the angle and the distance. Remember a angle of 0.5 = 45 degrees clock wise.
+//Plus the starting direction is ->.
+pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> Point  {
+    let point = point.into();
+    angle = PI * (angle * 2.0);
+    Point::new(
+        point.x() + (distance * angle.cos()) as i32,
+        point.y() + (distance * angle.sin()) as i32
+    )
 }

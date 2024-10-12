@@ -85,6 +85,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
+        //For the user be able to change the sliders.
         if mouse.left() && slider_id == 0 {
             for slider in sliders.iter_mut().enumerate() {
                 if slider.1.bar_rect().contains_point((mouse.x(), mouse.y())) {
@@ -95,9 +96,10 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             slider_id = 0;
         }
 
+        //For the user be able to click the buttons
         if mouse.left() && last_mouse_state == false {
             for button in buttons.iter_mut() {
-                if button.state_rect().contains_point((mouse.x(), mouse.y())) {
+                if button.rect().contains_point((mouse.x(), mouse.y())) {
                     button.toggle();
                 }
             }
@@ -120,6 +122,10 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
                 &slider.get_value_ref().to_string(),
                 8,
             );
+            if slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
+                let _ = display.draw_outline(&slider.pivot_rect());
+                let _ = display.draw_outline(&slider.bar_rect());
+            }
             let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
         }
 
