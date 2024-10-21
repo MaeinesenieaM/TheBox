@@ -130,6 +130,17 @@ impl Display {
         Ok(())
     }
 
+    pub fn draw_geometry<P: Into<Point>>(&mut self, pos: P, vertices: u16, size: f32) {
+        let pos: Point = pos.into();
+        let mut vert: Vec<Point> = geometry(pos, vertices, size);
+
+        vert.push(vert.first().unwrap().clone());
+
+        let _ = self
+            .canvas
+            .draw_lines(vert.as_slice());
+    }
+
     //Draws a Slider on screen according to its values.
     pub fn draw_slider(&mut self, slider: &Slider) -> Result<(), String> {
         self.canvas.fill_rect(slider.bar_rect())?;
@@ -402,4 +413,16 @@ pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> 
         point.x() + (distance * angle.cos()) as i32,
         point.y() + (distance * angle.sin()) as i32
     )
+}
+
+//Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
+pub fn geometry<P: Into<Point>> (pos: P, vertices: u16, size: f32) -> Vec<Point> {
+    let pos = pos.into();
+    let mut edges: Vec<Point> = Vec::new();
+    let angle_difference = 1.0 / vertices as f32;
+
+    for i in 0..vertices { 
+        edges.push(angle_point(pos, angle_difference * i as f32, size)); 
+    }
+    edges
 }
