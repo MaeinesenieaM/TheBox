@@ -4,7 +4,6 @@ use sdl2::ttf;
 use sdl2::Sdl;
 use sdl2::{EventPump, VideoSubsystem};
 
-use sdl2::gfx::framerate::FPSManager;
 use sdl2::rect::*;
 use sdl2::render::*;
 use sdl2::video::WindowContext;
@@ -34,7 +33,7 @@ pub struct SdlContext {
 pub struct Display {
     pub canvas: WindowCanvas,
     pub texture_creator: TextureCreator<WindowContext>,
-    pub fps_manager: FPSManager,
+//    pub fps_manager: FPSManager,
 }
 
 pub struct Write<'t, 'f> {
@@ -90,11 +89,11 @@ impl Display {
 
         let canvas = window.into_canvas().present_vsync().build().unwrap();
         let texture_creator = canvas.texture_creator();
-        let fps_manager = FPSManager::new();
+//        let fps_manager = FPSManager::new();
         Display {
             canvas,
             texture_creator,
-            fps_manager,
+//            fps_manager,
         }
     }
 
@@ -130,15 +129,14 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_geometry<P: Into<Point>>(&mut self, pos: P, vertices: u16, size: f32) {
+    pub fn draw_geometry<P: Into<Point>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), String> {
         let pos: Point = pos.into();
         let mut vert: Vec<Point> = geometry(pos, vertices, size);
 
         vert.push(vert.first().unwrap().clone());
 
-        let _ = self
-            .canvas
-            .draw_lines(vert.as_slice());
+        self.canvas.draw_lines(vert.as_slice())?;
+        Ok(())
     }
 
     //Draws a Slider on screen according to its values.
@@ -416,7 +414,7 @@ pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> 
 }
 
 //Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
-pub fn geometry<P: Into<Point>> (pos: P, vertices: u16, size: f32) -> Vec<Point> {
+pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> {
     let pos = pos.into();
     let mut edges: Vec<Point> = Vec::new();
     let angle_difference = 1.0 / vertices as f32;

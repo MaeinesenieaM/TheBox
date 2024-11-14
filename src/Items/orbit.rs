@@ -2,15 +2,13 @@ use sdl2::event::Event;
 use sdl2::keyboard::*;
 use sdl2::pixels::Color;
 
-use sdl2::gfx::primitives::DrawRenderer;
-
 use thebox::{Display, Write};
 
 pub const NAME: &str = "Orbit";
 pub const ID: u8 = 0;
 
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
-    let radius: i16 = 100;
+    let radius: f32 = 100.0;
 
     let mut blue: u8 = 120;
     let mut over: bool = false;
@@ -20,14 +18,11 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     let windowref = display.canvas.window();
 
     let (window_x, window_y) = windowref.size();
-    let window_x_middle: i16 = (window_x / 2).try_into().unwrap();
-    let window_y_middle: i16 = (window_y / 2).try_into().unwrap();
+    let (window_x_middle, window_y_middle): (i32, i32) = (window_x as i32 / 2, window_y as i32 / 2);
 
-    let circle_color: Color = Color::RGB(120, 120, 120);
+    let circle_color: Color = Color::RGB(230, 80, 60);
 
     'repeat: loop {
-        let circle_sin_x: i16 = window_y_middle + (100.0 * angle.sin()) as i16;
-        let circle_cos_y: i16 = window_x_middle + (100.0 * angle.cos()) as i16;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -52,12 +47,21 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             16,
         );
 
-        let _ = display
-            .canvas
-            .aa_circle(window_x_middle, window_y_middle, radius, circle_color);
-        let _ = display
-            .canvas
-            .filled_circle(circle_cos_y, circle_sin_x, radius / 8, circle_color);
+        display.canvas.set_draw_color(thebox::COLOR_WHITE);
+
+        let _ = display.draw_geometry(
+            (window_x_middle, window_y_middle),
+            24,
+            radius
+        );
+
+        display.canvas.set_draw_color(circle_color);
+
+        let _ = display.draw_geometry(
+            thebox::angle_point((window_x_middle, window_y_middle), angle, radius),
+            16,
+            16.0
+        );
 
         if blue == 255 || blue == 0 {
             over = !over
@@ -69,12 +73,12 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             blue -= 1
         };
 
-        angle += 0.02;
+        angle += 0.005;
 
         display.draw_text(&write, 0, 0, &angle.to_string(), 8);
 
         display.canvas.present();
     }
 
-    write.set_draw_color(super::super::DEFAULT_COLOR);
+    write.set_draw_color(thebox::DEFAULT_COLOR);
 }

@@ -3,8 +3,6 @@ use sdl2::keyboard::*;
 use sdl2::pixels::Color;
 use sdl2::rect::*;
 
-use sdl2::gfx::primitives::DrawRenderer;
-
 use std::time;
 
 use thebox::{Display, Write};
@@ -47,15 +45,11 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
-        display.draw_geometry(screen_center, 8, 64.0);
+        let _ = display.draw_geometry(screen_center, 8, 64.0);
 
 //        let _ = display
 //            .canvas
 //            .draw_points(temp_geo.as_slice());
-
-        //let _ = display
-        //    .canvas
-        //    .circle(window_x / 2, window_y / 2, 150, Color::WHITE);
 
         display.draw_text_centered(
             &write,
@@ -71,10 +65,15 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
 impl Clock {
 
-/*    fn new(pos_x: i32, pos_y: i32, size: f32) -> Clock {
+    /*fn new(pos_x: i32, pos_y: i32, size: f32) -> Clock {
         Clock {
             pos_x,
             pos_y,
+            second_hand_ang: 0.0,
+            minute_hand_ang: 0.0,
+            hour_hand_ang: 0.0,
+            size,
+            local_time: time::Duration
         }
     }
     //This might get an error, be sure to handle it well.

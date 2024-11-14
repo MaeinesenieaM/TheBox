@@ -7,7 +7,6 @@ use sdl2::mouse::*;
 
 use thebox::*;
 
-//use sdl2::gfx::primitives::DrawRenderer;
 /*
 struct Entity {
     fill: bool,
