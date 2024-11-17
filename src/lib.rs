@@ -139,6 +139,24 @@ impl Display {
         Ok(())
     }
 
+    pub fn draw_geometry_points<P: Into<Point>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), String> {
+        let pos: Point = pos.into();
+        let mut vert: Vec<Point> = geometry(pos, vertices, size);
+
+        vert.push(vert.first().unwrap().clone());
+
+        self.canvas.draw_points(vert.as_slice())?;
+        Ok(())
+    }
+
+    pub fn draw_angle<P: Into<Point>>(&mut self, pos: P, angle: f32, distance: f32) -> Result<(), String> {
+        let pos1: Point = pos.into();
+        let pos2: Point = angle_point(pos1, angle, distance);
+
+        self.canvas.draw_line(pos1, pos2)?;
+        Ok(())
+    }
+
     //Draws a Slider on screen according to its values.
     pub fn draw_slider(&mut self, slider: &Slider) -> Result<(), String> {
         self.canvas.fill_rect(slider.bar_rect())?;

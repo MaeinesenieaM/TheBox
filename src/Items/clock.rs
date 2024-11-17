@@ -10,16 +10,6 @@ use thebox::{Display, Write};
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;
 
-struct Clock {
-    pos_x: i32,
-    pos_y: i32,
-    second_hand_ang: f32,
-    minute_hand_ang: f32,
-    hour_hand_ang: f32,
-    size: f32,
-    local_time: time::Duration,
-}
-
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
     let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
@@ -27,7 +17,8 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
     let window_y: i16 = window_y.try_into().unwrap();
 
     let screen_center: Point = Point::new(window_x as i32 / 2, window_y as i32 / 2);
-//    let temp_geo: Vec<Point> = thebox::geometry(screen_center, 4, 64.0);
+
+    let mut clock: Clock = Clock::new(screen_center, 80.0);
 
     'repeat: loop {
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
@@ -45,11 +36,11 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
             }
         }
 
-        let _ = display.draw_geometry(screen_center, 8, 64.0);
+//        let _ = display.draw_geometry(screen_center, 8, 64.0);
+//        let _ = display.draw_angle(screen_center, 0.80, 64.0);
 
-//        let _ = display
-//            .canvas
-//            .draw_points(temp_geo.as_slice());
+        clock.update_hands_real();
+        let _ = clock.draw(display);
 
         display.draw_text_centered(
             &write,
@@ -62,30 +53,49 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         display.canvas.present();
     }
 }
-
+#[allow(dead_code)]
+struct Clock {
+    pos: Point,
+    second_hand_ang: f32,
+    minute_hand_ang: f32,
+    hour_hand_ang: f32,
+    size: f32,
+    local_time: time::SystemTime,
+}
+#[allow(dead_code)]
 impl Clock {
-
-    /*fn new(pos_x: i32, pos_y: i32, size: f32) -> Clock {
+    fn new<P: Into<Point>>(pos: P, size: f32) -> Clock {
         Clock {
-            pos_x,
-            pos_y,
+            pos: pos.into(),
             second_hand_ang: 0.0,
             minute_hand_ang: 0.0,
             hour_hand_ang: 0.0,
             size,
-            local_time: time::Duration
+            local_time: time::SystemTime::now()
         }
     }
     //This might get an error, be sure to handle it well.
     fn draw(&self, display: &mut Display) -> Result<(), String> {
-        display.canvas.circle(self.pos_x, self.pos_y, self.size, thebox::COLOR_WHITE)
-
-    }*/
-
-    //Updates de clock hands acording to its local time.
+        display.draw_geometry(self.pos, 16, self.size)?;
+        display.draw_geometry_points(self.pos, 12, self.size * 0.9)?;
+        display.draw_angle(self.pos, self.second_hand_ang - 0.25, self.size * 0.5)?;
+        display.draw_angle(self.pos, self.minute_hand_ang - 0.25, self.size * 0.7)?;
+        display.draw_angle(self.pos, self.hour_hand_ang - 0.25, self.size * 0.8)?;
+        Ok(())
+    }
+    //Updates the clock hands acording to its local time.
     fn update_hands(&mut self) {
-        let secs: u64 = self.local_time.as_secs();
-
+        let secs: u64 = self.local_time.elapsed().unwrap().as_secs();
+        self.second_hand_ang = (secs % 60) as f32 / 60.0;
+        self.minute_hand_ang = (secs % 3600) as f32 / 3600.0;
+        self.hour_hand_ang = (secs % 43200) as f32 / 43200.0;
+    }
+    //Updates the clock by the OS SystemTime.
+    fn update_hands_real(&mut self) {
+        let secs: u64 = time::SystemTime::now()
+            .duration_since(time::SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
         self.second_hand_ang = (secs % 60) as f32 / 60.0;
         self.minute_hand_ang = (secs % 3600) as f32 / 3600.0;
         self.hour_hand_ang = (secs % 43200) as f32 / 43200.0;
