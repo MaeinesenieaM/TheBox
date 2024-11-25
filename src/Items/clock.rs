@@ -10,6 +10,8 @@ use thebox::{Display, Write};
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;
 
+const CLOCK_SIZE: f32 = 180.0;
+
 pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
     let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
@@ -18,7 +20,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
     let screen_center: Point = Point::new(window_x as i32 / 2, window_y as i32 / 2);
 
-    let mut clock: Clock = Clock::new(screen_center, 80.0);
+    let mut clock: Clock = Clock::new(screen_center, CLOCK_SIZE);
 
     'repeat: loop {
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
@@ -78,8 +80,11 @@ impl Clock {
     fn draw(&self, display: &mut Display) -> Result<(), String> {
         display.draw_geometry(self.pos, 16, self.size)?;
         display.draw_geometry_points(self.pos, 12, self.size * 0.9)?;
+        display.canvas.set_draw_color(Color::RGB(180, 40, 40));
         display.draw_angle(self.pos, self.second_hand_ang - 0.25, self.size * 0.5)?;
+        display.canvas.set_draw_color(Color::RGB(40, 40, 180));
         display.draw_angle(self.pos, self.minute_hand_ang - 0.25, self.size * 0.7)?;
+        display.canvas.set_draw_color(thebox::COLOR_WHITE);
         display.draw_angle(self.pos, self.hour_hand_ang - 0.25, self.size * 0.8)?;
         Ok(())
     }
