@@ -2,12 +2,12 @@ use sdl2::event::Event;
 use sdl2::keyboard::*;
 use sdl2::pixels::Color;
 
-use thebox::{Display, Write};
+use thebox::{Display, Write, SdlContext};
 
 pub const NAME: &str = "Orbit";
 pub const ID: u8 = 0;
 
-pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
     let radius: f32 = 100.0;
 
     let mut blue: u8 = 120;
@@ -24,7 +24,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
 
     'repeat: loop {
 
-        for event in event_pump.poll_iter() {
+        for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {

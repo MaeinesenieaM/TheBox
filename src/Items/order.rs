@@ -16,23 +16,23 @@ struct Entity {
 }
 */
 
-use thebox::{Display, Write};
+use thebox::{Display, Write, SdlContext};
 
 pub const NAME: &str = "Order";
 pub const ID: u8 = 9;
 
-pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
     let window = display.canvas.window();
 
     let points = grid_points(window.size(), 16);
 
     'repeat: loop {
-        let _mouse = MouseState::new(&event_pump);
+        let _mouse = MouseState::new(&sdl_context.event_pump);
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
-        for event in event_pump.poll_iter() {
+        for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {

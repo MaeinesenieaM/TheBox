@@ -11,24 +11,24 @@ pub mod pendulum;
 //This code is startig to hit a nerve on me, but it's going to be here for the long run until
 //I figure something better...
 
-use thebox::{Display, Write};
+use thebox::{Display, Write, SdlContext};
 
 pub fn select_item(
     choice: i32,
     display: &mut Display,
-    event_pump: &mut sdl2::EventPump,
+    sdl_context: &mut SdlContext,
     write: &mut Write,
 ) {
     match choice {
-        0 => orbit::start(display, event_pump, write),
-        1 => input::start(display, event_pump, write),
-        2 => rays::start(display, event_pump, write),
-        3 => pendulum::start(display, event_pump, write),
-        4 => tree::start(display, event_pump, write),
-        5 => textures::start(display, event_pump, write),
-        6 => audio::start(display, event_pump, write),
-        7 => clock::start(display, event_pump, write),
-        9 => order::start(display, event_pump, write),
+        0 => orbit::start(display, sdl_context, write),
+        1 => input::start(display, sdl_context, write),
+        2 => rays::start(display, sdl_context, write),
+        3 => pendulum::start(display, sdl_context, write),
+        4 => tree::start(display, sdl_context, write),
+        5 => textures::start(display, sdl_context, write),
+        6 => audio::start(display, sdl_context, write),
+        7 => clock::start(display, sdl_context, write),
+        9 => order::start(display, sdl_context, write),
         _ => {
             println!("COULD NOT FIND ANYTHING!");
         }

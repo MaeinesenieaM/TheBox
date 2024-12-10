@@ -8,7 +8,7 @@ use thebox::*;
 pub const NAME: &str = "Input";
 pub const ID: u8 = 1;
 
-pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
@@ -72,9 +72,9 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
-        let mouse: MouseState = MouseState::new(event_pump);
+        let mouse: MouseState = MouseState::new(&sdl_context.event_pump);
 
-        for event in event_pump.poll_iter() {
+        for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {

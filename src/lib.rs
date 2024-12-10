@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 use sdl2::ttf;
 
 use sdl2::Sdl;
-use sdl2::{EventPump, VideoSubsystem};
+use sdl2::{EventPump, VideoSubsystem, AudioSubsystem};
 
 use sdl2::rect::*;
 use sdl2::render::*;
@@ -28,6 +28,7 @@ pub struct SdlContext {
     pub sdl2: Sdl,
     pub event_pump: EventPump,
     pub video_subsystem: VideoSubsystem,
+    pub audio_subsystem: AudioSubsystem
 }
 
 pub struct Display {
@@ -39,12 +40,12 @@ pub struct Display {
 pub struct Write<'t, 'f> {
     pub ttf: &'t ttf::Sdl2TtfContext,
     pub font: ttf::Font<'t, 'f>,
-    pub color: Color,
+    pub color: Color
 }
 
 pub enum SliderType {
     SliderHorizontal,
-    SliderVertical,
+    SliderVertical
 }
 
 //The slider is a user input element, where the user moves a pivot o control the value.
@@ -61,19 +62,19 @@ pub struct Slider {
 pub struct Button {
     pub state: bool,
     pub x: i32,
-    pub y: i32,
+    pub y: i32
 }
 
 impl SdlContext {
     pub fn init_context() -> SdlContext {
+
         let sdl2 = sdl2::init().unwrap();
-        let event_pump = sdl2.event_pump().unwrap();
-        let video_subsystem = sdl2.video().unwrap();
 
         SdlContext {
-            sdl2,
-            event_pump,
-            video_subsystem,
+            event_pump : sdl2.event_pump().unwrap(),
+            video_subsystem : sdl2.video().unwrap(),
+            audio_subsystem : sdl2.audio().unwrap(),
+            sdl2 : sdl2,
         }
     }
 }

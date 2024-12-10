@@ -5,14 +5,14 @@ use sdl2::rect::*;
 
 use std::time;
 
-use thebox::{Display, Write};
+use thebox::{Display, Write, SdlContext};
 
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;
 
 const CLOCK_SIZE: f32 = 180.0;
 
-pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
     let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
     let window_x: i16 = window_x.try_into().unwrap();
@@ -27,7 +27,7 @@ pub fn start(display: &mut Display, event_pump: &mut sdl2::EventPump, write: &mu
         display.canvas.clear();
         display.canvas.set_draw_color(thebox::COLOR_WHITE);
 
-        for event in event_pump.poll_iter() {
+        for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {
@@ -81,11 +81,11 @@ impl Clock {
         display.draw_geometry(self.pos, 16, self.size)?;
         display.draw_geometry_points(self.pos, 12, self.size * 0.9)?;
         display.canvas.set_draw_color(Color::RGB(180, 40, 40));
-        display.draw_angle(self.pos, self.second_hand_ang - 0.25, self.size * 0.5)?;
+        display.draw_angle(self.pos, self.second_hand_ang - 0.25, self.size * 0.8)?;
         display.canvas.set_draw_color(Color::RGB(40, 40, 180));
         display.draw_angle(self.pos, self.minute_hand_ang - 0.25, self.size * 0.7)?;
         display.canvas.set_draw_color(thebox::COLOR_WHITE);
-        display.draw_angle(self.pos, self.hour_hand_ang - 0.25, self.size * 0.8)?;
+        display.draw_angle(self.pos, self.hour_hand_ang - 0.25, self.size * 0.5)?;
         Ok(())
     }
     //Updates the clock hands acording to its local time.

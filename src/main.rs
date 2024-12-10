@@ -58,7 +58,7 @@ fn main() {
         }
 
         if enter == 1 {
-            items::select_item(count, &mut display, &mut sdl_context.event_pump, &mut write);
+            items::select_item(count, &mut display, &mut sdl_context, &mut write);
             enter = 0;
         }
 
