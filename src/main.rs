@@ -18,7 +18,7 @@ fn main() {
     let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600);
 
     let ttf = sdl2::ttf::init().unwrap();
-    let mut write = Write::init_write(&ttf, DEFAULT_COLOR);
+    let mut write = Write::init_write(&ttf, DEFAULT_COLOR, "Fixedsys.ttf");
 
     let mut frames = 0;
     let mut temp_frames = 0;

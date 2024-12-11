@@ -8,6 +8,9 @@ pub const NAME: &str = "Audio";
 pub const ID: u8 = 6;
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+
+//   let audio_path: Path = 
+
     'repeat: loop {
         display.canvas.clear();
 

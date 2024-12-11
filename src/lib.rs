@@ -8,6 +8,7 @@ use sdl2::rect::*;
 use sdl2::render::*;
 use sdl2::video::WindowContext;
 
+use std::path::*;
 use std::f32::consts::PI;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
@@ -188,17 +189,15 @@ impl Display {
 }
 
 impl Write<'_, '_> {
-    pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext, color: Color) -> Write<'t, 'f> {
-        let font = match ttf.load_font("./src/main_assets/Fixedsys.ttf", 32) {
+    pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext, color: Color, font: &str) -> Write<'t, 'f> {
+
+        let mut path = PathBuf::from(get_assets_path());
+        path.push(font);
+
+        let font = match ttf.load_font(path, 32) {
             Ok(font_src) => font_src,
-            Err(_) => match ttf.load_font("./main_assets/Fixedsys.ttf", 32) {
-                Ok(font_ass) => font_ass,
-                Err(damn) => {
-                    panic!("ERROR: {}", &damn)
-                }
-            },
+            Err(damn) => panic!("ERROR: {}", &damn)
         };
-        let color = color;
         Write { ttf, font, color }
     }
 
@@ -216,7 +215,7 @@ impl Write<'_, '_> {
             .unwrap()
     }
 
-    pub fn set_font(&mut self, path: &str) {
+    pub fn set_font<P: AsRef<Path>>(&mut self, path: P) {
         self.font = self.ttf.load_font(path, 32).expect("COULD NOT FIND FONT!");
     }
 
@@ -414,6 +413,28 @@ pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
     } else {
         100
     }
+}
+
+pub fn get_assets_path() -> String {
+    let mut path = PathBuf::from("./");
+    
+    path.push("main_assets");
+    match path.try_exists() {
+        Ok(true) => {
+            //This might break in some ocasions, probably will fix when I properly learn OsString.
+            return path.into_os_string().into_string().expect("Could not transform OsString into String!");
+        },
+        Ok(false) => path.pop(),
+        Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!")
+    };
+    path.push("src/main_assets");
+    match path.try_exists() {
+        Ok(true) => {
+            return path.into_os_string().into_string().expect("Could not transform OsString into String!");
+        },
+        Ok(false) => panic!("THE FOLDER [main_assets] DOES NOT EXIST!"),
+        Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!")
+    };
 }
 
 //Takes a precentage from 0 to 100 and return the possible value.
