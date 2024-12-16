@@ -26,7 +26,7 @@ const BUTTON_RECT_SIZE: u32 = 24;
 const BUTTON_RECT_STATE_SIZE: u32 = 16;
 
 pub struct SdlContext {
-    pub sdl2: Sdl,
+    pub sdl: Sdl,
     pub event_pump: EventPump,
     pub video_subsystem: VideoSubsystem,
     pub audio_subsystem: AudioSubsystem
@@ -69,13 +69,13 @@ pub struct Button {
 impl SdlContext {
     pub fn init_context() -> SdlContext {
 
-        let sdl2 = sdl2::init().unwrap();
+        let sdl = sdl2::init().unwrap();
 
         SdlContext {
-            event_pump : sdl2.event_pump().unwrap(),
-            video_subsystem : sdl2.video().unwrap(),
-            audio_subsystem : sdl2.audio().unwrap(),
-            sdl2 : sdl2,
+            event_pump : sdl.event_pump().unwrap(),
+            video_subsystem : sdl.video().unwrap(),
+            audio_subsystem : sdl.audio().unwrap(),
+            sdl : sdl,
         }
     }
 }
@@ -416,7 +416,7 @@ pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
 }
 
 pub fn get_assets_path() -> String {
-    let mut path = PathBuf::from("./");
+    let mut path: PathBuf = PathBuf::from("./");
     
     path.push("main_assets");
     match path.try_exists() {

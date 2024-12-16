@@ -1,13 +1,14 @@
 use sdl2::event::Event;
 //use sdl2::pixels::Color;
 use sdl2::keyboard::*;
-use sdl2::rect::*;
+//use sdl2::rect::*;
 
 use thebox::{Display, Write, SdlContext};
 
 pub const NAME: &str = "Double Pendulum";
 pub const ID: u8 = 3;
 
+/*
 struct Pendulum {
     center: Point,
     center_ange: f32,
@@ -18,6 +19,7 @@ struct Pendulum {
     p2_distance: f32,
     p2_angle: f32,
 }
+*/
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
     'repeat: loop {
