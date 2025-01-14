@@ -88,7 +88,7 @@ impl Clock {
         display.draw_angle(self.pos, self.hour_hand_ang - 0.25, self.size * 0.5)?;
         Ok(())
     }
-    //Updates the clock hands acording to its local time.
+    //Updates the clock hands according to its local time.
     fn update_hands(&mut self) {
         let secs: u64 = self.local_time.elapsed().unwrap().as_secs();
         self.second_hand_ang = (secs % 60) as f32 / 60.0;

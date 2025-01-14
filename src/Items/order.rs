@@ -72,16 +72,16 @@ fn grid_points(size: (u32, u32), difference: i32) -> Vec<Point> {
     let width: i32 = i32::try_from(size.0).unwrap();
     let height: i32 = i32::try_from(size.1).unwrap();
 
-    let ammount_x: i32 = width / difference;
-    let ammount_y: i32 = height / difference;
+    let amount_x: i32 = width / difference;
+    let amount_y: i32 = height / difference;
 
     let mut points: Vec<Point> = Vec::new();
 
-    for i in 0..ammount_y {
-        for j in 0..ammount_x {
+    for i in 0..amount_y {
+        for j in 0..amount_x {
             points.push(Point::new(
-                (width / ammount_x) * j,
-                (height / ammount_y) * i,
+                (width / amount_x) * j,
+                (height / amount_y) * i,
             ));
         }
     }

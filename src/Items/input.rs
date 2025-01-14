@@ -29,7 +29,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         100,
         40,
         60,
-        (window_height - 100) as u32,
+        window_height - 100,
         SliderType::SliderVertical,
     ));
 
@@ -38,7 +38,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         100,
         40,
         40,
-        (window_width - 100) as u32,
+        window_width - 100,
         SliderType::SliderHorizontal,
     ));
 

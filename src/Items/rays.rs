@@ -25,7 +25,7 @@ struct Modifier {
     slider: Slider,
 }
 
-//I Should've use Points instead of a bunch of tuples, but i'm too lazy to rewrite it.
+//I Should've use Points instead of a bunch of tuples, but I'm too lazy to rewrite it.
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
@@ -41,11 +41,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
     //This single value divides how many steps it will take to calculate the collisions.
     let mut ray_precision: u32 = 0;
 
-    //The lenght of each ray.
+    //The length of each ray.
     let mut ray_length: f32 = 0.0;
 
     //Basically how many rays will be used. It does not mean how many corners it will hit,
-    //only the ammount of rays.
+    //only the amount of rays.
     let mut ray_cycles: i32 = 0;
 
     let mut modifiers: Vec<Modifier> = Vec::new();
@@ -57,7 +57,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             200,                          //Max
             60,                           //X
             (window_height - 40) as i32,  //Y
-            120,                          //Lenght
+            120,                          //Length
             SliderType::SliderHorizontal, //Type
         ),
     });
@@ -152,7 +152,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         }
 
         //Check input of mouse in the slider.
-        //TODO! Make all this into a simpler funcion.
+        //TODO! Make all this into a simpler function.
         if mouse.left() && slider_id == 0 {
             for modifier in modifiers.iter_mut().enumerate() {
                 if modifier
@@ -177,7 +177,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
                 .update_from_pos((mouse.x(), mouse.y()));
         }
 
-        //self explanatory
+        //self-explanatory
         arrow.turn(&left_arrow);
         arrow.turn(&right_arrow);
         let mut next_angle: f32 = arrow.angle;
@@ -250,8 +250,8 @@ fn angle_pos(x: i32, y: i32, mut angle: f32, distance: f32) -> (i32, i32) {
 fn rounder(value: &mut i32, max: u32) {
     if *value > max as i32 {
         *value = max as i32
-    } else if *value < 0 as i32 {
-        *value = 0 as i32
+    } else if *value < 0i32 {
+        *value = 0i32
     }
 }
 

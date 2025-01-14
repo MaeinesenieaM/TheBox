@@ -1,7 +1,7 @@
 use sdl2::event::Event;
 use sdl2::keyboard::*;
 use sdl2::pixels::Color;
-
+use sdl2::video::Window;
 use thebox::{Display, Write, SdlContext};
 
 pub const NAME: &str = "Orbit";
@@ -15,9 +15,9 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
 
     let mut angle: f32 = 0.0;
 
-    let windowref = display.canvas.window();
+    let window_ref: &Window = display.canvas.window();
 
-    let (window_x, window_y) = windowref.size();
+    let (window_x, window_y) = window_ref.size();
     let (window_x_middle, window_y_middle): (i32, i32) = (window_x as i32 / 2, window_y as i32 / 2);
 
     let circle_color: Color = Color::RGB(230, 80, 60);

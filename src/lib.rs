@@ -10,6 +10,7 @@ use sdl2::video::WindowContext;
 
 use std::path::*;
 use std::f32::consts::PI;
+use sdl2::sys::Font;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
@@ -21,7 +22,7 @@ const SLIDER_BAR_SIZE: u32 = 8;
 
 const BUTTON_STATE_TRUE: Color = Color::RGB(30, 165, 30);
 const BUTTON_STATE_FALSE: Color = Color::RGB(165, 30, 30);
-const BUTOON_DEFAULT_COLOR: Color = Color::RGB(120, 120, 120);
+const BUTTON_DEFAULT_COLOR: Color = Color::RGB(120, 120, 120);
 const BUTTON_RECT_SIZE: u32 = 24;
 const BUTTON_RECT_STATE_SIZE: u32 = 16;
 
@@ -77,7 +78,7 @@ impl SdlContext {
             audio_subsystem : sdl.audio().unwrap(),
             sdl : sdl,
         }
-    }
+    }    
 }
 
 impl Display {
@@ -179,7 +180,7 @@ impl Display {
     }
 
     pub fn draw_button(&mut self, button: &Button) -> Result<(), String> {
-        self.canvas.set_draw_color(BUTOON_DEFAULT_COLOR);
+        self.canvas.set_draw_color(BUTTON_DEFAULT_COLOR);
         self.canvas.fill_rect(button.rect())?;
         self.canvas.set_draw_color(button.get_state_color());
         self.canvas.fill_rect(button.state_rect())?;
@@ -374,7 +375,7 @@ impl Button {
     }
 
     pub fn set_pos<P: Into<Point>>(&mut self, point: P) {
-        let point = point.into();
+        let point: Point = point.into();
         self.x = point.x();
         self.y = point.y();
     }
@@ -437,7 +438,7 @@ pub fn get_assets_path() -> String {
     };
 }
 
-//Takes a precentage from 0 to 100 and return the possible value.
+//Takes a percentage from 0 to 100 and return the possible value.
 pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
     *value * *percentage as i32 / 100
 }
@@ -445,7 +446,7 @@ pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
 //Return a point based mainly on the angle and the distance. Remember a angle of 0.5 = 45 degrees clock wise.
 //Plus the starting direction is ->.
 pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> Point  {
-    let point = point.into();
+    let point: Point = point.into();
     angle = PI * (angle * 2.0);
     Point::new(
         point.x() + (distance * angle.cos()) as i32,
@@ -455,9 +456,9 @@ pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> 
 
 //Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
 pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> {
-    let pos = pos.into();
+    let pos: Point = pos.into();
     let mut edges: Vec<Point> = Vec::new();
-    let angle_difference = 1.0 / vertices as f32;
+    let angle_difference: f32 = 1.0 / vertices as f32;
 
     for i in 0..vertices { 
         edges.push(angle_point(pos, angle_difference * i as f32, size)); 

@@ -8,7 +8,7 @@ pub mod textures;
 pub mod tree;
 pub mod pendulum;
 
-//This code is startig to hit a nerve on me, but it's going to be here for the long run until
+//This code is starting to hit a nerve on me, but it's going to be here for the long run until
 //I figure something better...
 
 use thebox::{Display, Write, SdlContext};
