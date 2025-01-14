@@ -10,7 +10,6 @@ use sdl2::video::WindowContext;
 
 use std::path::*;
 use std::f32::consts::PI;
-use sdl2::sys::Font;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
@@ -25,6 +24,61 @@ const BUTTON_STATE_FALSE: Color = Color::RGB(165, 30, 30);
 const BUTTON_DEFAULT_COLOR: Color = Color::RGB(120, 120, 120);
 const BUTTON_RECT_SIZE: u32 = 24;
 const BUTTON_RECT_STATE_SIZE: u32 = 16;
+
+//Hmm... Primitives....
+pub trait PrimitiveNumber: Copy + std::cmp::PartialOrd + std::ops::Div {
+    fn as_f32(self) -> f32;
+    fn from_f32(value: f32) -> Self;
+}
+
+impl PrimitiveNumber for u8 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> u8 { value as u8 }
+}
+impl PrimitiveNumber for i8 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> i8 { value as i8 }
+}
+impl PrimitiveNumber for u16 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> u16 { value as u16 }
+}
+impl PrimitiveNumber for i16 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> i16 { value as i16 }
+}
+impl PrimitiveNumber for u32 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> u32 { value as u32 }
+}
+impl PrimitiveNumber for i32 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> i32 { value as i32 }
+}
+impl PrimitiveNumber for u64 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> u64 { value as u64 }
+}
+impl PrimitiveNumber for i64 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> i64 { value as i64 }
+}
+impl PrimitiveNumber for f32 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> f32 { value }
+}
+impl PrimitiveNumber for f64 {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> f64 { value as f64 }
+}
+impl PrimitiveNumber for usize {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> usize { value as usize }
+}
+impl PrimitiveNumber for isize {
+    fn as_f32(self) -> f32 { self as f32 }
+    fn from_f32(value: f32) -> isize { value as isize }
+}
 
 pub struct SdlContext {
     pub sdl: Sdl,
@@ -51,10 +105,10 @@ pub enum SliderType {
 }
 
 //The slider is a user input element, where the user moves a pivot o control the value.
-pub struct Slider {
-    value: u16,
-    min: u16,
-    max: u16,
+pub struct Slider<T: PrimitiveNumber> {
+    value: T,
+    min: T,
+    max: T,
     pub x: i32,
     pub y: i32,
     length: u32,
@@ -161,7 +215,10 @@ impl Display {
     }
 
     //Draws a Slider on screen according to its values.
-    pub fn draw_slider(&mut self, slider: &Slider) -> Result<(), String> {
+    pub fn draw_slider<T>(&mut self, slider: &Slider<T>) -> Result<(), String>
+    where
+        T: PrimitiveNumber
+    {
         self.canvas.fill_rect(slider.bar_rect())?;
         self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
         self.canvas.fill_rect(slider.pivot_rect())?;
@@ -170,7 +227,10 @@ impl Display {
     }
 
     //Same as above, but is drawn with a predefined color.
-    pub fn draw_slider_cl(&mut self, slider: &Slider, color: Color) -> Result<(), String> {
+    pub fn draw_slider_cl<T>(&mut self, slider: &Slider<T>, color: Color) -> Result<(), String>
+    where
+        T: PrimitiveNumber
+    {
         self.canvas.set_draw_color(color);
         self.canvas.fill_rect(slider.bar_rect())?;
         self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -229,8 +289,8 @@ impl Write<'_, '_> {
     }
 }
 
-impl Slider {
-    pub fn new(min: u16, max: u16, x: i32, y: i32, length: u32, slider_type: SliderType) -> Slider {
+impl<T: PrimitiveNumber> Slider<T> {
+    pub fn new(min: T, max: T, x: i32, y: i32, length: u32, slider_type: SliderType) -> Slider<T> {
         Slider {
             min,
             max,
@@ -242,12 +302,15 @@ impl Slider {
         }
     }
 
-    pub fn set_value(&mut self, value: u16) {
+    pub fn set_value(&mut self, value: T) {
         self.value = value;
     }
 
-    //Recommended for controled values.
-    pub fn set_value_limited(&mut self, value: u16) {
+    //Recommended for controlled values.
+    pub fn set_value_limited(&mut self, value: T)
+    where
+        T: PrimitiveNumber
+    {
         if value < self.min {
             self.value = self.min
         } else if value > self.max {
@@ -257,23 +320,21 @@ impl Slider {
         };
     }
 
-    pub fn get_value_ref(&self) -> &u16 {
+    pub fn get_value_ref(&self) -> &T {
         &self.value
     }
 
-    pub fn from_value<T>(&self) -> T
-    where
-        T: From<u16>,
+    pub fn from_value(&self) -> T
     {
         T::from(self.value)
     }
 
-    //Mutate the given value from the value of the slider.
-    pub fn mut_from_value<T>(&self, value: &mut T)
+    //Mutates the given value from the value of the slider.
+    pub fn mut_from_slider<F>(&self, value: &mut F)
     where
-        T: From<u16>,
+        F: PrimitiveNumber
     {
-        *value = T::from(self.value);
+        *value = PrimitiveNumber::from_f32(self.value.as_f32());
     }
 
     pub fn get_type(&self) -> &SliderType {
@@ -281,8 +342,9 @@ impl Slider {
     }
 
     //Returns how filled is the slider.
-    pub fn percentage(&self) -> f32 {
-        self.value as f32 / self.max as f32
+    pub fn percentage(&self) -> f32
+    {
+        self.value.as_f32() / self.max.as_f32()
     }
 
     //Calculates and returns the position of the pivot.
@@ -342,14 +404,9 @@ impl Slider {
             SliderType::SliderHorizontal => distance = point.x() - self.x,
             SliderType::SliderVertical => distance = point.y() - self.y,
         }
-        self.set_value_limited(
-            int_from_percentage(
-                &(self.max as i32),
-                &percentage_from_int(&distance, &(self.length as i32)),
-            )
-            .try_into()
-            .unwrap(),
-        );
+        let value: T = PrimitiveNumber::from_f32(self.max.as_f32() * (distance as f32 / self.length as f32));
+
+        self.set_value_limited(value);
     }
 }
 
@@ -403,7 +460,7 @@ impl Button {
     }
 }
 
-//return the percentage from 0 to 100 in a value with a int.
+//return the percentage from 0 to 100 in a value with an int.
 pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
     if *value < 1 {
         return 0;
@@ -416,13 +473,19 @@ pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
     }
 }
 
+//Takes a percentage from 0 to 100 and return the possible value.
+pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
+    *value * *percentage as i32 / 100
+}
+
 pub fn get_assets_path() -> String {
     let mut path: PathBuf = PathBuf::from("./");
-    
+
+    //I hate this code so much, but I'm too lazy to think a better way.
     path.push("main_assets");
     match path.try_exists() {
         Ok(true) => {
-            //This might break in some ocasions, probably will fix when I properly learn OsString.
+            //This might break in some occasions, probably will fix when I properly learn OsString.
             return path.into_os_string().into_string().expect("Could not transform OsString into String!");
         },
         Ok(false) => path.pop(),
@@ -438,12 +501,7 @@ pub fn get_assets_path() -> String {
     };
 }
 
-//Takes a percentage from 0 to 100 and return the possible value.
-pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
-    *value * *percentage as i32 / 100
-}
-
-//Return a point based mainly on the angle and the distance. Remember a angle of 0.5 = 45 degrees clock wise.
+//Return a point based mainly on the angle and the distance. Remember an angle of 0.5 = 45 degrees clock wise.
 //Plus the starting direction is ->.
 pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> Point  {
     let point: Point = point.into();

@@ -22,7 +22,7 @@ struct ButtonState {
 
 struct Modifier {
     name: String,
-    slider: Slider,
+    slider: Slider<u32>,
 }
 
 //I Should've use Points instead of a bunch of tuples, but I'm too lazy to rewrite it.
@@ -107,17 +107,17 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             .next()
             .unwrap()
             .slider
-            .mut_from_value(&mut ray_precision);
+            .mut_from_slider(&mut ray_precision);
         set_iter
             .next()
             .unwrap()
             .slider
-            .mut_from_value(&mut ray_length);
+            .mut_from_slider(&mut ray_length);
         set_iter
             .next()
             .unwrap()
             .slider
-            .mut_from_value(&mut ray_cycles);
+            .mut_from_slider(&mut ray_cycles);
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();

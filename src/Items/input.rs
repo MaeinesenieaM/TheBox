@@ -12,12 +12,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
-    let mut sliders: Vec<Slider> = Vec::new();
+    let mut sliders: Vec<Slider<u8>> = Vec::new();
     let mut buttons: Vec<Button> = Vec::new();
 
     sliders.push(Slider::new(
         0,
-        256,
+        255,
         (window_width / 2) as i32 - 60,
         (window_height / 2) as i32,
         120,
@@ -35,7 +35,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
 
     sliders.push(Slider::new(
         0,
-        100,
+        50,
         40,
         40,
         window_width - 100,
