@@ -1,4 +1,3 @@
-use sdl2::event::Event;
 use sdl2::keyboard::*;
 use sdl2::mouse::*;
 use sdl2::pixels::Color;
@@ -50,14 +49,17 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
 
     let mut slider_id: usize = 0;
 
-
-
     let mut blue: u8 = 65;
     let mut add: bool = true;
 
     let mut last_mouse_state: bool = false;
+    let mut last_key_pressed: String;
+
 
     'repeat: loop {
+        let mouse: MouseState = MouseState::new(&sdl_context.event_pump);
+        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
+
         if blue < 65 {
             add = true
         } else if blue > 185 {
@@ -71,20 +73,10 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
-
-        let mouse: MouseState = MouseState::new(&sdl_context.event_pump);
-
-        for event in sdl_context.event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'repeat,
-                _ => {}
-            }
-        }
-
+        
+        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if sdl_context.check_quit() {break 'repeat}
+        
         //For the user be able to change the sliders.
         if mouse.left() && slider_id == 0 {
             for slider in sliders.iter_mut().enumerate() {
@@ -129,6 +121,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
         }
 
+        //This draws the buttons
         for button in buttons.iter() {
             if button.rect().contains_point((mouse.x(), mouse.y())) {
                 let _ = display.draw_outline(&button.rect());

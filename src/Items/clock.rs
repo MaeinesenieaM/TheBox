@@ -1,4 +1,3 @@
-use sdl2::event::Event;
 use sdl2::keyboard::*;
 use sdl2::pixels::Color;
 use sdl2::rect::*;
@@ -26,21 +25,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
         display.canvas.set_draw_color(thebox::COLOR_WHITE);
+        
+        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
-        for event in sdl_context.event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'repeat,
-                _ => {}
-            }
-        }
-
-//        let _ = display.draw_geometry(screen_center, 8, 64.0);
-//        let _ = display.draw_angle(screen_center, 0.80, 64.0);
-
+        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if sdl_context.check_quit() {break 'repeat}
+        
         clock.update_hands_real();
         let _ = clock.draw(display);
 

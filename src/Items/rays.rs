@@ -123,14 +123,15 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         display.canvas.clear();
 
         let mouse: MouseState = MouseState::new(&sdl_context.event_pump);
+        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
+        
+        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if sdl_context.check_quit() {break 'repeat}
+        
+        //Despite I'm having more knowledge of user inputs, I'm not going to refactor this code just
+        //because I think its funny. trollface.jpg
         for event in sdl_context.event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'repeat,
-
                 Event::KeyDown {
                     keycode: Some(Keycode::Left),
                     ..

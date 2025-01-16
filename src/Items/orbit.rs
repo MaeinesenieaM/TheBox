@@ -24,16 +24,10 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
 
     'repeat: loop {
 
-        for event in sdl_context.event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'repeat,
-                _ => {}
-            }
-        }
+        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
+        
+        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if sdl_context.check_quit() {break 'repeat}
 
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();

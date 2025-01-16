@@ -1,9 +1,7 @@
-use sdl2::event::Event;
 use sdl2::pixels::Color;
 use sdl2::rect::*;
 
 use sdl2::keyboard::*;
-use sdl2::mouse::*;
 
 use thebox::*;
 
@@ -27,21 +25,13 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
     let points = grid_points(window.size(), 16);
 
     'repeat: loop {
-        let _mouse = MouseState::new(&sdl_context.event_pump);
+        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
-
-        for event in sdl_context.event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => break 'repeat,
-                _ => {}
-            }
-        }
+        
+        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if sdl_context.check_quit() {break 'repeat}
 
         let mut count = 0;
 

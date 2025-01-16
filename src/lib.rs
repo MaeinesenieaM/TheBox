@@ -1,5 +1,5 @@
 use sdl2::pixels::Color;
-use sdl2::ttf;
+use sdl2::{ttf, EventSubsystem};
 
 use sdl2::Sdl;
 use sdl2::{EventPump, VideoSubsystem, AudioSubsystem};
@@ -7,6 +7,7 @@ use sdl2::{EventPump, VideoSubsystem, AudioSubsystem};
 use sdl2::rect::*;
 use sdl2::render::*;
 use sdl2::video::WindowContext;
+use sdl2::event::Event;
 
 use std::path::*;
 use std::f32::consts::PI;
@@ -64,7 +65,7 @@ impl PrimitiveNumber for i64 {
     fn from_f32(value: f32) -> i64 { value as i64 }
 }
 impl PrimitiveNumber for f32 {
-    fn as_f32(self) -> f32 { self as f32 }
+    fn as_f32(self) -> f32 { self }
     fn from_f32(value: f32) -> f32 { value }
 }
 impl PrimitiveNumber for f64 {
@@ -83,6 +84,7 @@ impl PrimitiveNumber for isize {
 pub struct SdlContext {
     pub sdl: Sdl,
     pub event_pump: EventPump,
+    pub event_subsystem: EventSubsystem,
     pub video_subsystem: VideoSubsystem,
     pub audio_subsystem: AudioSubsystem
 }
@@ -128,11 +130,21 @@ impl SdlContext {
 
         SdlContext {
             event_pump : sdl.event_pump().unwrap(),
+            event_subsystem : sdl.event().unwrap(),
             video_subsystem : sdl.video().unwrap(),
             audio_subsystem : sdl.audio().unwrap(),
             sdl : sdl,
         }
-    }    
+    }
+
+    pub fn send_quit(&self) -> Result<(), String> {
+        self.event_subsystem.push_event(Event::Quit { timestamp: 0 })
+    }
+    
+    //Returns true if theres is a Quit Event and false if not.
+    pub fn check_quit(&mut self) -> bool {
+        self.event_pump.poll_iter().any(|quit| quit.is_same_kind_as(&Event::Quit { timestamp: 0 }))
+    }
 }
 
 impl Display {
