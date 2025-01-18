@@ -14,16 +14,22 @@ struct Entity {
 }
 */
 
-use thebox::{Display, Write, SdlContext};
-
 pub const NAME: &str = "Order";
 pub const ID: u8 = 9;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
     let window = display.canvas.window();
 
     let points = grid_points(window.size(), 16);
 
+    let message: Label = Label::new(
+            400,
+            550,
+            16,
+            &write,
+            Some(String::from("This section will have a vector visualizer and it will order it."))
+    );
+    
     'repeat: loop {
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
@@ -44,14 +50,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             display.canvas.set_draw_color(Color::RGB(200, 200, 200));
             let _ = display.canvas.draw_point(*point);
         }
-
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "This section will have a vector visualizer and it will order it.",
-            8,
-        );
+        
+        let _ = message.draw_centered(display);
 
         display.canvas.present();
     }

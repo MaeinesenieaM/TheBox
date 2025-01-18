@@ -17,7 +17,7 @@ pub fn select_item(
     choice: i32,
     display: &mut Display,
     sdl_context: &mut SdlContext,
-    write: &mut Write,
+    write: &Write,
 ) {
     match choice {
         0 => orbit::start(display, sdl_context, write),

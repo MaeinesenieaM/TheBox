@@ -7,13 +7,21 @@ use thebox::*;
 pub const NAME: &str = "Input";
 pub const ID: u8 = 1;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
     let mut sliders: Vec<Slider<u8>> = Vec::new();
     let mut buttons: Vec<Button> = Vec::new();
 
+    let input_message: Label = Label::new(
+        400, 
+        550, 
+        8, 
+        write,
+        Some(String::from("This is a special example showcasing the types of user inputs"))
+    );
+    
     sliders.push(Slider::new(
         0,
         255,
@@ -41,6 +49,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         SliderType::SliderHorizontal,
     ));
 
+    let mut sliders_label: Label = Label::new(0, 0, 8, write, None);
+    
     buttons.push(Button::new(
         false,
         (window_width - 64) as i32,
@@ -53,7 +63,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
     let mut add: bool = true;
 
     let mut last_mouse_state: bool = false;
-    let mut last_key_pressed: String;
+//    let mut last_key_pressed: String;
 
 
     'repeat: loop {
@@ -107,13 +117,10 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
 
         //This draws the sliders.
         for slider in sliders.iter() {
-            display.draw_text_centered(
-                &write,
-                slider.x - 20,
-                slider.y - 8,
-                &slider.get_value_ref().to_string(),
-                8,
-            );
+            sliders_label.set_pos(slider.x - 20, slider.y - 8);
+            sliders_label.update_text(Some(slider.get_value_ref().to_string()));
+            let _ = sliders_label.draw_centered(display);
+            
             if slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
                 let _ = display.draw_outline(&slider.pivot_rect());
                 let _ = display.draw_outline(&slider.bar_rect());
@@ -129,15 +136,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             let _ = display.draw_button(button);
         }
 
-        display.draw_text(&write, 0, 0, &mouse.x().to_string(), 8);
-
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "SLIDERS! This will be an example of some user input tools.",
-            8,
-        );
+        let _ = input_message.draw_centered(display);
 
         last_mouse_state = mouse.left();
 

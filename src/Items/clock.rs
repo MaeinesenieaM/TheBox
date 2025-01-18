@@ -4,14 +4,14 @@ use sdl2::rect::*;
 
 use std::time;
 
-use thebox::{Display, Write, SdlContext};
+use thebox::{Display, Write, SdlContext, Draw};
 
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;
 
 const CLOCK_SIZE: f32 = 180.0;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
     let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
     let window_x: i16 = window_x.try_into().unwrap();
@@ -20,6 +20,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
     let screen_center: Point = Point::new(window_x as i32 / 2, window_y as i32 / 2);
 
     let mut clock: Clock = Clock::new(screen_center, CLOCK_SIZE);
+    
+    let clock_message: thebox::Label = thebox::Label::new(
+        400,
+        550,
+        8,
+        write,
+        Some(String::from("In here, there will be a analog clock that tells time live."))
+    );
 
     'repeat: loop {
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
@@ -34,13 +42,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         clock.update_hands_real();
         let _ = clock.draw(display);
 
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "In here, there will be a analog clock that tells time live.",
-            8,
-        );
+        let _ = clock_message.draw_centered(display);
 
         display.canvas.present();
     }

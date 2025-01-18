@@ -26,7 +26,7 @@ struct Modifier {
 }
 
 //I Should've use Points instead of a bunch of tuples, but I'm too lazy to rewrite it.
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
@@ -49,6 +49,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
     let mut ray_cycles: i32 = 0;
 
     let mut modifiers: Vec<Modifier> = Vec::new();
+
+    let mut modifiers_label: Label = Label::new(0, 0, 8, &write, None);
 
     modifiers.push(Modifier {
         name: String::from("Precision"),
@@ -123,10 +125,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         display.canvas.clear();
 
         let mouse: MouseState = MouseState::new(&sdl_context.event_pump);
-        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
-        
-        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
-        if sdl_context.check_quit() {break 'repeat}
         
         //Despite I'm having more knowledge of user inputs, I'm not going to refactor this code just
         //because I think its funny. trollface.jpg
@@ -152,6 +150,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             }
         }
 
+        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
+        
+        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if sdl_context.check_quit() {break 'repeat}
+        
         //Check input of mouse in the slider.
         //TODO! Make all this into a simpler function.
         if mouse.left() && slider_id == 0 {
@@ -214,23 +217,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
             pos_end_y = temp_y;
         }
 
-        display.draw_text(&write, 0, 0, &format!("Angle: {}", arrow.angle), 8);
-
         for modifier in modifiers.iter() {
-            display.draw_text_centered(
-                &write,
-                modifier.slider.x - 20,
-                modifier.slider.y - 8,
-                &modifier.slider.get_value_ref().to_string(),
-                8,
-            );
-            display.draw_text(
-                &write,
-                modifier.slider.x,
-                modifier.slider.y - 22,
-                &modifier.name,
-                8,
-            );
+            modifiers_label.set_pos(modifier.slider.x - 20, modifier.slider.y - 8);
+            modifiers_label.update_text(Some(modifier.slider.get_value_ref().to_string()));
+            let _ = modifiers_label.draw_centered(display);
+
+            modifiers_label.set_pos(modifier.slider.x, modifier.slider.y - 22);
+            modifiers_label.update_text(Some(String::from(&modifier.name)));
+            let _ = modifiers_label.draw(display);
 
             let _ = display.draw_slider_cl(&modifier.slider, Color::RGB(30, 110, 40));
         }

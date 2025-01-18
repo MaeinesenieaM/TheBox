@@ -16,10 +16,11 @@ fn main() {
 
     let mut sdl_context = SdlContext::init_context();
     let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600);
-
+    let texture_creator = display.canvas.texture_creator();
+    
     let ttf = sdl2::ttf::init().unwrap();
-    let mut write = Write::init_write(&ttf, DEFAULT_COLOR, "Fixedsys.ttf");
-
+    let write = Write::init_write(&ttf, &texture_creator, "Fixedsys.ttf");
+    
     let mut frames = 0;
     let mut temp_frames = 0;
     let mut instant = Instant::now();
@@ -27,6 +28,11 @@ fn main() {
     let mut count: i32 = 1;
     let mut enter: u16 = 0;
 
+    let mut fps_label = Label::new(0, 0, 8, &write, None);
+    let mut count_label = Label::new(400, 300, 16, &write, Some(count.to_string()));
+    let mut item_label = Label::new(400, 332, 16, &write, None);
+    
+    
     'running: loop {
         for event in sdl_context.event_pump.poll_iter() {
             match event {
@@ -58,7 +64,7 @@ fn main() {
         }
 
         if enter == 1 {
-            items::select_item(count, &mut display, &mut sdl_context, &mut write);
+            items::select_item(count, &mut display, &mut sdl_context, &write);
             enter = 0;
         }
 
@@ -72,9 +78,17 @@ fn main() {
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
-        display.draw_text_centered(&write, 400, 300, items::name_item(count), 16);
-        display.draw_text_centered(&write, 400, 332, &count.to_string(), 8);
-        display.draw_text(&write, 0, 0, &temp_frames.to_string(), 8);
+        item_label.update_text(Some(items::name_item(count).to_string()));
+        count_label.update_text(Some(count.to_string()));
+        fps_label.update_text(Some(temp_frames.to_string()));
+        
+        let _ = item_label.draw_centered(&mut display);
+        let _ = count_label.draw_centered(&mut display);
+        let _ = fps_label.draw(&mut display);
+
+//        display.draw_text_centered(&write, 400, 300, items::name_item(count), 16);
+//        display.draw_text_centered(&write, 400, 332, &count.to_string(), 8);
+//        display.draw_text(&write, 0, 0, &temp_frames.to_string(), 8);
 
         frames += 1;
         display.canvas.present();

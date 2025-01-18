@@ -1,9 +1,8 @@
-use sdl2::event::Event;
 //use sdl2::pixels::Color;
 use sdl2::keyboard::*;
 //use sdl2::rect::*;
 
-use thebox::{Display, Write, SdlContext};
+use thebox::*;
 
 pub const NAME: &str = "Double Pendulum";
 pub const ID: u8 = 3;
@@ -21,7 +20,16 @@ struct Pendulum {
 }
 */
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+    
+    let message: Label = Label::new(
+            400,
+            550,
+            16,
+            &write,
+            Some(String::from("Will simulate a double pendulum."))
+    );
+    
     'repeat: loop {
         display.canvas.clear();
 
@@ -30,7 +38,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
 
-        display.draw_text_centered(&write, 400, 550, "Will simulate a double pendulum.", 16);
+        let _ = message.draw_centered(display);
 
         display.canvas.present();
     }

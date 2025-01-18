@@ -1,8 +1,8 @@
 use sdl2::pixels::Color;
-use sdl2::{ttf, EventSubsystem};
+use sdl2::ttf;
 
 use sdl2::Sdl;
-use sdl2::{EventPump, VideoSubsystem, AudioSubsystem};
+use sdl2::{EventPump, VideoSubsystem, AudioSubsystem, EventSubsystem};
 
 use sdl2::rect::*;
 use sdl2::render::*;
@@ -14,7 +14,9 @@ use std::f32::consts::PI;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
+
 pub const COLOR_WHITE: Color = Color::RGB(194, 194, 194);
+pub const COLOR_RED: Color = Color::RGB(236, 74, 74);
 
 const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
 const SLIDER_PIVOT_SIZE: u32 = 14;
@@ -81,6 +83,14 @@ impl PrimitiveNumber for isize {
     fn from_f32(value: f32) -> isize { value as isize }
 }
 
+pub trait Draw {
+    fn draw(&self, display: &mut Display) -> Result<(), String>;
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>;
+
+    fn draw_centered(&self, display: &mut Display) -> Result<(), String>;
+    fn draw_centered_cl(&self, display: &mut Display, color: Color) -> Result<(), String>;
+}
+
 pub struct SdlContext {
     pub sdl: Sdl,
     pub event_pump: EventPump,
@@ -91,14 +101,13 @@ pub struct SdlContext {
 
 pub struct Display {
     pub canvas: WindowCanvas,
-    pub texture_creator: TextureCreator<WindowContext>,
 //    pub fps_manager: FPSManager,
 }
 
-pub struct Write<'t, 'f> {
-    pub ttf: &'t ttf::Sdl2TtfContext,
-    pub font: ttf::Font<'t, 'f>,
-    pub color: Color
+pub struct Write<'ttf, 'r, 'render> {
+    pub ttf: &'ttf ttf::Sdl2TtfContext,
+    pub font: ttf::Font<'ttf, 'r>,
+    pub texture_creator: &'render TextureCreator<WindowContext>
 }
 
 pub enum SliderType {
@@ -119,6 +128,16 @@ pub struct Slider<T: PrimitiveNumber> {
 
 pub struct Button {
     pub state: bool,
+    pub x: i32,
+    pub y: i32
+}
+
+//Warning! Label can only be used in the same Display that Write has been created.
+//If somehow you use multiple screens in one application, keep in mind to use another.
+pub struct Label<'render, 'w, 'ttf, 'r> {
+    text: String,
+    write: &'w Write<'ttf, 'r, 'render>,
+    pub size: u32,
     pub x: i32,
     pub y: i32
 }
@@ -157,33 +176,11 @@ impl Display {
             .unwrap();
 
         let canvas = window.into_canvas().present_vsync().build().unwrap();
-        let texture_creator = canvas.texture_creator();
 //        let fps_manager = FPSManager::new();
         Display {
             canvas,
-            texture_creator,
 //            fps_manager,
         }
-    }
-
-    //Draws a text with the given string.
-    pub fn draw_text(&mut self, write: &Write, x: i32, y: i32, string: &str, size: u32) {
-        let texture = write.create_text(&self.texture_creator, string);
-        let string_len: u32 = string.len().try_into().unwrap();
-
-        let area = sdl2::rect::Rect::new(x, y, string_len * size, size * 2);
-        let _ = self.canvas.copy(&texture, None, area);
-    }
-
-    //Same as above but centered.
-    pub fn draw_text_centered(&mut self, write: &Write, x: i32, y: i32, string: &str, size: u32) {
-        let texture = write.create_text(&self.texture_creator, string);
-        let string_len: u32 = string.len().try_into().unwrap();
-
-        let middle: i32 = ((string_len * size) / 2).try_into().unwrap(); //I hate this middle variable.
-
-        let area = sdl2::rect::Rect::new(x - middle, y, string_len * size, size * 2);
-        let _ = self.canvas.copy(&texture, None, area);
     }
 
     pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), String> {        
@@ -261,9 +258,12 @@ impl Display {
     }
 }
 
-impl Write<'_, '_> {
-    pub fn init_write<'t, 'f>(ttf: &'t ttf::Sdl2TtfContext, color: Color, font: &str) -> Write<'t, 'f> {
-
+impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
+    pub fn init_write(
+        ttf: &'t ttf::Sdl2TtfContext,
+        texture_creator: &'render TextureCreator<WindowContext>,
+        font: &str
+    ) -> Write<'t, 'f, 'render> {
         let mut path = PathBuf::from(get_assets_path());
         path.push(font);
 
@@ -271,33 +271,22 @@ impl Write<'_, '_> {
             Ok(font_src) => font_src,
             Err(damn) => panic!("ERROR: {}", &damn)
         };
-        Write { ttf, font, color }
+        Write { ttf, font, texture_creator }
     }
 
     //This should be only used by the Display for now.
-    fn create_text<'b>(
+    //HIS TIME HAS BEEN MET.
+    pub fn create_text(
         &self,
-        texture_creator: &'b TextureCreator<WindowContext>,
         string: &str,
-    ) -> Texture<'b> {
+        color: Color<>
+    ) -> Result<Texture<'render>, TextureValueError>
+    {
         self.font
             .render(string)
-            .solid(self.color)
+            .solid(color)
             .unwrap()
-            .as_texture(texture_creator)
-            .unwrap()
-    }
-
-    pub fn set_font<P: AsRef<Path>>(&mut self, path: P) {
-        self.font = self.ttf.load_font(path, 32).expect("COULD NOT FIND FONT!");
-    }
-
-    pub fn set_draw_color_rgb(&mut self, r: u8, g: u8, b: u8) {
-        self.color = Color::RGB(r, g, b);
-    }
-
-    pub fn set_draw_color(&mut self, color: Color) {
-        self.color = color;
+            .as_texture(self.texture_creator)
     }
 }
 
@@ -469,6 +458,125 @@ impl Button {
             BUTTON_RECT_STATE_SIZE,
             BUTTON_RECT_STATE_SIZE,
         )
+    }
+}
+
+//Ugly lifetimes :D
+impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
+    pub fn new(
+        x: i32,
+        y: i32,
+        size: u32,
+        write: &'w Write<'ttf, 'r, 'render>,
+        string: Option<String>
+    ) -> Label<'render, 'w, 'ttf, 'r> {
+        let text: String = string.unwrap_or_else(|| String::new());
+        Label {
+            text,
+            write,
+            size,
+            x,
+            y
+        }
+    }
+
+    pub fn set_pos(&mut self, x: i32, y: i32) {
+        self.x = x;
+        self.y = y;
+    }
+
+    pub fn change_write(&mut self, write: &'w Write<'ttf, 'r, 'render>) {
+        self.write = write;
+    }
+    //Takes ownership of the given String!
+    pub fn update_text(&mut self, string: Option<String>) {
+        if string.is_some() {self.text = string.unwrap()};
+    }
+    fn update_texture(&self, color: Option<Color>) -> Result<
+        Texture<'render>,
+        TextureValueError>
+    {
+        self.write.create_text(&self.text, color.unwrap_or_else(|| DEFAULT_COLOR))
+    }
+}
+
+impl Draw for Label<'_, '_, '_, '_> {
+    fn draw(&self, display: &mut Display) -> Result<(), String> {
+        let area = sdl2::rect::Rect::new(
+            self.x,
+            self.y - (self.size / 2) as i32,
+            self.text.len() as u32 * self.size,
+            self.size * 2
+        );
+        let texture = self.update_texture(None).unwrap_or_else(
+            |err| {
+                println!("Failed to create text Texture: {:?}", err);
+                self.write
+                    .create_text("!ERROR!", COLOR_RED)
+                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
+            }
+        );
+        display.canvas.copy(&texture, None, area)
+    }
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
+        let area = sdl2::rect::Rect::new(
+            self.x,
+            self.y,
+            self.text.len() as u32 * self.size,
+            self.size * 2
+        );
+        let texture = self.update_texture(Some(color)).unwrap_or_else(
+            |err| {
+                println!("Failed to create text Texture: {:?}", err);
+                self.write.font
+                    .render("!ERROR!")
+                    .solid(COLOR_RED)
+                    .unwrap()
+                    .as_texture(self.write.texture_creator)
+                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
+            }
+        );
+        display.canvas.copy(&texture, None, area)
+    }
+    fn draw_centered(&self, display: &mut Display) -> Result<(), String> {
+        let area = sdl2::rect::Rect::new(
+            self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
+            self.y - (self.size / 2) as i32,
+            self.text.len() as u32 * self.size,
+            self.size * 2
+        );
+        let texture = self.update_texture(None).unwrap_or_else(
+            |err| {
+                println!("Failed to create text Texture: {:?}", err);
+                self.write.font
+                    .render("!ERROR!")
+                    .solid(COLOR_RED)
+                    .unwrap()
+                    .as_texture(self.write.texture_creator)
+                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
+            }
+        );
+        display.canvas.copy(&texture, None, area)
+    }
+    fn draw_centered_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
+        let area = sdl2::rect::Rect::new(
+            self.x + ((self.text.len() as u32 * self.size) / 2) as i32,
+            self.y,
+            self.text.len() as u32 * self.size,
+            self.size * 2
+        );
+        let texture = self.update_texture(Some(color)).unwrap_or_else(
+            |err| {
+                println!("Failed to create text Texture: {:?}", err);
+                self.write.font
+                    .render("!ERROR!")
+                    .solid(COLOR_RED)
+                    .unwrap()
+                    .as_texture(self.write.texture_creator)
+                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
+            }
+        );
+        display.canvas.copy(&texture, None, area)
     }
 }
 

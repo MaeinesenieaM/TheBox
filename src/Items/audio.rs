@@ -1,16 +1,23 @@
-use sdl2::event::Event;
 //use sdl2::pixels::Color;
 use sdl2::keyboard::*;
 use sdl2::audio::*;
 
 use std::path::*;
-use thebox::{Display, Write, SdlContext};
+use thebox::{Display, Write, SdlContext, Draw};
 
 pub const NAME: &str = "Audio";
 pub const ID: u8 = 6;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
 
+    let audio_message: thebox::Label = thebox::Label::new(
+        400, 
+        550,
+        16,
+        write,
+        Some(String::from("I like bells"))
+    );
+    
     let mut audio_path: PathBuf = PathBuf::from(thebox::get_assets_path());
     audio_path.push("audio_demo.wav");
 
@@ -57,13 +64,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &mut Wr
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
 
-        display.draw_text_centered(
-            &write,
-            400,
-            550,
-            "I Like Bells.",
-            16,
-        );
+        let _ = audio_message.draw_centered(display);
 
         display.canvas.present();
     }
