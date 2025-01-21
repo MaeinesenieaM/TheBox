@@ -24,7 +24,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
 
-        let _ = message.draw_centered(display);
+        let _ = message.draw(display);
 
         display.canvas.present();
     }

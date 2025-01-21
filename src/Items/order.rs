@@ -51,7 +51,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             let _ = display.canvas.draw_point(*point);
         }
         
-        let _ = message.draw_centered(display);
+        let _ = message.draw(display);
 
         display.canvas.present();
     }

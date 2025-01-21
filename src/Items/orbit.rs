@@ -22,11 +22,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let circle_color: Color = Color::RGB(230, 80, 60);
 
     let orbit_message: Label = Label::new(
-            window_x_middle,
-            window_y_middle + 100,
-            16,
-            &write,
-            Some(String::from("ORBIT!"))
+        (window_x / 2) as i32,
+        window_y_middle + 100,
+        16,
+        &write,
+        Some(String::from("ORBIT!"))
     );
     
     'repeat: loop {
@@ -39,7 +39,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
         
-        let _ = orbit_message.draw_centered_cl(display, Color::RGB(120, 120, blue));
+        let _ = orbit_message.draw_cl(display, Color::RGB(120, 120, blue));
         
         display.canvas.set_draw_color(COLOR_WHITE);
 

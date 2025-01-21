@@ -28,7 +28,7 @@ fn main() {
     let mut count: i32 = 1;
     let mut enter: u16 = 0;
 
-    let mut fps_label = Label::new(0, 0, 8, &write, None);
+    let mut fps_label = Label::new(400, 0, 8, &write, None);
     let mut count_label = Label::new(400, 300, 16, &write, Some(count.to_string()));
     let mut item_label = Label::new(400, 332, 16, &write, None);
     
@@ -82,8 +82,8 @@ fn main() {
         count_label.update_text(Some(count.to_string()));
         fps_label.update_text(Some(temp_frames.to_string()));
         
-        let _ = item_label.draw_centered(&mut display);
-        let _ = count_label.draw_centered(&mut display);
+        let _ = item_label.draw(&mut display);
+        let _ = count_label.draw(&mut display);
         let _ = fps_label.draw(&mut display);
 
 //        display.draw_text_centered(&write, 400, 300, items::name_item(count), 16);

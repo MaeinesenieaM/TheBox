@@ -16,10 +16,12 @@ pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
 pub const COLOR_WHITE: Color = Color::RGB(194, 194, 194);
+pub const COLOR_GRAY: Color = Color::RGB(131, 131, 131);
 pub const COLOR_RED: Color = Color::RGB(236, 74, 74);
 
 const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
 const SLIDER_PIVOT_SIZE: u32 = 14;
+const SLIDER_BAR_DEFAULT_COLOR: Color = Color::RGB(87, 87, 87);
 const SLIDER_BAR_SIZE: u32 = 8;
 
 const BUTTON_STATE_TRUE: Color = Color::RGB(30, 165, 30);
@@ -86,9 +88,7 @@ impl PrimitiveNumber for isize {
 pub trait Draw {
     fn draw(&self, display: &mut Display) -> Result<(), String>;
     fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>;
-
-    fn draw_centered(&self, display: &mut Display) -> Result<(), String>;
-    fn draw_centered_cl(&self, display: &mut Display, color: Color) -> Result<(), String>;
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String>;
 }
 
 pub struct SdlContext {
@@ -104,6 +104,8 @@ pub struct Display {
 //    pub fps_manager: FPSManager,
 }
 
+//Write works like any Context of SDL with the resposibility to render texts with specific
+//fonts. If you want to use multiple fonts, create various Writes.
 pub struct Write<'ttf, 'r, 'render> {
     pub ttf: &'ttf ttf::Sdl2TtfContext,
     pub font: ttf::Font<'ttf, 'r>,
@@ -133,13 +135,14 @@ pub struct Button {
 }
 
 //Warning! Label can only be used in the same Display that Write has been created.
-//If somehow you use multiple screens in one application, keep in mind to use another.
+//If for some reason you want use multiple screens in one application, keep in mind to use the same
+//one in it's context.
 pub struct Label<'render, 'w, 'ttf, 'r> {
     text: String,
     write: &'w Write<'ttf, 'r, 'render>,
     pub size: u32,
-    pub x: i32,
-    pub y: i32
+    x: i32,
+    y: i32
 }
 
 impl SdlContext {
@@ -222,40 +225,6 @@ impl Display {
         self.canvas.draw_line(pos1, pos2)?;
         Ok(())
     }
-
-    //Draws a Slider on screen according to its values.
-    pub fn draw_slider<T>(&mut self, slider: &Slider<T>) -> Result<(), String>
-    where
-        T: PrimitiveNumber
-    {
-        self.canvas.fill_rect(slider.bar_rect())?;
-        self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
-        self.canvas.fill_rect(slider.pivot_rect())?;
-        self.canvas.set_draw_color(DEFAULT_COLOR);
-        Ok(())
-    }
-
-    //Same as above, but is drawn with a predefined color.
-    pub fn draw_slider_cl<T>(&mut self, slider: &Slider<T>, color: Color) -> Result<(), String>
-    where
-        T: PrimitiveNumber
-    {
-        self.canvas.set_draw_color(color);
-        self.canvas.fill_rect(slider.bar_rect())?;
-        self.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
-        self.canvas.fill_rect(slider.pivot_rect())?;
-        self.canvas.set_draw_color(DEFAULT_COLOR);
-        Ok(())
-    }
-
-    pub fn draw_button(&mut self, button: &Button) -> Result<(), String> {
-        self.canvas.set_draw_color(BUTTON_DEFAULT_COLOR);
-        self.canvas.fill_rect(button.rect())?;
-        self.canvas.set_draw_color(button.get_state_color());
-        self.canvas.fill_rect(button.state_rect())?;
-        self.canvas.set_draw_color(DEFAULT_COLOR);
-        Ok(())
-    }
 }
 
 impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
@@ -274,8 +243,6 @@ impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
         Write { ttf, font, texture_creator }
     }
 
-    //This should be only used by the Display for now.
-    //HIS TIME HAS BEEN MET.
     pub fn create_text(
         &self,
         string: &str,
@@ -338,76 +305,124 @@ impl<T: PrimitiveNumber> Slider<T> {
         *value = PrimitiveNumber::from_f32(self.value.as_f32());
     }
 
-    pub fn get_type(&self) -> &SliderType {
-        &self.slider_type
-    }
+    pub fn get_type(&self) -> &SliderType { &self.slider_type }
 
     //Returns how filled is the slider.
-    pub fn percentage(&self) -> f32
-    {
-        self.value.as_f32() / self.max.as_f32()
+    pub fn percentage(&self) -> f32 { self.value.as_f32() / self.max.as_f32() }
+
+    fn centralized_pos(&self) -> Point {
+        match self.slider_type {
+            SliderType::SliderHorizontal => {
+                (self.x - self.length as i32 / 2, self.y).into()
+            },
+            SliderType::SliderVertical => {
+                (self.x, self.y - self.length as i32 / 2).into()
+            }
+        }
     }
 
     //Calculates and returns the position of the pivot.
     pub fn pivot(&self) -> Point {
+        let pos = self.centralized_pos();
         match &self.slider_type {
             SliderType::SliderHorizontal => {
-                Point::new((self.x as f32 * self.percentage()) as i32, self.y)
+                Point::new(
+                    pos.x() + (self.length as f32 * self.percentage()) as i32,
+                    pos.y()
+                )
             }
             SliderType::SliderVertical => {
-                Point::new(self.x, (self.y as f32 * self.percentage()) as i32)
+                Point::new(
+                    pos.x(),
+                    pos.y() + self.length as i32 - (self.length as f32 * self.percentage()) as i32
+                )
             }
         }
     }
 
     //Returns the Rect of the pivot.
     pub fn pivot_rect(&self) -> Rect {
-        let half_size: i32 = (SLIDER_PIVOT_SIZE / 2) as i32;
-        match self.slider_type {
-            SliderType::SliderHorizontal => Rect::new(
-                self.x + (self.length as f32 * self.percentage()) as i32 - half_size,
-                self.y - half_size,
-                SLIDER_PIVOT_SIZE,
-                SLIDER_PIVOT_SIZE,
-            ),
-            SliderType::SliderVertical => Rect::new(
-                self.x - half_size,
-                self.y + (self.length as f32 * self.percentage()) as i32 - half_size,
-                SLIDER_PIVOT_SIZE,
-                SLIDER_PIVOT_SIZE,
-            ),
-        }
+        let pos = self.pivot();
+        Rect::new(
+            pos.x() - (SLIDER_PIVOT_SIZE / 2) as i32,
+            pos.y() - (SLIDER_PIVOT_SIZE / 2) as i32, // - SLIDER_BAR_SIZE as i32 / 2
+            SLIDER_PIVOT_SIZE,
+            SLIDER_PIVOT_SIZE,
+        )
     }
 
     //Returns the Rect of the Bar.
     pub fn bar_rect(&self) -> Rect {
+        let pos = self.centralized_pos();
         match self.slider_type {
             SliderType::SliderHorizontal => Rect::new(
-                self.x,
-                self.y - SLIDER_BAR_SIZE as i32 / 2,
+                pos.x(),
+                pos.y() - (SLIDER_BAR_SIZE / 2) as i32,
                 self.length,
                 SLIDER_BAR_SIZE,
             ),
             SliderType::SliderVertical => Rect::new(
-                self.x - SLIDER_BAR_SIZE as i32 / 2,
-                self.y,
+                pos.x() - (SLIDER_BAR_SIZE / 2) as i32,
+                pos.y(),
                 SLIDER_BAR_SIZE,
                 self.length,
             ),
         }
     }
 
+    //This will be like this until I have the patience to add more SliderTypes o7
     pub fn update_from_pos<P: Into<Point>>(&mut self, point: P) {
-        let point = point.into();
+        let pos: Point = self.centralized_pos();
+        let point: Point = point.into();
         let distance: i32;
-
         match self.slider_type {
-            SliderType::SliderHorizontal => distance = point.x() - self.x,
-            SliderType::SliderVertical => distance = point.y() - self.y,
-        }
+            SliderType::SliderHorizontal => distance = point.x() - pos.x(),
+            SliderType::SliderVertical => distance =  (pos.y() + self.length as i32) - point.y(),
+        }                                           /*^^Extra orientation calculus^^.*/
         let value: T = PrimitiveNumber::from_f32(self.max.as_f32() * (distance as f32 / self.length as f32));
 
         self.set_value_limited(value);
+    }
+}
+
+impl<T: PrimitiveNumber> Draw for Slider<T> {
+    fn draw(&self, display: &mut Display) -> Result<(), String>{
+        display.canvas.set_draw_color(SLIDER_BAR_DEFAULT_COLOR);
+        display.canvas.fill_rect(self.bar_rect())?;
+        display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
+        display.canvas.fill_rect(self.pivot_rect())?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>{
+        display.canvas.set_draw_color(color);
+        display.canvas.fill_rect(self.bar_rect())?;
+        display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
+        display.canvas.fill_rect(self.pivot_rect())?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
+        let bar_rect: Rect = self.bar_rect();
+        let pivot_rect: Rect = self.pivot_rect();
+        
+        let bar_outline: Rect = Rect::new(
+            bar_rect.x() - 2,
+            bar_rect.y() - 2,
+            bar_rect.width() + 4,
+            bar_rect.height() + 4,
+        );
+        let pivot_outline: Rect = Rect::new(
+            pivot_rect.x() - 2,
+            pivot_rect.y() - 2,
+            pivot_rect.width() + 4,
+            pivot_rect.height() + 4,
+        );
+        
+        display.canvas.set_draw_color(color);
+        display.canvas.fill_rects(&[bar_outline, pivot_outline])?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
     }
 }
 
@@ -416,13 +431,9 @@ impl Button {
         Button { state, x, y }
     }
 
-    pub fn set_state(&mut self, state: bool) {
-        self.state = state;
-    }
+    pub fn set_state(&mut self, state: bool) { self.state = state; }
 
-    pub fn get_state(&self) -> bool {
-        self.state
-    }
+    pub fn get_state(&self) -> bool { self.state }
 
     pub fn get_state_color(&self) -> Color {
         if self.state {
@@ -437,10 +448,8 @@ impl Button {
         self.x = point.x();
         self.y = point.y();
     }
-
-    pub fn toggle(&mut self) {
-        self.state = !self.state;
-    }
+    
+    pub fn toggle(&mut self) { self.state = !self.state; }
 
     pub fn rect(&self) -> Rect {
         Rect::new(
@@ -450,7 +459,7 @@ impl Button {
             BUTTON_RECT_SIZE,
         )
     }
-
+    
     pub fn state_rect(&self) -> Rect {
         Rect::new(
             self.x - BUTTON_RECT_STATE_SIZE as i32 / 2,
@@ -461,7 +470,38 @@ impl Button {
     }
 }
 
-//Ugly lifetimes :D
+impl Draw for Button {
+    fn draw(&self, display: &mut Display) -> Result<(), String>{
+        display.canvas.set_draw_color(BUTTON_DEFAULT_COLOR);
+        display.canvas.fill_rect(self.rect())?;
+        display.canvas.set_draw_color(self.get_state_color());
+        display.canvas.fill_rect(self.state_rect())?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>{
+        display.canvas.set_draw_color(color);
+        display.canvas.fill_rect(self.rect())?;
+        display.canvas.set_draw_color(self.get_state_color());
+        display.canvas.fill_rect(self.state_rect())?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
+        let button_rect: Rect = self.rect();
+        let outline: Rect = Rect::new(
+            button_rect.x() - 2,
+            button_rect.y() - 2,
+            button_rect.width() + 4,
+            button_rect.height() + 4,
+        );
+        display.canvas.set_draw_color(color);
+        display.canvas.fill_rect(outline)?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
+    }
+}
+
 impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
     pub fn new(
         x: i32,
@@ -495,50 +535,11 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
     fn update_texture(&self, color: Option<Color>) -> Result<
         Texture<'render>,
         TextureValueError>
-    {
-        self.write.create_text(&self.text, color.unwrap_or_else(|| DEFAULT_COLOR))
-    }
+    { self.write.create_text(&self.text, color.unwrap_or_else(|| DEFAULT_COLOR)) }
 }
 
 impl Draw for Label<'_, '_, '_, '_> {
     fn draw(&self, display: &mut Display) -> Result<(), String> {
-        let area = sdl2::rect::Rect::new(
-            self.x,
-            self.y - (self.size / 2) as i32,
-            self.text.len() as u32 * self.size,
-            self.size * 2
-        );
-        let texture = self.update_texture(None).unwrap_or_else(
-            |err| {
-                println!("Failed to create text Texture: {:?}", err);
-                self.write
-                    .create_text("!ERROR!", COLOR_RED)
-                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
-            }
-        );
-        display.canvas.copy(&texture, None, area)
-    }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
-        let area = sdl2::rect::Rect::new(
-            self.x,
-            self.y,
-            self.text.len() as u32 * self.size,
-            self.size * 2
-        );
-        let texture = self.update_texture(Some(color)).unwrap_or_else(
-            |err| {
-                println!("Failed to create text Texture: {:?}", err);
-                self.write.font
-                    .render("!ERROR!")
-                    .solid(COLOR_RED)
-                    .unwrap()
-                    .as_texture(self.write.texture_creator)
-                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
-            }
-        );
-        display.canvas.copy(&texture, None, area)
-    }
-    fn draw_centered(&self, display: &mut Display) -> Result<(), String> {
         let area = sdl2::rect::Rect::new(
             self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32,
@@ -558,9 +559,9 @@ impl Draw for Label<'_, '_, '_, '_> {
         );
         display.canvas.copy(&texture, None, area)
     }
-    fn draw_centered_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
         let area = sdl2::rect::Rect::new(
-            self.x + ((self.text.len() as u32 * self.size) / 2) as i32,
+            self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
             self.y,
             self.text.len() as u32 * self.size,
             self.size * 2
@@ -577,6 +578,18 @@ impl Draw for Label<'_, '_, '_, '_> {
             }
         );
         display.canvas.copy(&texture, None, area)
+    }
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
+        let area = sdl2::rect::Rect::new(
+            self.x - (self.text.len() as u32 * (self.size / 2)) as i32 - 2,
+            self.y - (self.size / 2) as i32 - 2,
+            self.text.len() as u32 * self.size + 2,
+            self.size * 2 + 2
+        );
+        display.canvas.set_draw_color(color);
+        display.canvas.fill_rect(area)?;
+        display.canvas.set_draw_color(DEFAULT_COLOR);
+        Ok(())
     }
 }
 

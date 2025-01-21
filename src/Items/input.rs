@@ -25,7 +25,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     sliders.push(Slider::new(
         0,
         255,
-        (window_width / 2) as i32 - 60,
+        (window_width / 2) as i32,
         (window_height / 2) as i32,
         120,
         SliderType::SliderHorizontal,
@@ -35,15 +35,15 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         0,
         100,
         40,
-        60,
-        window_height - 100,
+        (window_height / 2) as i32,
+        400,
         SliderType::SliderVertical,
     ));
 
     sliders.push(Slider::new(
         0,
         50,
-        40,
+        (window_width / 2) as i32,
         40,
         window_width - 100,
         SliderType::SliderHorizontal,
@@ -117,26 +117,28 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
         //This draws the sliders.
         for slider in sliders.iter() {
-            sliders_label.set_pos(slider.x - 20, slider.y - 8);
+            match slider.get_type() {
+                SliderType::SliderHorizontal => sliders_label.set_pos(slider.x, slider.y - 20),
+                SliderType::SliderVertical => sliders_label.set_pos(slider.x - 20, slider.y)
+            }
             sliders_label.update_text(Some(slider.get_value_ref().to_string()));
-            let _ = sliders_label.draw_centered(display);
+            let _ = sliders_label.draw(display);
             
             if slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
-                let _ = display.draw_outline(&slider.pivot_rect());
-                let _ = display.draw_outline(&slider.bar_rect());
+                let _ = slider.draw_outline(display, COLOR_WHITE);
             }
-            let _ = display.draw_slider_cl(slider, Color::RGB(30, 30, blue.clone()));
+            let _ = slider.draw_cl(display, Color::RGB(30, 30, blue.clone()));
         }
 
         //This draws the buttons
         for button in buttons.iter() {
             if button.rect().contains_point((mouse.x(), mouse.y())) {
-                let _ = display.draw_outline(&button.rect());
+                let _ = button.draw_outline(display, COLOR_WHITE);
             }
-            let _ = display.draw_button(button);
+            let _ = button.draw(display);
         }
 
-        let _ = input_message.draw_centered(display);
+        let _ = input_message.draw(display);
 
         last_mouse_state = mouse.left();
 

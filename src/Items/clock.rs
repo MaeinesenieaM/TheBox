@@ -42,7 +42,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         clock.update_hands_real();
         let _ = clock.draw(display);
 
-        let _ = clock_message.draw_centered(display);
+        let _ = clock_message.draw(display);
 
         display.canvas.present();
     }

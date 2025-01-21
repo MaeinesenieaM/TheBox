@@ -57,7 +57,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         slider: Slider::new(
             0,                            //Minimum
             200,                          //Max
-            60,                           //X
+            80,                           //X
             (window_height - 40) as i32,  //Y
             120,                          //Length
             SliderType::SliderHorizontal, //Type
@@ -68,7 +68,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         slider: Slider::new(
             10,
             1000,
-            60,
+            80,
             (window_height - 80) as i32,
             120,
             SliderType::SliderHorizontal,
@@ -79,7 +79,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         slider: Slider::new(
             0,
             100,
-            60,
+            80,
             (window_height - 120) as i32,
             120,
             SliderType::SliderHorizontal,
@@ -149,10 +149,9 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                 _ => {}
             }
         }
-
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
-        
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+
         if sdl_context.check_quit() {break 'repeat}
         
         //Check input of mouse in the slider.
@@ -218,15 +217,17 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         }
 
         for modifier in modifiers.iter() {
-            modifiers_label.set_pos(modifier.slider.x - 20, modifier.slider.y - 8);
+            modifiers_label.set_pos(modifier.slider.x + 80, modifier.slider.y - 4);
             modifiers_label.update_text(Some(modifier.slider.get_value_ref().to_string()));
-            let _ = modifiers_label.draw_centered(display);
+            let _ = modifiers_label.draw(display);
 
             modifiers_label.set_pos(modifier.slider.x, modifier.slider.y - 22);
             modifiers_label.update_text(Some(String::from(&modifier.name)));
             let _ = modifiers_label.draw(display);
-
-            let _ = display.draw_slider_cl(&modifier.slider, Color::RGB(30, 110, 40));
+            if modifier.slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
+                let _ = modifier.slider.draw_outline(display, COLOR_WHITE);
+            }
+            let _ = modifier.slider.draw_cl(display, Color::RGB(30, 110, 40));
         }
 
         display.canvas.present();
