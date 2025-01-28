@@ -17,7 +17,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     
     'repeat: loop {
         display.canvas.clear();
-        
+
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
         
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}

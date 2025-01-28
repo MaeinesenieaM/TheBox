@@ -9,8 +9,12 @@ use sdl2::render::*;
 use sdl2::video::WindowContext;
 use sdl2::event::Event;
 
+use png;
+
 use std::path::*;
 use std::f32::consts::PI;
+use std::fs;
+use std::io;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
@@ -31,7 +35,7 @@ const BUTTON_RECT_SIZE: u32 = 24;
 const BUTTON_RECT_STATE_SIZE: u32 = 16;
 
 //Hmm... Primitives....
-pub trait PrimitiveNumber: Copy + std::cmp::PartialOrd + std::ops::Div {
+pub trait PrimitiveNumber: Copy + PartialOrd + std::ops::Div {
     fn as_f32(self) -> f32;
     fn from_f32(value: f32) -> Self;
 }
@@ -101,10 +105,11 @@ pub struct SdlContext {
 
 pub struct Display {
     pub canvas: WindowCanvas,
+    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
 //    pub fps_manager: FPSManager,
 }
 
-//Write works like any Context of SDL with the resposibility to render texts with specific
+//Write works like any Context of SDL with the responsibility to render texts with specific
 //fonts. If you want to use multiple fonts, create various Writes.
 pub struct Write<'ttf, 'r, 'render> {
     pub ttf: &'ttf ttf::Sdl2TtfContext,
@@ -135,8 +140,8 @@ pub struct Button {
 }
 
 //Warning! Label can only be used in the same Display that Write has been created.
-//If for some reason you want use multiple screens in one application, keep in mind to use the same
-//one in it's context.
+//If for some reason you want to use multiple screens in one application, keep in mind to use the 
+//same one in its context.
 pub struct Label<'render, 'w, 'ttf, 'r> {
     text: String,
     write: &'w Write<'ttf, 'r, 'render>,
@@ -151,11 +156,11 @@ impl SdlContext {
         let sdl = sdl2::init().unwrap();
 
         SdlContext {
-            event_pump : sdl.event_pump().unwrap(),
-            event_subsystem : sdl.event().unwrap(),
-            video_subsystem : sdl.video().unwrap(),
-            audio_subsystem : sdl.audio().unwrap(),
-            sdl : sdl,
+            event_pump: sdl.event_pump().unwrap(),
+            event_subsystem: sdl.event().unwrap(),
+            video_subsystem: sdl.video().unwrap(),
+            audio_subsystem: sdl.audio().unwrap(),
+            sdl,
         }
     }
 
@@ -163,7 +168,7 @@ impl SdlContext {
         self.event_subsystem.push_event(Event::Quit { timestamp: 0 })
     }
     
-    //Returns true if theres is a Quit Event and false if not.
+    //Returns true if there is a Quit Event and false if not.
     pub fn check_quit(&mut self) -> bool {
         self.event_pump.poll_iter().any(|quit| quit.is_same_kind_as(&Event::Quit { timestamp: 0 }))
     }
@@ -181,6 +186,7 @@ impl Display {
         let canvas = window.into_canvas().present_vsync().build().unwrap();
 //        let fps_manager = FPSManager::new();
         Display {
+            texture_creator: canvas.texture_creator(),
             canvas,
 //            fps_manager,
         }
@@ -224,6 +230,26 @@ impl Display {
 
         self.canvas.draw_line(pos1, pos2)?;
         Ok(())
+    }
+        
+    pub fn width(&self) -> u32 {
+        let window = self.canvas.window();
+        window.size().0
+    }
+    
+    pub fn width_center(&self) -> u32 {
+        let window = self.canvas.window();
+        window.size().0 / 2
+    }
+    
+    pub fn height(&self) -> u32 {
+        let window = self.canvas.window();
+        window.size().1
+    }
+    
+    pub fn height_center(&self) -> u32 {
+        let window = self.canvas.window();
+        window.size().1 / 2
     }
 }
 
@@ -540,7 +566,7 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
 
 impl Draw for Label<'_, '_, '_, '_> {
     fn draw(&self, display: &mut Display) -> Result<(), String> {
-        let area = sdl2::rect::Rect::new(
+        let area = Rect::new(
             self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32,
             self.text.len() as u32 * self.size,
@@ -560,7 +586,7 @@ impl Draw for Label<'_, '_, '_, '_> {
         display.canvas.copy(&texture, None, area)
     }
     fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
-        let area = sdl2::rect::Rect::new(
+        let area = Rect::new(
             self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
             self.y,
             self.text.len() as u32 * self.size,
@@ -579,9 +605,10 @@ impl Draw for Label<'_, '_, '_, '_> {
         );
         display.canvas.copy(&texture, None, area)
     }
+    //This function will only draw a rectangle on the text.
     fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
-        let area = sdl2::rect::Rect::new(
-            self.x - (self.text.len() as u32 * (self.size / 2)) as i32 - 2,
+        let area = Rect::new(
+            self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32 - 2,
             self.text.len() as u32 * self.size + 2,
             self.size * 2 + 2
@@ -627,11 +654,16 @@ pub fn get_assets_path() -> String {
     path.push("src/main_assets");
     match path.try_exists() {
         Ok(true) => {
-            return path.into_os_string().into_string().expect("Could not transform OsString into String!");
+            path.into_os_string().into_string().expect("Could not transform OsString into String!")
         },
         Ok(false) => panic!("THE FOLDER [main_assets] DOES NOT EXIST!"),
         Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!")
-    };
+    }
+}
+
+pub fn get_asset_file(file: &str) -> Result<fs::File, io::Error> {
+    let path: String = format!("{}/{}", get_assets_path(), file);
+    fs::File::open(path)
 }
 
 //Return a point based mainly on the angle and the distance. Remember an angle of 0.5 = 45 degrees clock wise.
@@ -655,4 +687,114 @@ pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> 
         edges.push(angle_point(pos, angle_difference * i as f32, size)); 
     }
     edges
+}
+
+//This function receives an image file, (PNGs for now) and transforms them into a Texture.
+//Note: DO NOT ignore the error that comes from it.
+pub fn texture_from_file<T>(
+    file: fs::File,
+    texture_creator: &TextureCreator<T>
+) -> Result<Texture, String>
+{
+    let mut reader = png_reader(file)?;
+
+    let mut buffer = vec!(0; reader.output_buffer_size());
+    let info = reader.next_frame(&mut buffer).unwrap();
+
+    let mut image = texture_creator.create_texture_static(
+        translate_color_format(info.color_type),
+        info.width,
+        info.height,
+    ).unwrap();
+
+    let mut pitch = info.line_size;
+    
+    match info.color_type {
+        png::ColorType::Rgba => image.set_blend_mode(BlendMode::Blend),
+        png::ColorType::Grayscale => {
+            pitch = pitch * 3;
+            convert_from_greyscale(&mut buffer);
+            image.set_blend_mode(BlendMode::Blend);
+        },
+        png::ColorType::GrayscaleAlpha => {
+            pitch = pitch * 2;
+            convert_from_greyscale_alpha(&mut buffer);
+            image.set_blend_mode(BlendMode::Blend);
+        },
+        _ => {}
+    }
+
+    image.update(
+        None,
+        &buffer,
+        pitch 
+    ).map_err(|err|
+        match err {
+            UpdateTextureError::PitchOverflows(overflow) => 
+                format!("Pitch has overflowed!: {overflow}"),
+            UpdateTextureError::PitchMustBeMultipleOfTwoForFormat(num, format) =>
+                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                        num,
+                        format
+                ),
+            UpdateTextureError::XMustBeMultipleOfTwoForFormat(num, format) =>
+                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                        num,
+                        format
+                ),
+            UpdateTextureError::YMustBeMultipleOfTwoForFormat(num, format) =>
+                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                        num,
+                        format
+                ),
+            UpdateTextureError::WidthMustBeMultipleOfTwoForFormat(num, format) =>
+                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                        num,
+                        format
+                ),
+            UpdateTextureError::HeightMustBeMultipleOfTwoForFormat(num, format) =>
+                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                        num,
+                        format
+                ),
+            UpdateTextureError::SdlError(err) => err,
+        },
+    ).map(|()| image)
+}
+
+fn png_reader<R: io::Read>(file: R) -> Result<png::Reader<R>, String> {
+    png::Decoder::new(file).read_info().map_err(|err|
+        match err {
+            png::DecodingError::IoError(error) => error.to_string(),
+            png::DecodingError::Format(_) => String::from("The PNG format is invalid!"),
+            png::DecodingError::Parameter(error) => error.to_string(),
+            png::DecodingError::LimitsExceeded => String::from("LIMITS EXCEEDED!"),
+        }
+    )
+}
+
+fn translate_color_format(color_type: png::ColorType) -> sdl2::pixels::PixelFormatEnum {
+    match color_type {
+            png::ColorType::Grayscale => sdl2::pixels::PixelFormatEnum::RGB24,
+            png::ColorType::Indexed => sdl2::pixels::PixelFormatEnum::Index8,
+            png::ColorType::Rgb => sdl2::pixels::PixelFormatEnum::RGB24,
+            png::ColorType::Rgba => sdl2::pixels::PixelFormatEnum::RGBA32,
+            png::ColorType::GrayscaleAlpha => sdl2::pixels::PixelFormatEnum::RGBA32
+    }
+}
+
+fn convert_from_greyscale(vec: &mut Vec<u8>) {
+    let mut buffer: Vec<u8> = Vec::with_capacity(vec.len() * 3);
+    for chunk in  vec.iter() {
+        buffer.extend_from_slice(&[*chunk, *chunk, *chunk]);
+    }
+    *vec = buffer;
+}
+
+fn convert_from_greyscale_alpha(vec: &mut Vec<u8>) {
+    let mut buffer: Vec<u8> = Vec::with_capacity(vec.len() * 2);
+    for chunk in  vec.chunks(2) {
+        buffer.extend_from_slice(&[chunk[0], chunk[0], chunk[0], chunk[1]]);
+    }
+    *vec = buffer;
 }

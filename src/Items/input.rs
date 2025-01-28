@@ -11,7 +11,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 
-    let mut sliders: Vec<Slider<u8>> = Vec::new();
+    let mut sliders: Vec<Slider<f32>> = Vec::new();
     let mut buttons: Vec<Button> = Vec::new();
 
     let input_message: Label = Label::new(
@@ -23,8 +23,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     );
     
     sliders.push(Slider::new(
-        0,
-        255,
+        0.0,
+        255.0,
         (window_width / 2) as i32,
         (window_height / 2) as i32,
         120,
@@ -32,8 +32,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     ));
 
     sliders.push(Slider::new(
-        0,
-        100,
+        0.0,
+        100.0,
         40,
         (window_height / 2) as i32,
         400,
@@ -41,8 +41,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     ));
 
     sliders.push(Slider::new(
-        0,
-        50,
+        0.0,
+        50.0,
         (window_width / 2) as i32,
         40,
         window_width - 100,

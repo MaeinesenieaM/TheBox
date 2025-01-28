@@ -11,10 +11,10 @@ pub const ID: u8 = 3;
 struct Pendulum {
     center: Point,
     center_ange: f32,
-    p1: Point,
+    p1: FPoint,
     p1_distance: f32,
     p1_angle: f32,
-    p2: Point,
+    p2: FPoint,
     p2_distance: f32,
     p2_angle: f32,
 }

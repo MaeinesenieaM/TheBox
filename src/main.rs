@@ -16,9 +16,9 @@ fn main() {
 
     let mut sdl_context = SdlContext::init_context();
     let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600);
-    let texture_creator = display.canvas.texture_creator();
     
     let ttf = sdl2::ttf::init().unwrap();
+    let texture_creator = display.canvas.texture_creator();
     let write = Write::init_write(&ttf, &texture_creator, "Fixedsys.ttf");
     
     let mut frames = 0;
@@ -31,7 +31,6 @@ fn main() {
     let mut fps_label = Label::new(400, 0, 8, &write, None);
     let mut count_label = Label::new(400, 300, 16, &write, Some(count.to_string()));
     let mut item_label = Label::new(400, 332, 16, &write, None);
-    
     
     'running: loop {
         for event in sdl_context.event_pump.poll_iter() {
