@@ -218,11 +218,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
         for modifier in modifiers.iter() {
             modifiers_label.set_pos(modifier.slider.x + 80, modifier.slider.y - 4);
-            modifiers_label.update_text(Some(modifier.slider.get_value_ref().to_string()));
+            modifiers_label.update_text(modifier.slider.get_value_ref().to_string());
             let _ = modifiers_label.draw(display);
 
             modifiers_label.set_pos(modifier.slider.x, modifier.slider.y - 22);
-            modifiers_label.update_text(Some(String::from(&modifier.name)));
+            modifiers_label.update_text(String::from(&modifier.name));
             let _ = modifiers_label.draw(display);
             if modifier.slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
                 let _ = modifier.slider.draw_outline(display, COLOR_WHITE);

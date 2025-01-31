@@ -121,7 +121,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                 SliderType::SliderHorizontal => sliders_label.set_pos(slider.x, slider.y - 20),
                 SliderType::SliderVertical => sliders_label.set_pos(slider.x - 20, slider.y)
             }
-            sliders_label.update_text(Some(slider.get_value_ref().to_string()));
+            sliders_label.update_text(slider.get_value_ref().to_string());
             let _ = sliders_label.draw(display);
             
             if slider.bar_rect().contains_point((mouse.x(), mouse.y())) {

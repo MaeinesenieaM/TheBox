@@ -77,17 +77,13 @@ fn main() {
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
-        item_label.update_text(Some(items::name_item(count).to_string()));
-        count_label.update_text(Some(count.to_string()));
-        fps_label.update_text(Some(temp_frames.to_string()));
+        item_label.update_text(items::name_item(count).to_string());
+        count_label.update_text(count.to_string());
+        fps_label.update_text(temp_frames.to_string());
         
         let _ = item_label.draw(&mut display);
         let _ = count_label.draw(&mut display);
         let _ = fps_label.draw(&mut display);
-
-//        display.draw_text_centered(&write, 400, 300, items::name_item(count), 16);
-//        display.draw_text_centered(&write, 400, 332, &count.to_string(), 8);
-//        display.draw_text(&write, 0, 0, &temp_frames.to_string(), 8);
 
         frames += 1;
         display.canvas.present();

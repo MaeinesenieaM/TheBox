@@ -21,7 +21,9 @@ pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
 pub const COLOR_WHITE: Color = Color::RGB(194, 194, 194);
 pub const COLOR_GRAY: Color = Color::RGB(131, 131, 131);
-pub const COLOR_RED: Color = Color::RGB(236, 74, 74);
+pub const COLOR_RED: Color = Color::RGB(212, 74, 74);
+pub const COLOR_GREEN: Color = Color::RGB(74, 212, 74);
+pub const COLOR_BLUE: Color = Color::RGB(74, 74, 212);
 
 const SLIDER_PIVOT_COLOR: Color = Color::RGB(120, 120, 120);
 const SLIDER_PIVOT_SIZE: u32 = 14;
@@ -142,8 +144,10 @@ pub struct Button {
 //Warning! Label can only be used in the same Display that Write has been created.
 //If for some reason you want to use multiple screens in one application, keep in mind to use the 
 //same one in its context.
+//Labels are also somewhat expensive since they create a texture every single frame. If you want
+//a static text, use Write directly.
 pub struct Label<'render, 'w, 'ttf, 'r> {
-    text: String,
+    string: String,
     write: &'w Write<'ttf, 'r, 'render>,
     pub size: u32,
     x: i32,
@@ -272,7 +276,7 @@ impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
     pub fn create_text(
         &self,
         string: &str,
-        color: Color<>
+        color: Color
     ) -> Result<Texture<'render>, TextureValueError>
     {
         self.font
@@ -536,9 +540,9 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
         write: &'w Write<'ttf, 'r, 'render>,
         string: Option<String>
     ) -> Label<'render, 'w, 'ttf, 'r> {
-        let text: String = string.unwrap_or_else(|| String::new());
+        let string: String = string.unwrap_or_else(|| String::new());
         Label {
-            text,
+            string,
             write,
             size,
             x,
@@ -555,62 +559,56 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
         self.write = write;
     }
     //Takes ownership of the given String!
-    pub fn update_text(&mut self, string: Option<String>) {
-        if string.is_some() {self.text = string.unwrap()};
+    pub fn update_text(&mut self, string: String) {
+        self.string = string;
     }
-    fn update_texture(&self, color: Option<Color>) -> Result<
-        Texture<'render>,
-        TextureValueError>
-    { self.write.create_text(&self.text, color.unwrap_or_else(|| DEFAULT_COLOR)) }
+    fn update_texture(&self, color: Option<Color>) -> Result<Texture<'render>, TextureValueError> { 
+        self.write.create_text(&self.string, color.unwrap_or_else(|| DEFAULT_COLOR))
+    }
+    
+    fn error_texture(&self) -> Texture {
+        self.write.font
+            .render("!ERROR!")
+            .solid(COLOR_RED)
+            .unwrap()
+            .as_texture(self.write.texture_creator)
+            .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
+    }
 }
 
 impl Draw for Label<'_, '_, '_, '_> {
     fn draw(&self, display: &mut Display) -> Result<(), String> {
         let area = Rect::new(
-            self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
+            self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32,
-            self.text.len() as u32 * self.size,
+            self.string.len() as u32 * self.size,
             self.size * 2
         );
-        let texture = self.update_texture(None).unwrap_or_else(
-            |err| {
-                println!("Failed to create text Texture: {:?}", err);
-                self.write.font
-                    .render("!ERROR!")
-                    .solid(COLOR_RED)
-                    .unwrap()
-                    .as_texture(self.write.texture_creator)
-                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
-            }
-        );
+        let texture = self.update_texture(None).unwrap_or_else(|err| {
+            println!("Failed to create text Texture: {:?}", err);
+            self.error_texture()
+        });
         display.canvas.copy(&texture, None, area)
     }
     fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
         let area = Rect::new(
-            self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
+            self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y,
-            self.text.len() as u32 * self.size,
+            self.string.len() as u32 * self.size,
             self.size * 2
         );
-        let texture = self.update_texture(Some(color)).unwrap_or_else(
-            |err| {
-                println!("Failed to create text Texture: {:?}", err);
-                self.write.font
-                    .render("!ERROR!")
-                    .solid(COLOR_RED)
-                    .unwrap()
-                    .as_texture(self.write.texture_creator)
-                    .expect("MAJOR FAIL ON MAKING TEXTURES WITH TEXT!")
-            }
-        );
+        let texture = self.update_texture(Some(color)).unwrap_or_else(|err| {
+            println!("Failed to create text Texture: {:?}", err);
+            self.error_texture()
+        });
         display.canvas.copy(&texture, None, area)
     }
     //This function will only draw a rectangle on the text.
     fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
         let area = Rect::new(
-            self.x - (self.text.len() as u32 * (self.size / 2)) as i32,
+            self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32 - 2,
-            self.text.len() as u32 * self.size + 2,
+            self.string.len() as u32 * self.size + 2,
             self.size * 2 + 2
         );
         display.canvas.set_draw_color(color);
@@ -691,9 +689,9 @@ pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> 
 
 //This function receives an image file, (PNGs for now) and transforms them into a Texture.
 //Note: DO NOT ignore the error that comes from it.
-pub fn texture_from_file<T>(
+pub fn texture_from_file<Render>(
     file: fs::File,
-    texture_creator: &TextureCreator<T>
+    texture_creator: &TextureCreator<Render>
 ) -> Result<Texture, String>
 {
     let mut reader = png_reader(file)?;
