@@ -20,14 +20,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let screen_center: Point = Point::new(window_x as i32 / 2, window_y as i32 / 2);
 
     let mut clock: Clock = Clock::new(screen_center, CLOCK_SIZE);
-    
-    let clock_message: thebox::Label = thebox::Label::new(
-        400,
-        550,
-        8,
-        write,
-        Some(String::from("In here, there will be a analog clock that tells time live."))
-    );
 
     'repeat: loop {
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
@@ -41,8 +33,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         
         clock.update_hands_real();
         let _ = clock.draw(display);
-
-        let _ = clock_message.draw(display);
 
         display.canvas.present();
     }
@@ -73,19 +63,19 @@ impl Clock {
         display.draw_geometry(self.pos, 16, self.size)?;
         display.draw_geometry_points(self.pos, 12, self.size * 0.9)?;
         display.canvas.set_draw_color(Color::RGB(180, 40, 40));
-        display.draw_angle(self.pos, self.second_hand_ang - 0.25, self.size * 0.8)?;
+        display.draw_angle(self.pos, self.second_hand_ang, self.size * 0.8)?;
         display.canvas.set_draw_color(Color::RGB(40, 40, 180));
-        display.draw_angle(self.pos, self.minute_hand_ang - 0.25, self.size * 0.7)?;
+        display.draw_angle(self.pos, self.minute_hand_ang, self.size * 0.7)?;
         display.canvas.set_draw_color(thebox::COLOR_WHITE);
-        display.draw_angle(self.pos, self.hour_hand_ang - 0.25, self.size * 0.5)?;
+        display.draw_angle(self.pos, self.hour_hand_ang, self.size * 0.5)?;
         Ok(())
     }
     //Updates the clock hands according to its local time.
     fn update_hands(&mut self) {
         let secs: u64 = self.local_time.elapsed().unwrap().as_secs();
-        self.second_hand_ang = (secs % 60) as f32 / 60.0;
-        self.minute_hand_ang = (secs % 3600) as f32 / 3600.0;
-        self.hour_hand_ang = (secs % 43200) as f32 / 43200.0;
+        self.second_hand_ang = (secs % 60) as f32 / 60.0 * 360.;
+        self.minute_hand_ang = (secs % 3600) as f32 / 3600.0 * 360.;
+        self.hour_hand_ang = (secs % 43200) as f32 / 43200.0 * 360.;
     }
     //Updates the clock by the OS SystemTime.
     fn update_hands_real(&mut self) {
@@ -93,8 +83,8 @@ impl Clock {
             .duration_since(time::SystemTime::UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        self.second_hand_ang = (secs % 60) as f32 / 60.0;
-        self.minute_hand_ang = (secs % 3600) as f32 / 3600.0;
-        self.hour_hand_ang = (secs % 43200) as f32 / 43200.0;
+        self.second_hand_ang = (secs % 60) as f32 / 60.0 * 360.;
+        self.minute_hand_ang = (secs % 3600) as f32 / 3600.0 * 360.;
+        self.hour_hand_ang = (secs % 43200) as f32 / 43200.0 * 360.;
     }
 }

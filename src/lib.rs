@@ -12,7 +12,6 @@ use sdl2::event::Event;
 use png;
 
 use std::path::*;
-use std::f32::consts::PI;
 use std::fs;
 use std::io;
 
@@ -664,14 +663,22 @@ pub fn get_asset_file(file: &str) -> Result<fs::File, io::Error> {
     fs::File::open(path)
 }
 
-//Return a point based mainly on the angle and the distance. Remember an angle of 0.5 = 45 degrees clock wise.
-//Plus the starting direction is ->.
-pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> Point  {
+//Return a point based mainly on the angle and the distance.
+//Remember an angle of 0.25 = 90 degrees clock wise.
+pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
     let point: Point = point.into();
-    angle = PI * (angle * 2.0);
+//    angle = PI / angle;
     Point::new(
-        point.x() + (distance * angle.cos()) as i32,
-        point.y() + (distance * angle.sin()) as i32
+        point.x() + (distance * angle.to_radians().sin()) as i32,
+        point.y() + (distance * angle.to_radians().cos()) as i32 * -1 //to make it sure it stays on raster format.
+    )
+}
+
+pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
+    let point: FPoint = point.into();
+    FPoint::new(
+        point.x() + (distance * angle.to_radians().sin()),
+        point.y() + (distance * angle.to_radians().cos()) * -1.0 //to make it sure it stays on raster format.
     )
 }
 
@@ -679,7 +686,7 @@ pub fn angle_point<P: Into<Point>> (point: P, mut angle: f32, distance: f32) -> 
 pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> {
     let pos: Point = pos.into();
     let mut edges: Vec<Point> = Vec::new();
-    let angle_difference: f32 = 1.0 / vertices as f32;
+    let angle_difference: f32 = 360.0 / vertices as f32;
 
     for i in 0..vertices { 
         edges.push(angle_point(pos, angle_difference * i as f32, size)); 

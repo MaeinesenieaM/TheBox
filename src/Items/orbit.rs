@@ -67,7 +67,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             blue -= 1
         };
 
-        angle += 0.005;
+        angle += 1.0;
 
         display.canvas.present();
     }

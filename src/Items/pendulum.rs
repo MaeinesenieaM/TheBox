@@ -1,24 +1,25 @@
 //use sdl2::pixels::Color;
 use sdl2::keyboard::*;
-//use sdl2::rect::*;
+use sdl2::rect::*;
 
 use thebox::*;
 
 pub const NAME: &str = "Double Pendulum";
 pub const ID: u8 = 3;
 
-/*
 struct Pendulum {
-    center: Point,
-    center_ange: f32,
-    p1: FPoint,
-    p1_distance: f32,
-    p1_angle: f32,
-    p2: FPoint,
-    p2_distance: f32,
-    p2_angle: f32,
+    pos: FPoint,
+    angle: f32,
+    length: f32,
+    velocity_x: f32,
+    velocity_y: f32
 }
-*/
+
+impl Pendulum {
+    pub fn update(&mut self) {
+        
+    }
+}
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
     
@@ -29,6 +30,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             &write,
             Some(String::from("Will simulate a double pendulum."))
     );
+    
+    let mut gravity: f32 = 50.0;
     
     'repeat: loop {
         display.canvas.clear();
