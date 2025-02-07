@@ -14,6 +14,7 @@ use png;
 use std::path::*;
 use std::fs;
 use std::io;
+use sdl2::mouse::MouseState;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
@@ -36,7 +37,7 @@ const BUTTON_RECT_SIZE: u32 = 24;
 const BUTTON_RECT_STATE_SIZE: u32 = 16;
 
 //Hmm... Primitives....
-pub trait PrimitiveNumber: Copy + PartialOrd + std::ops::Div {
+pub trait PrimitiveNumber: Copy + PartialOrd + std::fmt::Debug + std::ops::Div {
     fn as_f32(self) -> f32;
     fn from_f32(value: f32) -> Self;
 }
@@ -227,11 +228,28 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_angle<P: Into<Point>>(&mut self, pos: P, angle: f32, distance: f32) -> Result<(), String> {
+    pub fn draw_angle<P: Into<Point>>(
+        &mut self,
+        pos: P, angle: f32,
+        distance: f32
+    ) -> Result<(), String> {
         let pos1: Point = pos.into();
         let pos2: Point = angle_point(pos1, angle, distance);
 
         self.canvas.draw_line(pos1, pos2)?;
+        Ok(())
+    }
+    
+    pub fn draw_angle_float<P: Into<FPoint>>(
+        &mut self,
+        pos: P,
+        angle: f32,
+        distance: f32
+    ) -> Result<(), String> {
+        let pos1: FPoint = pos.into();
+        let pos2: FPoint = angle_fpoint(pos1, angle, distance);
+
+        self.canvas.draw_fline(pos1, pos2)?;
         Ok(())
     }
         
@@ -327,19 +345,19 @@ impl<T: PrimitiveNumber> Slider<T> {
     }
 
     //Mutates the given value from the value of the slider.
-    pub fn mut_from_slider<F>(&self, value: &mut F)
-    where
-        F: PrimitiveNumber
-    {
+    pub fn mut_from_slider<F: PrimitiveNumber>(&self, value: &mut F) {
         *value = PrimitiveNumber::from_f32(self.value.as_f32());
     }
 
     pub fn get_type(&self) -> &SliderType { &self.slider_type }
 
     //Returns how filled is the slider.
-    pub fn percentage(&self) -> f32 { self.value.as_f32() / self.max.as_f32() }
+    pub fn percentage(&self) -> f32 {
+        (self.value.as_f32() - self.min.as_f32()) / (self.max.as_f32() - self.min.as_f32())
+    }
 
-    fn centralized_pos(&self) -> Point {
+    //Returns a position at the beginning of the slider.
+    fn start_pos(&self) -> Point {
         match self.slider_type {
             SliderType::SliderHorizontal => {
                 (self.x - self.length as i32 / 2, self.y).into()
@@ -352,11 +370,11 @@ impl<T: PrimitiveNumber> Slider<T> {
 
     //Calculates and returns the position of the pivot.
     pub fn pivot(&self) -> Point {
-        let pos = self.centralized_pos();
+        let pos = self.start_pos();
         match &self.slider_type {
             SliderType::SliderHorizontal => {
                 Point::new(
-                    pos.x() + (self.length as f32 * self.percentage()) as i32,
+                    pos.x + (self.length as f32 * self.percentage()) as i32,
                     pos.y()
                 )
             }
@@ -382,7 +400,7 @@ impl<T: PrimitiveNumber> Slider<T> {
 
     //Returns the Rect of the Bar.
     pub fn bar_rect(&self) -> Rect {
-        let pos = self.centralized_pos();
+        let pos = self.start_pos();
         match self.slider_type {
             SliderType::SliderHorizontal => Rect::new(
                 pos.x(),
@@ -401,15 +419,17 @@ impl<T: PrimitiveNumber> Slider<T> {
 
     //This will be like this until I have the patience to add more SliderTypes o7
     pub fn update_from_pos<P: Into<Point>>(&mut self, point: P) {
-        let pos: Point = self.centralized_pos();
+        let pos: Point = self.start_pos();
         let point: Point = point.into();
         let distance: i32;
         match self.slider_type {
             SliderType::SliderHorizontal => distance = point.x() - pos.x(),
             SliderType::SliderVertical => distance =  (pos.y() + self.length as i32) - point.y(),
         }                                           /*^^Extra orientation calculus^^.*/
-        let value: T = PrimitiveNumber::from_f32(self.max.as_f32() * (distance as f32 / self.length as f32));
-
+        let value: T = PrimitiveNumber::from_f32(
+            //This formula makes so negative minimal values are possible.
+            self.min.as_f32() + (distance as f32 / self.length as f32) * (self.max.as_f32() - self.min.as_f32())
+        );
         self.set_value_limited(value);
     }
 }
@@ -663,22 +683,21 @@ pub fn get_asset_file(file: &str) -> Result<fs::File, io::Error> {
     fs::File::open(path)
 }
 
-//Return a point based mainly on the angle and the distance.
-//Remember an angle of 0.25 = 90 degrees clock wise.
+//Return a point based mainly on angle and the distance given.
 pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
     let point: Point = point.into();
-//    angle = PI / angle;
     Point::new(
         point.x() + (distance * angle.to_radians().sin()) as i32,
-        point.y() + (distance * angle.to_radians().cos()) as i32 * -1 //to make it sure it stays on raster format.
+        point.y() + (distance * angle.to_radians().cos()) as i32 * -1 //makes sure it stays on raster format.
     )
 }
 
+//Same as above, but for a FPoint.
 pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
     let point: FPoint = point.into();
     FPoint::new(
         point.x() + (distance * angle.to_radians().sin()),
-        point.y() + (distance * angle.to_radians().cos()) * -1.0 //to make it sure it stays on raster format.
+        point.y() + (distance * angle.to_radians().cos()) * -1.0 //makes sure it stays on raster format.
     )
 }
 

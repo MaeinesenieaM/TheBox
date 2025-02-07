@@ -89,6 +89,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         "alpha:",
         COLOR_GRAY
     ));
+    
     for slider in sliders.iter_mut() {slider.slider.set_value(255)}
     let mut mouse_slider_own: Option<usize> = None;
     
