@@ -14,7 +14,6 @@ use png;
 use std::path::*;
 use std::fs;
 use std::io;
-use sdl2::mouse::MouseState;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);

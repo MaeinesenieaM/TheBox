@@ -15,13 +15,15 @@ struct Velocity {
     y: f32
 }
 
+#[derive(Debug)]
 struct Pendulum {
     pos: FPoint,
     axle: FPoint,
     angle: f32,
     length: f32,
     mass: f32,
-    velocity: Velocity
+    velocity: f32,
+    acceleration: f32
 }
 
 impl Pendulum {
@@ -38,38 +40,33 @@ impl Pendulum {
             angle,
             length,
             mass,
-            velocity: Velocity {
-                x: 0.0,
-                y: 0.0
-            }
+            velocity: 0.0,
+            acceleration: 0.0
         }
     }
     
     pub fn draw(&self, display: &mut Display) -> Result<(), String> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
-        display.canvas.draw_fline(self.pos, self.axle)?;
-        //display.draw_angle_float(self.pos, self.angle, self.length)?;
-        //display.draw_angle_float(self.pos, self.angle + 180.0, self.length)?;
+
+        let end_fpoint: FPoint = angle_fpoint(self.axle, self.angle, self.length);
+        let end_point: Point = Point::new(end_fpoint.x as i32, end_fpoint.y as i32); //THE HORROR!
+
+        display.canvas.draw_fline(self.axle, end_fpoint)?;
+        display.canvas.set_draw_color(COLOR_RED);
+        display.draw_geometry(end_point, 16, 16.0)?;
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         Ok(())
     }
     
-    pub fn update(&mut self, gravity: &f32) {
-        self.velocity.y = self.velocity.y + gravity / self.mass;
+    pub fn simulate(&mut self, time: &Duration, gravity: &f32) {
+        self.acceleration = (gravity * self.mass) * self.angle.to_radians().sin();
+        self.velocity += self.acceleration * time.as_secs_f32();
+        self.angle += self.velocity * time.as_secs_f32();
     }
-    
-    pub fn simulate(&mut self, time: &Duration) {
-        self.pos.x = self.pos.x + self.velocity.x * time.as_secs_f32();
-        self.pos.y = self.pos.y + self.velocity.y * time.as_secs_f32();
-    }
-    
-//    pub fn mass_center(&self) -> FPoint {
-//        angle_fpoint(self.pos, self.angle, self.length / 2.0)
-//    }
 }
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
-    
+
     let message: Label = Label::new(
             400,
             550,
@@ -82,11 +79,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let mut gravity: f32 = 0.0;
     
     let mut pendulum: Pendulum = Pendulum::new(
-        FPoint::new(display.width_center() as f32, display.height_center() as f32),
+        FPoint::new(display.width_center() as f32 + 50.0, display.height_center() as f32),
         FPoint::new(display.width_center() as f32, display.height_center() as f32 - 100.0),
-        0.0,
+        90.0,
+        200.0,
         50.0,
-        5.0,
     );
     
     let mut sliders: Vec<Slider<f32>> = Vec::new();
@@ -116,14 +113,15 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         gravity = sliders[0].from_value();
         
         if time.elapsed() >= Duration::from_millis(5) {
-            pendulum.update(&gravity);
-            pendulum.simulate(&time.elapsed());
+            pendulum.simulate(&time.elapsed(), &gravity);
             time = Instant::now();
         }
-        
+
+        //Draws and uses the sliders.
         for slider in sliders.iter_mut().enumerate() {
             let spc_ref = slider.1; //spc = slider_pixel_color
             let pos = slider.0;
+            //I really need to make all this into a function.
             if spc_ref.bar_rect().contains_point((mouse.x(), mouse.y())) &&
                 mouse_slider_own.is_none()
             {
@@ -148,10 +146,10 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         
         Label::new(
             display.width_center() as i32,
-            display.height_center() as i32,
+            32,
             8,
             write, 
-            Some(format!("{:?} | {:?}", pendulum.pos, pendulum.velocity.y))
+            Some(format!("{:?} | {:?}", pendulum.pos, pendulum.velocity))
         ).draw(display).unwrap();
         
         pendulum.draw(display).unwrap();
