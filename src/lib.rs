@@ -12,7 +12,7 @@ use sdl2::event::Event;
 use png;
 
 use std::path::*;
-use std::fs;
+use std::{cmp, fs};
 use std::io;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
@@ -698,6 +698,26 @@ pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FP
         point.x() + (distance * angle.to_radians().sin()),
         point.y() + (distance * angle.to_radians().cos()) * -1.0 //makes sure it stays on raster format.
     )
+}
+
+//Return a 1.0 to -1.0 difference, being 1 meaning its equal and -1.0 with opposite directions.
+pub fn angle_difference(angle: f32, counter_angle: f32) -> f32 {
+    (counter_angle - angle).to_radians().cos()
+}
+
+//Same as above, but with radians instead.
+pub fn angler_difference(angle: f32, counter_angle: f32) -> f32 {
+    (counter_angle - angle).cos()
+}
+
+//Uses sin instead of the default cos. So 1.0 means its 90 degrees on its side and -1.0 the opposite
+pub fn angle_difference_sin(angle: f32, counter_angle: f32) -> f32 {
+    (counter_angle - angle).to_radians().sin()
+}
+
+//Same as above, but with radians instead.
+pub fn angler_difference_sin(angle: f32, counter_angle: f32) -> f32 {
+    (counter_angle - angle).sin()
 }
 
 //Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.

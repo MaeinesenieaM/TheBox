@@ -17,7 +17,7 @@ struct Velocity {
 
 #[derive(Debug)]
 struct Pendulum {
-    pos: FPoint,
+    end: FPoint,
     axle: FPoint,
     angle: f32,
     length: f32,
@@ -28,16 +28,15 @@ struct Pendulum {
 
 impl Pendulum {
     pub fn new(
-        pos: FPoint,
         axle: FPoint,
         angle: f32,
         length: f32,
         mass: f32,
     ) -> Pendulum {
         Pendulum {
-            pos,
+            end: FPoint::new(0.0, 0.0),
             axle,
-            angle,
+            angle: angle.to_radians(),
             length,
             mass,
             velocity: 0.0,
@@ -48,18 +47,23 @@ impl Pendulum {
     pub fn draw(&self, display: &mut Display) -> Result<(), String> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
 
-        let end_fpoint: FPoint = angle_fpoint(self.axle, self.angle, self.length);
-        let end_point: Point = Point::new(end_fpoint.x as i32, end_fpoint.y as i32); //THE HORROR!
+    //    let end_fpoint: FPoint = angle_fpoint(*self.axle, self.angle, self.length);
+        let end_point: Point = Point::new(self.end.x as i32, self.end.y as i32); //THE HORROR!
 
-        display.canvas.draw_fline(self.axle, end_fpoint)?;
+        display.canvas.draw_fline(*self.axle, self.end)?;
         display.canvas.set_draw_color(COLOR_RED);
         display.draw_geometry(end_point, 16, 16.0)?;
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         Ok(())
     }
     
-    pub fn simulate(&mut self, time: &Duration, gravity: &f32) {
-        self.acceleration = (gravity * self.mass) * self.angle.to_radians().sin();
+    pub fn simulate(&mut self, time: &Duration, gravity: &f32, new_axle: Option<&mut Pendulum>) {
+
+
+        new_axle.inspect(|axle| self.axle = axle.end);
+
+        self.end = angle_fpoint(*self.axle, self.angle.to_degrees(), self.length);
+        self.acceleration = (gravity * self.mass) * self.angle.sin();
         self.velocity += self.acceleration * time.as_secs_f32();
         self.angle += self.velocity * time.as_secs_f32();
     }
@@ -77,13 +81,20 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     
     let mut time = Instant::now();
     let mut gravity: f32 = 0.0;
-    
-    let mut pendulum: Pendulum = Pendulum::new(
-        FPoint::new(display.width_center() as f32 + 50.0, display.height_center() as f32),
-        FPoint::new(display.width_center() as f32, display.height_center() as f32 - 100.0),
+    let main_axle: FPoint = FPoint::new(display.width_center() as f32, display.height_center() as f32 - 100.0);
+
+    let mut pendulum1: Pendulum = Pendulum::new(
+        main_axle,
         90.0,
         200.0,
-        50.0,
+        5.0,
+    );
+
+    let mut pendulum2: Pendulum = Pendulum::new(
+        FPoint::new(0.0, 0.0),
+        90.0,
+        200.0,
+        5.0,
     );
     
     let mut sliders: Vec<Slider<f32>> = Vec::new();
@@ -113,7 +124,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         gravity = sliders[0].from_value();
         
         if time.elapsed() >= Duration::from_millis(5) {
-            pendulum.simulate(&time.elapsed(), &gravity);
+            pendulum1.simulate(&time.elapsed(), &gravity, None);
+            pendulum2.simulate(&time.elapsed(), &gravity, Some(&mut pendulum1));
             time = Instant::now();
         }
 
@@ -149,10 +161,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             32,
             8,
             write, 
-            Some(format!("{:?} | {:?}", pendulum.pos, pendulum.velocity))
+            Some(format!("{:?} | {:?}", pendulum1.end, pendulum1.velocity))
         ).draw(display).unwrap();
         
-        pendulum.draw(display).unwrap();
+        pendulum1.draw(display).unwrap();
+        pendulum2.draw(display).unwrap();
         let _ = message.draw(display);
         
         display.canvas.present();
