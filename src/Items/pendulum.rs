@@ -1,8 +1,11 @@
 use sdl2::mouse::*;
 use sdl2::keyboard::*;
 use sdl2::rect::*;
+use sdl2::pixels::Color;
 
 use std::time::*;
+use sdl2::render::BlendMode;
+use fastrand;
 use thebox::*;
 
 pub const NAME: &str = "Double Pendulum";
@@ -27,13 +30,13 @@ impl Pendulum {
         mass: f32,
     ) -> Pendulum {
         Pendulum {
-            end: FPoint::new(0.0, 0.0),
-            axle,
             angle: angle.to_radians(),
             length,
             mass,
             velocity: 0.0,
-            acceleration: 0.0
+            acceleration: 0.0,
+            axle,
+            end: FPoint::new(0.0, 0.0),
         }
     }
     
@@ -49,6 +52,10 @@ impl Pendulum {
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         Ok(())
     }
+    
+    pub fn update_pos(&mut self) {
+        self.end = angle_fpoint(self.axle, self.angle.to_degrees(), self.length);
+    }
 }
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
@@ -56,20 +63,30 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let mut time = Instant::now();
     let main_axle: FPoint = FPoint::new(display.width_center() as f32, display.height_center() as f32 - 100.0);
 
+    let texture_creator = display.canvas.texture_creator();
+    let mut path_plane = texture_creator.create_texture_target(
+        None,
+        display.width(),
+        display.height()
+    ).unwrap();
+    path_plane.set_blend_mode(BlendMode::Add);
+    
     let mut pendulum1: Pendulum = Pendulum::new(
         main_axle,
         90.0,
         175.0,
         20.0,
     );
-
+    pendulum1.update_pos();
+    
     let mut pendulum2: Pendulum = Pendulum::new(
-        FPoint::new(0.0, 0.0),
-        90.0,
+        pendulum1.end,
+        fastrand::f32() * 90.0,
         175.0,
         20.0,
     );
-
+    pendulum2.update_pos();
+    
     let mut sliders: Vec<Slider<f32>> = Vec::new();
     sliders.push(
         Slider::new(
@@ -85,6 +102,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     sliders[0].set_value(980.7);
 
     let mut mouse_slider_own: Option<usize> = None;
+    let mut last_end_pos: FPoint = pendulum2.end;
     
     'repeat: loop {
         display.canvas.clear();
@@ -158,16 +176,28 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             pendulum1.angle += pendulum1.velocity * delta_time;
             pendulum2.angle += pendulum2.velocity * delta_time;
 
-            pendulum1.end = angle_fpoint(pendulum1.axle, pendulum1.angle.to_degrees(), pendulum1.length);
+            pendulum1.update_pos();
             pendulum2.axle = pendulum1.end;
-            pendulum2.end = angle_fpoint(pendulum2.axle, pendulum2.angle.to_degrees(), pendulum2.length);
+            pendulum2.update_pos();
 
             time = Instant::now();
         }
-        
+
+        display.canvas.with_texture_canvas(&mut path_plane, |plane| {
+            plane.set_draw_color(Color::RGB(60, 60, 60));
+            plane.draw_fline(last_end_pos, pendulum2.end).unwrap();
+            last_end_pos = pendulum2.end;
+        }).unwrap();
+
+        display.canvas.copy(&path_plane, None, None).unwrap();
         pendulum1.draw(display).unwrap();
         pendulum2.draw(display).unwrap();
 
         display.canvas.present();
     }
+    display.canvas.with_texture_canvas(&mut path_plane, |plane| {
+        plane.set_draw_color(Color::RGB(0, 0, 0));
+        plane.clear()
+    }).unwrap();
+    display.canvas.clear();
 }

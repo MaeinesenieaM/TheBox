@@ -106,7 +106,7 @@ pub struct SdlContext {
 
 pub struct Display {
     pub canvas: WindowCanvas,
-    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
+//    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
 //    pub fps_manager: FPSManager,
 }
 
@@ -189,7 +189,7 @@ impl Display {
         let canvas = window.into_canvas().present_vsync().build().unwrap();
 //        let fps_manager = FPSManager::new();
         Display {
-            texture_creator: canvas.texture_creator(),
+//            texture_creator: canvas.texture_creator(),
             canvas,
 //            fps_manager,
         }
