@@ -4,14 +4,14 @@ use sdl2::rect::*;
 
 use std::time;
 
-use thebox::{Display, Write, SdlContext, Draw};
+use thebox::{Display, Write, SdlContext};
 
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;
 
 const CLOCK_SIZE: f32 = 180.0;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write) {
     let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
     let window_x: i16 = window_x.try_into().unwrap();

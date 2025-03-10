@@ -12,7 +12,7 @@ use sdl2::event::Event;
 use png;
 
 use std::path::*;
-use std::{cmp, fs};
+use std::fs;
 use std::io;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
@@ -691,6 +691,15 @@ pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Poin
     )
 }
 
+//Same as above, but with radians instead.
+pub fn angler_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
+    let point: Point = point.into();
+    Point::new(
+        point.x() + (distance * angle.sin()) as i32,
+        point.y() + (distance * angle.cos()) as i32 * -1 //makes sure it stays on raster format.
+    )
+}
+
 //Same as above, but for a FPoint.
 pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
     let point: FPoint = point.into();
@@ -700,17 +709,26 @@ pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FP
     )
 }
 
-//Return a 1.0 to -1.0 difference, being 1 meaning its equal and -1.0 with opposite directions.
-pub fn angle_difference(angle: f32, counter_angle: f32) -> f32 {
+//Same as above, but with radians instead.
+pub fn angler_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
+    let point: FPoint = point.into();
+    FPoint::new(
+        point.x() + (distance * angle.sin()),
+        point.y() + (distance * angle.cos()) * -1.0 //makes sure it stays on raster format.
+    )
+}
+
+//Return a 1.0 to -1.0 difference, being 1.0 meaning its equal and -1.0 with opposite directions.
+pub fn angle_difference_cos(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).to_radians().cos()
 }
 
 //Same as above, but with radians instead.
-pub fn angler_difference(angle: f32, counter_angle: f32) -> f32 {
+pub fn angler_difference_cos(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).cos()
 }
 
-//Uses sin instead of the default cos. So 1.0 means its 90 degrees on its side and -1.0 the opposite
+//Uses sin instead of the default cos. 1.0 means its 90 degrees clockwise and -1.0 the opposite
 pub fn angle_difference_sin(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).to_radians().sin()
 }

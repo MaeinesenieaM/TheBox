@@ -1,29 +1,22 @@
-//use sdl2::pixels::Color;
 use sdl2::mouse::*;
 use sdl2::keyboard::*;
 use sdl2::rect::*;
 
 use std::time::*;
-
 use thebox::*;
 
 pub const NAME: &str = "Double Pendulum";
 pub const ID: u8 = 3;
 
-struct Velocity {
-    x: f32,
-    y: f32
-}
-
 #[derive(Debug)]
 struct Pendulum {
-    end: FPoint,
-    axle: FPoint,
     angle: f32,
     length: f32,
     mass: f32,
     velocity: f32,
-    acceleration: f32
+    acceleration: f32,
+    axle: FPoint,
+    end: FPoint
 }
 
 impl Pendulum {
@@ -48,68 +41,49 @@ impl Pendulum {
         display.canvas.set_draw_color(DEFAULT_COLOR);
 
     //    let end_fpoint: FPoint = angle_fpoint(*self.axle, self.angle, self.length);
-        let end_point: Point = Point::new(self.end.x as i32, self.end.y as i32); //THE HORROR!
+        let end_point: Point = Point::new(self.end.x as i32, self.end.y as i32); //THE HORROR OF AS!
 
         display.canvas.draw_fline(*self.axle, self.end)?;
         display.canvas.set_draw_color(COLOR_RED);
-        display.draw_geometry(end_point, 16, 16.0)?;
+        display.draw_geometry(end_point, 16, self.mass)?;
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         Ok(())
-    }
-    
-    pub fn simulate(&mut self, time: &Duration, gravity: &f32, new_axle: Option<&mut Pendulum>) {
-
-
-        new_axle.inspect(|axle| self.axle = axle.end);
-
-        self.end = angle_fpoint(*self.axle, self.angle.to_degrees(), self.length);
-        self.acceleration = (gravity * self.mass) * self.angle.sin();
-        self.velocity += self.acceleration * time.as_secs_f32();
-        self.angle += self.velocity * time.as_secs_f32();
     }
 }
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
-
-    let message: Label = Label::new(
-            400,
-            550,
-            16,
-            &write,
-            Some(String::from("Will simulate a double pendulum."))
-    );
     
     let mut time = Instant::now();
-    let mut gravity: f32 = 0.0;
     let main_axle: FPoint = FPoint::new(display.width_center() as f32, display.height_center() as f32 - 100.0);
 
     let mut pendulum1: Pendulum = Pendulum::new(
         main_axle,
         90.0,
-        200.0,
-        5.0,
+        175.0,
+        20.0,
     );
 
     let mut pendulum2: Pendulum = Pendulum::new(
         FPoint::new(0.0, 0.0),
         90.0,
-        200.0,
-        5.0,
+        175.0,
+        20.0,
     );
-    
+
     let mut sliders: Vec<Slider<f32>> = Vec::new();
     sliders.push(
         Slider::new(
-            -1.0,
-            1.0,
+            -2000.0,
+            2000.0,
             display.width_center() as i32 / 3 + 10,
             display.height_center() as i32 / 8,
             200,
             SliderType::SliderHorizontal
         )
     );
-    sliders[0].set_value(0.0);
-    
+
+    sliders[0].set_value(980.7);
+
     let mut mouse_slider_own: Option<usize> = None;
     
     'repeat: loop {
@@ -120,14 +94,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
-
-        gravity = sliders[0].from_value();
-        
-        if time.elapsed() >= Duration::from_millis(5) {
-            pendulum1.simulate(&time.elapsed(), &gravity, None);
-            pendulum2.simulate(&time.elapsed(), &gravity, Some(&mut pendulum1));
-            time = Instant::now();
-        }
 
         //Draws and uses the sliders.
         for slider in sliders.iter_mut().enumerate() {
@@ -151,23 +117,57 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                 spc_ref.y - 22,
                 8,
                 write,
-                Some(format!("Gravity: {}", spc_ref.get_value_ref())),
+                Some(format!("Gravity in cm/s: {}", spc_ref.get_value_ref())),
             ).draw_cl(display, COLOR_WHITE).unwrap()
         }
         if !mouse.left() {mouse_slider_own = None}
-        
-        Label::new(
-            display.width_center() as i32,
-            32,
-            8,
-            write, 
-            Some(format!("{:?} | {:?}", pendulum1.end, pendulum1.velocity))
-        ).draw(display).unwrap();
+
+        let gravity = -sliders[0].from_value();
+
+        //Simulates the double pendulum every 5 milliseconds.
+        if time.elapsed() >= Duration::from_millis(5) {
+            //pendulum1.velocity *= 0.9999; //Friction
+            //pendulum1.velocity *= 0.9999;
+
+            //Based on https://www.myphysicslab.com/pendulum/double-pendulum-en.html
+            let par1 = -gravity * (2f32 * pendulum1.mass + pendulum2.mass) * pendulum1.angle.sin();
+            let par2 = pendulum2.mass * gravity * (pendulum1.angle - 2f32 * pendulum2.angle).sin();
+            let par3 = 2f32 * (pendulum1.angle - pendulum2.angle).sin() * pendulum2.mass;
+            let par4 = pendulum2.velocity.powf(2f32) * pendulum2.length + pendulum1.velocity.powf(2f32)
+                * pendulum1.length * (pendulum1.angle - pendulum2.angle).cos();
+            let par5 = pendulum1.length * (2f32 * pendulum1.mass + pendulum2.mass - pendulum2.mass
+                * (2f32 * pendulum1.angle - 2f32 * pendulum2.angle).cos());
+
+            pendulum1.acceleration = (par1 - par2 - par3 * par4) / par5;
+
+            let par1 = 2f32 * (pendulum1.angle - pendulum2.angle).sin();
+            let par2 = pendulum1.velocity.powf(2f32) * pendulum1.length * (pendulum1.mass + pendulum2.mass);
+            let par3 = gravity * (pendulum1.mass + pendulum2.mass) * pendulum1.angle.cos();
+            let par4 = pendulum2.velocity.powf(2f32) * pendulum2.length * pendulum2.mass
+                * (pendulum1.angle - pendulum2.angle).cos();
+            let par5 = pendulum2.length * (2f32 * pendulum1.mass + pendulum2.mass - pendulum2.mass
+                * (2f32 * pendulum1.angle - 2f32 * pendulum2.angle).cos());
+
+            pendulum2.acceleration = (par1 * (par2 + par3 + par4)) / par5;
+
+            let delta_time = time.elapsed().as_secs_f32();
+
+            pendulum1.velocity += pendulum1.acceleration * delta_time;
+            pendulum2.velocity += pendulum2.acceleration * delta_time;
+
+            pendulum1.angle += pendulum1.velocity * delta_time;
+            pendulum2.angle += pendulum2.velocity * delta_time;
+
+            pendulum1.end = angle_fpoint(pendulum1.axle, pendulum1.angle.to_degrees(), pendulum1.length);
+            pendulum2.axle = pendulum1.end;
+            pendulum2.end = angle_fpoint(pendulum2.axle, pendulum2.angle.to_degrees(), pendulum2.length);
+
+            time = Instant::now();
+        }
         
         pendulum1.draw(display).unwrap();
         pendulum2.draw(display).unwrap();
-        let _ = message.draw(display);
-        
+
         display.canvas.present();
     }
 }

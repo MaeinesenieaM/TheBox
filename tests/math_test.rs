@@ -2,8 +2,8 @@ use sdl2::rect::{Point, FPoint};
 use thebox::{
     angle_point,
     angle_fpoint,
-    angle_difference,
-    angler_difference,
+    angle_difference_cos,
+    angler_difference_cos,
     angle_difference_sin,
     angler_difference_sin,
     geometry
@@ -33,8 +33,8 @@ fn check_geometry(){
 
 #[test]
 fn check_angle_differences(){
-    assert_eq!(angle_difference(0_f32, 180_f32), -1.0);
-    assert_eq!(angler_difference(0_f32.to_radians(), 0_f32.to_radians()), 1.0);
+    assert_eq!(angle_difference_cos(0_f32, 180_f32), -1.0);
+    assert_eq!(angler_difference_cos(0_f32.to_radians(), 0_f32.to_radians()), 1.0);
 }
 
 #[test]
