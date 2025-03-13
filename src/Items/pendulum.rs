@@ -4,7 +4,6 @@ use sdl2::rect::*;
 use sdl2::pixels::Color;
 
 use std::time::*;
-use sdl2::render::BlendMode;
 use fastrand;
 use thebox::*;
 
@@ -62,14 +61,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     
     let mut time = Instant::now();
     let main_axle: FPoint = FPoint::new(display.width_center() as f32, display.height_center() as f32 - 100.0);
-
-    let texture_creator = display.canvas.texture_creator();
-    let mut path_plane = texture_creator.create_texture_target(
-        None,
-        display.width(),
-        display.height()
-    ).unwrap();
-    path_plane.set_blend_mode(BlendMode::Add);
     
     let mut pendulum1: Pendulum = Pendulum::new(
         main_axle,
@@ -102,8 +93,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     sliders[0].set_value(980.7);
 
     let mut mouse_slider_own: Option<usize> = None;
-    let mut last_end_pos: FPoint = pendulum2.end;
+
+    let tracing_length = 400;
     
+    let mut tracers: Vec<FPoint> = Vec::with_capacity(tracing_length);
+    for _ in 0..tracers.capacity() {
+        tracers.push(FPoint::from(pendulum2.end));
+    }
+
     'repeat: loop {
         display.canvas.clear();
 
@@ -144,8 +141,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
         //Simulates the double pendulum every 5 milliseconds.
         if time.elapsed() >= Duration::from_millis(5) {
-            //pendulum1.velocity *= 0.9999; //Friction
-            //pendulum1.velocity *= 0.9999;
+            pendulum1.velocity *= 0.9999; //Friction
+            pendulum1.velocity *= 0.9999;
 
             //Based on https://www.myphysicslab.com/pendulum/double-pendulum-en.html
             let par1 = -gravity * (2f32 * pendulum1.mass + pendulum2.mass) * pendulum1.angle.sin();
@@ -183,21 +180,15 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             time = Instant::now();
         }
 
-        display.canvas.with_texture_canvas(&mut path_plane, |plane| {
-            plane.set_draw_color(Color::RGB(60, 60, 60));
-            plane.draw_fline(last_end_pos, pendulum2.end).unwrap();
-            last_end_pos = pendulum2.end;
-        }).unwrap();
-
-        display.canvas.copy(&path_plane, None, None).unwrap();
+        tracers[0] = pendulum2.end;
+        display.canvas.set_draw_color(Color::RGB(132, 112, 89));
+        display.canvas.draw_flines(tracers.as_slice()).unwrap();
+        tracers.rotate_right(1);
+        
         pendulum1.draw(display).unwrap();
         pendulum2.draw(display).unwrap();
-
+        
         display.canvas.present();
     }
-    display.canvas.with_texture_canvas(&mut path_plane, |plane| {
-        plane.set_draw_color(Color::RGB(0, 0, 0));
-        plane.clear()
-    }).unwrap();
     display.canvas.clear();
 }
