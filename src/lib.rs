@@ -35,7 +35,7 @@ const BUTTON_DEFAULT_COLOR: Color = Color::RGB(120, 120, 120);
 const BUTTON_RECT_SIZE: u32 = 24;
 const BUTTON_RECT_STATE_SIZE: u32 = 16;
 
-//Hmm... Primitives....
+///Hmm... Primitives....
 pub trait PrimitiveNumber: Copy + PartialOrd + std::fmt::Debug + std::ops::Div {
     fn as_f32(self) -> f32;
     fn from_f32(value: f32) -> Self;
@@ -92,6 +92,7 @@ impl PrimitiveNumber for isize {
 
 pub trait Draw {
     fn draw(&self, display: &mut Display) -> Result<(), String>;
+    ///draw_cl is the same as draw(), but with color!
     fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>;
     fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String>;
 }
@@ -104,14 +105,16 @@ pub struct SdlContext {
     pub audio_subsystem: AudioSubsystem
 }
 
+/// Display was initially where all the render magic happened, now it is being planned to be
+///transformed into a Trait for more modular and borrowing friendly system.
 pub struct Display {
     pub canvas: WindowCanvas,
 //    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
 //    pub fps_manager: FPSManager,
 }
 
-//Write works like any Context of SDL with the responsibility to render texts with specific
-//fonts. If you want to use multiple fonts, create various Writes.
+///Write works like any Context of SDL with the responsibility to render texts with specific
+///fonts. If you want to use multiple fonts, create various Writes.
 pub struct Write<'ttf, 'r, 'render> {
     pub ttf: &'ttf ttf::Sdl2TtfContext,
     pub font: ttf::Font<'ttf, 'r>,
@@ -123,7 +126,7 @@ pub enum SliderType {
     SliderVertical
 }
 
-//The slider is a user input element, where the user moves a pivot o control the value.
+///The slider is a user input element, where the user moves a pivot to control the value.
 pub struct Slider<T: PrimitiveNumber> {
     value: T,
     min: T,
@@ -139,12 +142,15 @@ pub struct Button {
     pub x: i32,
     pub y: i32
 }
-
-//Warning! Label can only be used in the same Display that Write has been created.
-//If for some reason you want to use multiple screens in one application, keep in mind to use the 
-//same one in its context.
-//Labels are also somewhat expensive since they create a texture every single frame. If you want
-//a static text, use Write directly.
+///Labels are essentially dynamic text that changes with its string. 
+///
+/// If for some reason you want to use multiple screens in one application, keep in mind to use the 
+///same one in its context.
+///
+/// Labels are also somewhat expensive since they create a texture every single frame. If you want
+///a static text, use Write directly.
+///
+/// Warning! Label can only be used in the same Display that Write has been created!
 pub struct Label<'render, 'w, 'ttf, 'r> {
     string: String,
     write: &'w Write<'ttf, 'r, 'render>,
@@ -171,7 +177,7 @@ impl SdlContext {
         self.event_subsystem.push_event(Event::Quit { timestamp: 0 })
     }
     
-    //Returns true if there is a Quit Event and false if not.
+    ///Returns true if there is a Quit Event and false if not.
     pub fn check_quit(&mut self) -> bool {
         self.event_pump.poll_iter().any(|quit| quit.is_same_kind_as(&Event::Quit { timestamp: 0 }))
     }
@@ -621,7 +627,7 @@ impl Draw for Label<'_, '_, '_, '_> {
         });
         display.canvas.copy(&texture, None, area)
     }
-    //This function will only draw a rectangle on the text.
+    ///This function will only draw a rectangle on the text.
     fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
@@ -636,7 +642,7 @@ impl Draw for Label<'_, '_, '_, '_> {
     }
 }
 
-//return the percentage from 0 to 100 in a value with an int.
+///return the percentage from 0 to 100 in a value with an int.
 pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
     if *value < 1 {
         return 0;
@@ -649,7 +655,7 @@ pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
     }
 }
 
-//Takes a percentage from 0 to 100 and return the possible value.
+///Takes a percentage from 0 to 100 and return the possible value.
 pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
     *value * *percentage as i32 / 100
 }
@@ -657,7 +663,7 @@ pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
 pub fn get_assets_path() -> String {
     let mut path: PathBuf = PathBuf::from("./");
 
-    //I hate this code so much, but I'm too lazy to think a better way.
+    ///I hate this code so much, but I'm too lazy to think a better way.
     path.push("main_assets");
     match path.try_exists() {
         Ok(true) => {
@@ -682,7 +688,7 @@ pub fn get_asset_file(file: &str) -> Result<fs::File, io::Error> {
     fs::File::open(path)
 }
 
-//Return a point based mainly on angle and the distance given.
+///Return a point based mainly on angle and the distance given.
 pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
     let point: Point = point.into();
     Point::new(
@@ -691,7 +697,7 @@ pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Poin
     )
 }
 
-//Same as above, but with radians instead.
+///Same as angle_point(), but with radians instead.
 pub fn angler_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
     let point: Point = point.into();
     Point::new(
@@ -700,7 +706,7 @@ pub fn angler_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Poi
     )
 }
 
-//Same as above, but for a FPoint.
+///Same as angle_point(), but for a FPoint.
 pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
     let point: FPoint = point.into();
     FPoint::new(
@@ -709,7 +715,7 @@ pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FP
     )
 }
 
-//Same as above, but with radians instead.
+///Same as angle_fpoint(), but with radians instead.
 pub fn angler_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
     let point: FPoint = point.into();
     FPoint::new(
@@ -718,27 +724,27 @@ pub fn angler_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> F
     )
 }
 
-//Return a 1.0 to -1.0 difference, being 1.0 meaning its equal and -1.0 with opposite directions.
+///Return a 1.0 to -1.0 difference, being 1.0 meaning its equal and -1.0 with opposite directions.
 pub fn angle_difference_cos(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).to_radians().cos()
 }
 
-//Same as above, but with radians instead.
+///Same as angle_difference_cos(), but with radians instead.
 pub fn angler_difference_cos(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).cos()
 }
 
-//Uses sin instead of the default cos. 1.0 means its 90 degrees clockwise and -1.0 the opposite
+///Uses sin instead of the default cos. 1.0 means its 90 degrees clockwise and -1.0 the opposite
 pub fn angle_difference_sin(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).to_radians().sin()
 }
 
-//Same as above, but with radians instead.
+///Same as angle_difference_sin(), but with radians instead.
 pub fn angler_difference_sin(angle: f32, counter_angle: f32) -> f32 {
     (counter_angle - angle).sin()
 }
 
-//Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
+///Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
 pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> {
     let pos: Point = pos.into();
     let mut edges: Vec<Point> = Vec::new();
@@ -750,8 +756,9 @@ pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> 
     edges
 }
 
-//This function receives an image file, (PNGs for now) and transforms them into a Texture.
-//Note: DO NOT ignore the error that comes from it.
+///This function receives an image file, (PNGs for now) and transforms them into a Texture.
+///
+/// Note: DO NOT ignore the error that comes from it.
 pub fn texture_from_file<Render>(
     file: fs::File,
     texture_creator: &TextureCreator<Render>

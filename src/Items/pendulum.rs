@@ -181,12 +181,15 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         }
 
         tracers[0] = pendulum2.end;
+        
+        pendulum1.draw(display).unwrap();
+        pendulum2.draw(display).unwrap();
+        
         display.canvas.set_draw_color(Color::RGB(132, 112, 89));
         display.canvas.draw_flines(tracers.as_slice()).unwrap();
         tracers.rotate_right(1);
         
-        pendulum1.draw(display).unwrap();
-        pendulum2.draw(display).unwrap();
+        display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         
         display.canvas.present();
     }
