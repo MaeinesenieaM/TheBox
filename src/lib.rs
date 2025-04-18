@@ -1,13 +1,13 @@
-use sdl2::pixels::Color;
-use sdl2::ttf;
+use sdl3::pixels::Color;
+use sdl3::{ttf};
 
-use sdl2::Sdl;
-use sdl2::{EventPump, VideoSubsystem, AudioSubsystem, EventSubsystem};
+use sdl3::Sdl;
+use sdl3::{EventPump, VideoSubsystem, AudioSubsystem, EventSubsystem};
 
-use sdl2::rect::*;
-use sdl2::render::*;
-use sdl2::video::WindowContext;
-use sdl2::event::Event;
+use sdl3::rect::*;
+use sdl3::render::*;
+use sdl3::video::WindowContext;
+use sdl3::event::Event;
 
 use png;
 
@@ -91,10 +91,10 @@ impl PrimitiveNumber for isize {
 }
 
 pub trait Draw {
-    fn draw(&self, display: &mut Display) -> Result<(), String>;
+    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error>;
     ///draw_cl is the same as draw(), but with color!
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>;
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String>;
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>;
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>;
 }
 
 pub struct SdlContext {
@@ -106,7 +106,7 @@ pub struct SdlContext {
 }
 
 /// Display was initially where all the render magic happened, now it is being planned to be
-///transformed into a Trait for more modular and borrowing friendly system.
+///transformed into a Trait for a more modular, and borrowing friendly system.
 pub struct Display {
     pub canvas: WindowCanvas,
 //    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
@@ -116,7 +116,7 @@ pub struct Display {
 ///Write works like any Context of SDL with the responsibility to render texts with specific
 ///fonts. If you want to use multiple fonts, create various Writes.
 pub struct Write<'ttf, 'r, 'render> {
-    pub ttf: &'ttf ttf::Sdl2TtfContext,
+    pub ttf: &'ttf ttf::Sdl3TtfContext,
     pub font: ttf::Font<'ttf, 'r>,
     pub texture_creator: &'render TextureCreator<WindowContext>
 }
@@ -162,7 +162,7 @@ pub struct Label<'render, 'w, 'ttf, 'r> {
 impl SdlContext {
     pub fn init_context() -> SdlContext {
 
-        let sdl = sdl2::init().unwrap();
+        let sdl = sdl3::init().unwrap();
 
         SdlContext {
             event_pump: sdl.event_pump().unwrap(),
@@ -173,7 +173,7 @@ impl SdlContext {
         }
     }
 
-    pub fn send_quit(&self) -> Result<(), String> {
+    pub fn send_quit(&self) -> Result<(), sdl3::Error> {
         self.event_subsystem.push_event(Event::Quit { timestamp: 0 })
     }
     
@@ -201,7 +201,7 @@ impl Display {
         }
     }
 
-    pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), String> {        
+    pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), sdl3::Error> {        
         let outline: Rect = Rect::new(
             rect.x() - 2,
             rect.y() - 2,
@@ -213,9 +213,9 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_geometry<P: Into<Point>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), String> {
-        let pos: Point = pos.into();
-        let mut vert: Vec<Point> = geometry(pos, vertices, size);
+    pub fn draw_geometry<P: Into<FPoint>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), sdl3::Error> {
+        let pos: FPoint = pos.into();
+        let mut vert: Vec<FPoint> = geometry(pos, vertices, size);
 
         vert.push(vert.first().unwrap().clone());
 
@@ -223,9 +223,9 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_geometry_points<P: Into<Point>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), String> {
-        let pos: Point = pos.into();
-        let mut vert: Vec<Point> = geometry(pos, vertices, size);
+    pub fn draw_geometry_points<P: Into<FPoint>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), sdl3::Error> {
+        let pos: FPoint = pos.into();
+        let mut vert: Vec<FPoint> = geometry(pos, vertices, size);
 
         vert.push(vert.first().unwrap().clone());
 
@@ -235,9 +235,10 @@ impl Display {
 
     pub fn draw_angle<P: Into<Point>>(
         &mut self,
-        pos: P, angle: f32,
+        pos: P,
+        angle: f32,
         distance: f32
-    ) -> Result<(), String> {
+    ) -> Result<(), sdl3::Error> {
         let pos1: Point = pos.into();
         let pos2: Point = angle_point(pos1, angle, distance);
 
@@ -245,16 +246,17 @@ impl Display {
         Ok(())
     }
     
+    ///Deprecated, sdl3 now enforces the use of FPoint in all circumstances.
     pub fn draw_angle_float<P: Into<FPoint>>(
         &mut self,
         pos: P,
         angle: f32,
         distance: f32
-    ) -> Result<(), String> {
+    ) -> Result<(), sdl3::Error> {
         let pos1: FPoint = pos.into();
         let pos2: FPoint = angle_fpoint(pos1, angle, distance);
 
-        self.canvas.draw_fline(pos1, pos2)?;
+        self.canvas.draw_line(pos1, pos2)?;
         Ok(())
     }
         
@@ -281,14 +283,14 @@ impl Display {
 
 impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
     pub fn init_write(
-        ttf: &'t ttf::Sdl2TtfContext,
+        ttf: &'t ttf::Sdl3TtfContext,
         texture_creator: &'render TextureCreator<WindowContext>,
         font: &str
     ) -> Write<'t, 'f, 'render> {
         let mut path = PathBuf::from(get_assets_path());
         path.push(font);
 
-        let font = match ttf.load_font(path, 32) {
+        let font = match ttf.load_font(path, 32.0) {
             Ok(font_src) => font_src,
             Err(damn) => panic!("ERROR: {}", &damn)
         };
@@ -440,7 +442,7 @@ impl<T: PrimitiveNumber> Slider<T> {
 }
 
 impl<T: PrimitiveNumber> Draw for Slider<T> {
-    fn draw(&self, display: &mut Display) -> Result<(), String>{
+    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error>{
         display.canvas.set_draw_color(SLIDER_BAR_DEFAULT_COLOR);
         display.canvas.fill_rect(self.bar_rect())?;
         display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -448,7 +450,7 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>{
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>{
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(self.bar_rect())?;
         display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -456,7 +458,7 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         let bar_rect: Rect = self.bar_rect();
         let pivot_rect: Rect = self.pivot_rect();
         
@@ -525,7 +527,7 @@ impl Button {
 }
 
 impl Draw for Button {
-    fn draw(&self, display: &mut Display) -> Result<(), String>{
+    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error>{
         display.canvas.set_draw_color(BUTTON_DEFAULT_COLOR);
         display.canvas.fill_rect(self.rect())?;
         display.canvas.set_draw_color(self.get_state_color());
@@ -533,7 +535,7 @@ impl Draw for Button {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String>{
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>{
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(self.rect())?;
         display.canvas.set_draw_color(self.get_state_color());
@@ -541,7 +543,7 @@ impl Draw for Button {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         let button_rect: Rect = self.rect();
         let outline: Rect = Rect::new(
             button_rect.x() - 2,
@@ -601,7 +603,7 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
 }
 
 impl Draw for Label<'_, '_, '_, '_> {
-    fn draw(&self, display: &mut Display) -> Result<(), String> {
+    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32,
@@ -614,7 +616,7 @@ impl Draw for Label<'_, '_, '_, '_> {
         });
         display.canvas.copy(&texture, None, area)
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), String> {
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y,
@@ -628,7 +630,7 @@ impl Draw for Label<'_, '_, '_, '_> {
         display.canvas.copy(&texture, None, area)
     }
     ///This function will only draw a rectangle on the text.
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), String> {
+    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32 - 2,
@@ -663,7 +665,7 @@ pub fn int_from_percentage(value: &i32, percentage: &u8) -> i32 {
 pub fn get_assets_path() -> String {
     let mut path: PathBuf = PathBuf::from("./");
 
-    ///I hate this code so much, but I'm too lazy to think a better way.
+    //I hate this code so much, but I'm too lazy to think a better way.
     path.push("main_assets");
     match path.try_exists() {
         Ok(true) => {
@@ -701,8 +703,8 @@ pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Poin
 pub fn angler_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
     let point: Point = point.into();
     Point::new(
-        point.x() + (distance * angle.sin()) as i32,
-        point.y() + (distance * angle.cos()) as i32 * -1 //makes sure it stays on raster format.
+        point.x + (distance * angle.sin()) as i32,
+        point.y + (distance * angle.cos()) as i32 * -1 //makes sure it stays on raster format.
     )
 }
 
@@ -710,8 +712,8 @@ pub fn angler_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Poi
 pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
     let point: FPoint = point.into();
     FPoint::new(
-        point.x() + (distance * angle.to_radians().sin()),
-        point.y() + (distance * angle.to_radians().cos()) * -1.0 //makes sure it stays on raster format.
+        point.x + (distance * angle.to_radians().sin()),
+        point.y + (distance * angle.to_radians().cos()) * -1.0 //makes sure it stays on raster format.
     )
 }
 
@@ -719,8 +721,8 @@ pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FP
 pub fn angler_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
     let point: FPoint = point.into();
     FPoint::new(
-        point.x() + (distance * angle.sin()),
-        point.y() + (distance * angle.cos()) * -1.0 //makes sure it stays on raster format.
+        point.x + (distance * angle.sin()),
+        point.y + (distance * angle.cos()) * -1.0 //makes sure it stays on raster format.
     )
 }
 
@@ -745,13 +747,13 @@ pub fn angler_difference_sin(angle: f32, counter_angle: f32) -> f32 {
 }
 
 ///Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
-pub fn geometry<P: Into<Point>> (pos: P, vertices: u8, size: f32) -> Vec<Point> {
-    let pos: Point = pos.into();
-    let mut edges: Vec<Point> = Vec::new();
+pub fn geometry<P: Into<FPoint>> (pos: P, vertices: u8, size: f32) -> Vec<FPoint> {
+    let pos: FPoint = pos.into();
+    let mut edges: Vec<FPoint> = Vec::new();
     let angle_difference: f32 = 360.0 / vertices as f32;
 
     for i in 0..vertices { 
-        edges.push(angle_point(pos, angle_difference * i as f32, size)); 
+        edges.push(angle_fpoint(pos, angle_difference * i as f32, size)); 
     }
     edges
 }
@@ -825,7 +827,7 @@ pub fn texture_from_file<Render>(
                         num,
                         format
                 ),
-            UpdateTextureError::SdlError(err) => err,
+            UpdateTextureError::SdlError(err) => err.to_string(),
         },
     ).map(|()| image)
 }
@@ -841,13 +843,13 @@ fn png_reader<R: io::Read>(file: R) -> Result<png::Reader<R>, String> {
     )
 }
 
-fn translate_color_format(color_type: png::ColorType) -> sdl2::pixels::PixelFormatEnum {
+fn translate_color_format(color_type: png::ColorType) -> sdl3::pixels::PixelFormatEnum {
     match color_type {
-            png::ColorType::Grayscale => sdl2::pixels::PixelFormatEnum::RGB24,
-            png::ColorType::Indexed => sdl2::pixels::PixelFormatEnum::Index8,
-            png::ColorType::Rgb => sdl2::pixels::PixelFormatEnum::RGB24,
-            png::ColorType::Rgba => sdl2::pixels::PixelFormatEnum::RGBA32,
-            png::ColorType::GrayscaleAlpha => sdl2::pixels::PixelFormatEnum::RGBA32
+            png::ColorType::Grayscale => sdl3::pixels::PixelFormatEnum::RGB24,
+            png::ColorType::Indexed => sdl3::pixels::PixelFormatEnum::Index8,
+            png::ColorType::Rgb => sdl3::pixels::PixelFormatEnum::RGB24,
+            png::ColorType::Rgba => sdl3::pixels::PixelFormatEnum::RGBA32,
+            png::ColorType::GrayscaleAlpha => sdl3::pixels::PixelFormatEnum::RGBA32
     }
 }
 
