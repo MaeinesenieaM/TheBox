@@ -1,6 +1,6 @@
-use sdl2::keyboard::*;
-use sdl2::pixels::Color;
-use sdl2::video::Window;
+use sdl3::keyboard::*;
+use sdl3::pixels::Color;
+use sdl3::video::Window;
 use thebox::*;
 
 pub const NAME: &str = "Orbit";

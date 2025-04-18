@@ -1,7 +1,8 @@
-use sdl2::mouse::*;
-use sdl2::keyboard::*;
-use sdl2::rect::*;
-use sdl2::pixels::Color;
+use sdl3::mouse::*;
+use sdl3::keyboard::*;
+use sdl3::rect::*;
+use sdl3::pixels::Color;
+use sdl3::render::FPoint;
 
 use std::time::*;
 use fastrand;
@@ -39,13 +40,13 @@ impl Pendulum {
         }
     }
     
-    pub fn draw(&self, display: &mut Display) -> Result<(), String> {
+    pub fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
 
     //    let end_fpoint: FPoint = angle_fpoint(*self.axle, self.angle, self.length);
         let end_point: Point = Point::new(self.end.x as i32, self.end.y as i32); //THE HORROR OF AS!
 
-        display.canvas.draw_fline(*self.axle, self.end)?;
+        display.canvas.draw_line(self.axle, self.end)?; //Something is going to break here, I feel it...
         display.canvas.set_draw_color(COLOR_RED);
         display.draw_geometry(end_point, 16, self.mass)?;
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
@@ -115,14 +116,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             let spc_ref = slider.1; //spc = slider_pixel_color
             let pos = slider.0;
             //I really need to make all this into a function.
-            if spc_ref.bar_rect().contains_point((mouse.x(), mouse.y())) &&
+            if spc_ref.bar_rect().contains_point((mouse.x() as i32, mouse.y() as i32)) &&
                 mouse_slider_own.is_none()
             {
                 if mouse.left() {mouse_slider_own = Some(pos)}
                 spc_ref.draw_outline(display, COLOR_WHITE).unwrap();
             }
             if mouse_slider_own == Some(pos) {
-                spc_ref.update_from_pos((mouse.x(), mouse.y()));
+                spc_ref.update_from_pos((mouse.x() as i32, mouse.y() as i32));
                 spc_ref.draw_outline(display, COLOR_WHITE).unwrap();
             }
             spc_ref.draw_cl(display, COLOR_GRAY).unwrap();
@@ -186,7 +187,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         pendulum2.draw(display).unwrap();
         
         display.canvas.set_draw_color(Color::RGB(132, 112, 89));
-        display.canvas.draw_flines(tracers.as_slice()).unwrap();
+        display.canvas.draw_lines(tracers.as_slice()).unwrap();
         tracers.rotate_right(1);
         
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);

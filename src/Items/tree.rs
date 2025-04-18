@@ -1,5 +1,5 @@
 //use sdl2::pixels::Color;
-use sdl2::keyboard::*;
+use sdl3::keyboard::*;
 use thebox::*;
 
 pub const NAME: &str = "Tree";

@@ -1,4 +1,5 @@
-use sdl2::rect::{Point, FPoint};
+use sdl3::rect::Point;
+use sdl3::render::FPoint;
 use thebox::{
     angle_point,
     angle_fpoint,
@@ -27,8 +28,8 @@ fn check_angle_float(){
 
 #[test]
 fn check_geometry(){
-    let points: Vec<Point> = geometry((0, 0), 2, 1_f32);
-    assert_eq!(points, vec!(Point::new(0, -1), Point::new(0, 1)));
+    let points: Vec<FPoint> = geometry((0, 0), 2, 1_f32);
+    assert_eq!(points, vec!(FPoint::new(0., -1.), FPoint::new(0., 1.)));
 }
 
 #[test]

@@ -1,7 +1,7 @@
-use sdl2::event::Event;
-use sdl2::keyboard::*;
-use sdl2::mouse::MouseState;
-use sdl2::pixels::Color;
+use sdl3::event::Event;
+use sdl3::keyboard::*;
+use sdl3::mouse::MouseState;
+use sdl3::pixels::Color;
 
 use std::f32::consts::PI;
 use thebox::*;
@@ -162,7 +162,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                     .1
                     .slider
                     .bar_rect()
-                    .contains_point((mouse.x(), mouse.y()))
+                    .contains_point((mouse.x() as i32, mouse.y() as i32))
                 {
                     slider_id = modifier.0 + 1;
                 }
@@ -177,7 +177,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                 .nth(slider_id - 1)
                 .expect("Something went wrong on reading the Slider Iter.")
                 .slider
-                .update_from_pos((mouse.x(), mouse.y()));
+                .update_from_pos((mouse.x() as i32, mouse.y() as i32));
         }
 
         //self-explanatory
@@ -224,7 +224,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             modifiers_label.set_pos(modifier.slider.x, modifier.slider.y - 22);
             modifiers_label.update_text(String::from(&modifier.name));
             let _ = modifiers_label.draw(display);
-            if modifier.slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
+            if modifier.slider.bar_rect().contains_point((mouse.x() as i32, mouse.y() as i32)) {
                 let _ = modifier.slider.draw_outline(display, COLOR_WHITE);
             }
             let _ = modifier.slider.draw_cl(display, Color::RGB(30, 110, 40));

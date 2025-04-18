@@ -1,8 +1,8 @@
-use sdl2::pixels::Color;
-use sdl2::rect::*;
+use sdl3::pixels::Color;
+use sdl3::rect::*;
 
-use sdl2::keyboard::*;
-
+use sdl3::keyboard::*;
+use sdl3::render::FRect;
 use thebox::*;
 
 /*
@@ -43,8 +43,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
         for point in points.iter() {
             count = count + 1;
-            let pos: (i32, i32) = sdl2::rect::Point::from(*point.clone()).into();
-            let rectangle = Rect::new(pos.0, pos.1, 16, 16);
+            let pos: (i32, i32) = sdl3::rect::Point::from(*point.clone()).into();
+            let rectangle = FRect::new(pos.0 as f32, pos.1 as f32, 16_f32, 16_f32);
             display.canvas.set_draw_color(Color::RGB(100, 120, 100));
             let _ = display.canvas.draw_rect(rectangle);
             display.canvas.set_draw_color(Color::RGB(200, 200, 200));

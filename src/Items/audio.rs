@@ -1,6 +1,6 @@
 //use sdl2::pixels::Color;
-use sdl2::keyboard::*;
-use sdl2::audio::*;
+use sdl3::keyboard::*;
+use sdl3::audio::*;
 
 use std::path::*;
 use thebox::{Display, Write, SdlContext, Draw};

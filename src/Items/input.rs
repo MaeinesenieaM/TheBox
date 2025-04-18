@@ -1,6 +1,6 @@
-use sdl2::keyboard::*;
-use sdl2::mouse::*;
-use sdl2::pixels::Color;
+use sdl3::keyboard::*;
+use sdl3::mouse::*;
+use sdl3::pixels::Color;
 
 use thebox::*;
 
@@ -90,7 +90,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         //For the user be able to change the sliders.
         if mouse.left() && slider_id == 0 {
             for slider in sliders.iter_mut().enumerate() {
-                if slider.1.bar_rect().contains_point((mouse.x(), mouse.y())) {
+                if slider.1.bar_rect().contains_point((mouse.x() as i32, mouse.y() as i32)) {
                     slider_id = slider.0 + 1;
                 }
             }
@@ -101,7 +101,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         //For the user be able to click the buttons
         if mouse.left() && last_mouse_state == false {
             for button in buttons.iter_mut() {
-                if button.rect().contains_point((mouse.x(), mouse.y())) {
+                if button.rect().contains_point((mouse.x() as i32, mouse.y() as i32)) {
                     button.toggle();
                 }
             }
@@ -112,7 +112,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                 .iter_mut()
                 .nth(slider_id - 1)
                 .expect("Something went wrong on reading the Slider Iter.")
-                .update_from_pos((mouse.x(), mouse.y()));
+                .update_from_pos((mouse.x() as i32, mouse.y() as i32));
         }
 
         //This draws the sliders.
@@ -124,7 +124,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             sliders_label.update_text(slider.get_value_ref().to_string());
             let _ = sliders_label.draw(display);
             
-            if slider.bar_rect().contains_point((mouse.x(), mouse.y())) {
+            if slider.bar_rect().contains_point((mouse.x() as i32, mouse.y() as i32)) {
                 let _ = slider.draw_outline(display, COLOR_WHITE);
             }
             let _ = slider.draw_cl(display, Color::RGB(30, 30, blue.clone()));
@@ -132,7 +132,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
         //This draws the buttons
         for button in buttons.iter() {
-            if button.rect().contains_point((mouse.x(), mouse.y())) {
+            if button.rect().contains_point((mouse.x() as i32, mouse.y() as i32)) {
                 let _ = button.draw_outline(display, COLOR_WHITE);
             }
             let _ = button.draw(display);

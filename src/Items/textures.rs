@@ -1,8 +1,8 @@
-use sdl2::keyboard::*;
-use sdl2::pixels::Color;
+use sdl3::keyboard::*;
+use sdl3::pixels::Color;
 
 use std::{fs, io};
-use sdl2::mouse::MouseState;
+use sdl3::mouse::MouseState;
 use thebox::*;
 
 pub const NAME: &str = "Textures";
@@ -48,7 +48,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     
     let mut image = texture_from_file(png_file.unwrap(), &texture_creator).unwrap();
 
-    let rect = sdl2::rect::Rect::new(
+    let rect = sdl3::rect::Rect::new(
         display.width_center() as i32 - image.query().width as i32 / 2, 
         display.height_center() as i32 - image.query().height as i32 / 2,
         image.query().width,
@@ -108,14 +108,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         for color_input in sliders.iter_mut().enumerate() {
             let spc_ref = color_input.1; //spc = slider_pixel_color
             let pos = color_input.0;
-            if spc_ref.slider.bar_rect().contains_point((mouse.x(), mouse.y())) &&
+            if spc_ref.slider.bar_rect().contains_point((mouse.x() as i32, mouse.y() as i32)) &&
                 mouse_slider_own.is_none()
             {
                 if mouse.left() {mouse_slider_own = Some(pos)}
                 spc_ref.slider.draw_outline(display, COLOR_WHITE).unwrap();
             }
             if mouse_slider_own == Some(pos) {
-                spc_ref.slider.update_from_pos((mouse.x(), mouse.y()));
+                spc_ref.slider.update_from_pos((mouse.x() as i32, mouse.y() as i32));
                 spc_ref.slider.draw_outline(display, COLOR_WHITE).unwrap();
             }
             spc_ref.slider.draw_cl(display, spc_ref.color).unwrap();

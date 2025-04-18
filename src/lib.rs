@@ -192,7 +192,7 @@ impl Display {
             .build()
             .unwrap();
 
-        let canvas = window.into_canvas().present_vsync().build().unwrap();
+        let canvas = window.into_canvas();
 //        let fps_manager = FPSManager::new();
         Display {
 //            texture_creator: canvas.texture_creator(),
@@ -462,17 +462,17 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         let bar_rect: Rect = self.bar_rect();
         let pivot_rect: Rect = self.pivot_rect();
         
-        let bar_outline: Rect = Rect::new(
-            bar_rect.x() - 2,
-            bar_rect.y() - 2,
-            bar_rect.width() + 4,
-            bar_rect.height() + 4,
+        let bar_outline: FRect = FRect::new(
+            bar_rect.x() as f32 - 2f32,
+            bar_rect.y() as f32 - 2f32,
+            bar_rect.width() as f32 + 4f32,
+            bar_rect.height() as f32 + 4f32
         );
-        let pivot_outline: Rect = Rect::new(
-            pivot_rect.x() - 2,
-            pivot_rect.y() - 2,
-            pivot_rect.width() + 4,
-            pivot_rect.height() + 4,
+        let pivot_outline: FRect = FRect::new(
+            pivot_rect.x() as f32 - 2f32,
+            pivot_rect.y() as f32 - 2f32,
+            pivot_rect.width() as f32 + 4f32,
+            pivot_rect.height() as f32 + 4f32
         );
         
         display.canvas.set_draw_color(color);
@@ -843,14 +843,47 @@ fn png_reader<R: io::Read>(file: R) -> Result<png::Reader<R>, String> {
     )
 }
 
-fn translate_color_format(color_type: png::ColorType) -> sdl3::pixels::PixelFormatEnum {
+fn translate_color_format(color_type: png::ColorType) -> sdl3::pixels::PixelFormat {
+    use sdl3::pixels::PixelFormat;
+    use sdl3::pixels::PixelMasks;
+    
+    //Initially RGBA32
+    let mut pixel_mask: PixelMasks = PixelMasks {
+        bpp: 8,
+        rmask: 0xFF000000,
+        gmask: 0x00FF0000,
+        bmask: 0x0000FF00,
+        amask: 0x000000FF
+    };
+    
     match color_type {
-            png::ColorType::Grayscale => sdl3::pixels::PixelFormatEnum::RGB24,
-            png::ColorType::Indexed => sdl3::pixels::PixelFormatEnum::Index8,
-            png::ColorType::Rgb => sdl3::pixels::PixelFormatEnum::RGB24,
-            png::ColorType::Rgba => sdl3::pixels::PixelFormatEnum::RGBA32,
-            png::ColorType::GrayscaleAlpha => sdl3::pixels::PixelFormatEnum::RGBA32
+            png::ColorType::Grayscale => {
+                //sdl3::pixels::PixelFormatEnum::RGB24
+                pixel_mask.rmask = 0x00FF0000;
+                pixel_mask.gmask = 0x0000FF00;
+                pixel_mask.bmask = 0x000000FF;
+                pixel_mask.amask = 0x00000000;
+            },
+            png::ColorType::Indexed => {
+                //sdl3::pixels::PixelFormatEnum::Index8
+                pixel_mask.rmask = 0x00000000;
+                pixel_mask.gmask = 0x00000000;
+                pixel_mask.bmask = 0x00000000;
+                pixel_mask.amask = 0x00000000;
+            },
+            png::ColorType::Rgb => {
+                //sdl3::pixels::PixelFormatEnum::RGB24,
+                pixel_mask.rmask = 0x00FF0000;
+                pixel_mask.gmask = 0x0000FF00;
+                pixel_mask.bmask = 0x000000FF;
+                pixel_mask.amask = 0x00000000;
+            }
+            //png::ColorType::Rgba => sdl3::pixels::PixelFormatEnum::RGBA32,
+            //png::ColorType::GrayscaleAlpha => sdl3::pixels::PixelFormatEnum::RGBA32
+            _ => {}
     }
+    
+    PixelFormat::from_masks(pixel_mask)
 }
 
 fn convert_from_greyscale(vec: &mut Vec<u8>) {
