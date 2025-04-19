@@ -23,22 +23,24 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
     let audio_spec = AudioSpecWAV::load_wav(audio_path).unwrap();
     
-    let desired_spec = AudioSpecDesired {
+    let desired_spec = AudioSpec {
         freq: Some(audio_spec.freq),
-        channels: Some(audio_spec.channels),
-        samples: None
+        channels: Some(audio_spec.channels as i32),
+        format: Some(audio_spec.format),
     };
 
-    let queue = match sdl_context.audio_subsystem.open_queue(None, &desired_spec) {
-        Ok(good) => good,
+    let audio_device = match sdl_context.audio_subsystem.open_playback_device(&desired_spec) {
+        Ok(audio_device) => audio_device,
         Err(damn) => panic!("{}", damn)
     };
-    
+
+    let mut queue = audio_device.open_device_stream(None).unwrap();
+
     for data in audio_spec.buffer().chunks(2) {
-        queue.queue_audio(&[i16::from_le_bytes([data[0], data[1]])]).unwrap();
+        queue.read_i16_samples(&mut[i16::from_le_bytes([data[0], data[1]])]).unwrap();
     }
-    
-    queue.resume();
+
+    queue.resume().unwrap();
 
     'repeat: loop {
         display.canvas.clear();

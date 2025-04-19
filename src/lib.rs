@@ -110,7 +110,7 @@ pub struct SdlContext {
 pub struct Display {
     pub canvas: WindowCanvas,
 //    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
-//    pub fps_manager: FPSManager,
+    pub fps_limit: f64,
 }
 
 ///Write works like any Context of SDL with the responsibility to render texts with specific
@@ -191,14 +191,19 @@ impl Display {
             .position_centered()
             .build()
             .unwrap();
-
+        
         let canvas = window.into_canvas();
-//        let fps_manager = FPSManager::new();
+        let fps_limit: f64 = 60.0;
         Display {
 //            texture_creator: canvas.texture_creator(),
-            canvas,
-//            fps_manager,
+            canvas, 
+            fps_limit,
         }
+    }
+    
+    pub fn sleep(&self) {
+        let sleep_time = std::time::Duration::from_secs_f64(1.0 / self.fps_limit);
+        std::thread::sleep(sleep_time)
     }
 
     pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), sdl3::Error> {        

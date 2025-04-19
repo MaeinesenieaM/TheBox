@@ -87,5 +87,6 @@ fn main() {
 
         frames += 1;
         display.canvas.present();
+        display.sleep()
     }
 }
