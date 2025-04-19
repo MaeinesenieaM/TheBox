@@ -755,10 +755,10 @@ pub fn angler_difference_sin(angle: f32, counter_angle: f32) -> f32 {
 pub fn geometry<P: Into<FPoint>> (pos: P, vertices: u8, size: f32) -> Vec<FPoint> {
     let pos: FPoint = pos.into();
     let mut edges: Vec<FPoint> = Vec::new();
-    let angle_difference: f32 = 360.0 / vertices as f32;
-
+    let angle_difference: f32 = (360.0 / vertices as f32).to_radians();
+    
     for i in 0..vertices { 
-        edges.push(angle_fpoint(pos, angle_difference * i as f32, size)); 
+        edges.push(angler_fpoint(pos, angle_difference * i as f32, size));
     }
     edges
 }
@@ -790,7 +790,6 @@ pub fn texture_from_file<Render>(
             image.set_blend_mode(BlendMode::Blend);
         },
         png::ColorType::GrayscaleAlpha => {
-            //pitch = pitch * 2;
             convert_from_greyscale_alpha(&mut buffer);
             image.set_blend_mode(BlendMode::Blend);
         },

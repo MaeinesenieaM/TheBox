@@ -28,8 +28,8 @@ fn check_angle_float(){
 
 #[test]
 fn check_geometry(){
-    let points: Vec<FPoint> = geometry((0, 0), 2, 1_f32);
-    assert_eq!(points, vec!(FPoint::new(0., -1.), FPoint::new(0., 1.)));
+    let points: Vec<FPoint> = geometry((0_f32, 0_f32), 2, 1_f32); //DAMN YOU FLOAT PRECISION!
+    assert_eq!(points, vec!(FPoint::new(0_f32, -1_f32), FPoint::new(-0.00000008742278_f32, 1_f32)));
 }
 
 #[test]
