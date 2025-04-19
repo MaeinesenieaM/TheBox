@@ -231,6 +231,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         }
 
         display.canvas.present();
+        display.sleep()
     }
 }
 

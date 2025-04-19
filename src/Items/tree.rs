@@ -26,5 +26,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         let _ = message.draw(display);
 
         display.canvas.present();
+        display.sleep()
     }
 }

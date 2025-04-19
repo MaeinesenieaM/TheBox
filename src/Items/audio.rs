@@ -1,3 +1,5 @@
+use std::any::Any;
+use std::io::Read;
 //use sdl2::pixels::Color;
 use sdl3::keyboard::*;
 use sdl3::audio::*;
@@ -21,12 +23,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let mut audio_path: PathBuf = PathBuf::from(thebox::get_assets_path());
     audio_path.push("audio_demo.wav");
 
-    let audio_spec = AudioSpecWAV::load_wav(audio_path).unwrap();
+    let audio_data = AudioSpecWAV::load_wav(audio_path).unwrap();
     
     let desired_spec = AudioSpec {
-        freq: Some(audio_spec.freq),
-        channels: Some(audio_spec.channels as i32),
-        format: Some(audio_spec.format),
+        freq: Some(audio_data.freq),
+        channels: Some(audio_data.channels as i32),
+        format: Some(audio_data.format),
     };
 
     let audio_device = match sdl_context.audio_subsystem.open_playback_device(&desired_spec) {
@@ -34,12 +36,10 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         Err(damn) => panic!("{}", damn)
     };
 
-    let mut queue = audio_device.open_device_stream(None).unwrap();
+    let mut queue = audio_device.open_device_stream(Some(&desired_spec)).unwrap();
 
-    for data in audio_spec.buffer().chunks(2) {
-        queue.read_i16_samples(&mut[i16::from_le_bytes([data[0], data[1]])]).unwrap();
-    }
-
+    //THIS IS SO MUCH BETTER THAN SDL2!
+    queue.put_data(audio_data.buffer()).unwrap();
     queue.resume().unwrap();
 
     'repeat: loop {
@@ -53,5 +53,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         let _ = audio_message.draw(display);
 
         display.canvas.present();
+        display.sleep()
     }
 }

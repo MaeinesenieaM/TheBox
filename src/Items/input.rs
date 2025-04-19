@@ -143,7 +143,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         last_mouse_state = mouse.left();
 
         display.canvas.present();
-        
         display.sleep()
     }
 }

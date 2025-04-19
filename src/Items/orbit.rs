@@ -70,5 +70,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         angle += 1.0;
 
         display.canvas.present();
+        display.sleep()
     }
 }

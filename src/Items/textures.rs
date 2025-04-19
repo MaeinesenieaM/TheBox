@@ -33,10 +33,9 @@ impl SliderPixelColor {
 }
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
-
+    
     let texture_creator = display.canvas.texture_creator();
     let png_file: Result<fs::File, io::Error> = get_asset_file("texture_test.png");
-
     if let Err(_) = png_file {
         let err = Label::new(120, 40, 8, write, Some(String::from("UNABLE TO READ FILE!")));
         display.canvas.clear();
@@ -139,5 +138,6 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         
         display.canvas.copy(&image, None, rect).unwrap();
         display.canvas.present();
+        display.sleep()
     }
 }

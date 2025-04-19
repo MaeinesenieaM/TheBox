@@ -775,24 +775,22 @@ pub fn texture_from_file<Render>(
 
     let mut buffer = vec!(0; reader.output_buffer_size());
     let info = reader.next_frame(&mut buffer).unwrap();
+    let pixel_format = translate_color_format(info.color_type);
 
     let mut image = texture_creator.create_texture_static(
-        translate_color_format(info.color_type),
+        pixel_format,
         info.width,
-        info.height,
+        info.height
     ).unwrap();
-
-    let mut pitch = info.line_size;
-    
+    let pitch: usize = pixel_format.byte_size_per_pixel() * info.width as usize;
     match info.color_type {
         png::ColorType::Rgba => image.set_blend_mode(BlendMode::Blend),
         png::ColorType::Grayscale => {
-            pitch = pitch * 3;
             convert_from_greyscale(&mut buffer);
             image.set_blend_mode(BlendMode::Blend);
         },
         png::ColorType::GrayscaleAlpha => {
-            pitch = pitch * 2;
+            //pitch = pitch * 2;
             convert_from_greyscale_alpha(&mut buffer);
             image.set_blend_mode(BlendMode::Blend);
         },
@@ -802,7 +800,7 @@ pub fn texture_from_file<Render>(
     image.update(
         None,
         &buffer,
-        pitch 
+        pitch
     ).map_err(|err|
         match err {
             UpdateTextureError::PitchOverflows(overflow) => 
@@ -850,50 +848,20 @@ fn png_reader<R: io::Read>(file: R) -> Result<png::Reader<R>, String> {
 
 fn translate_color_format(color_type: png::ColorType) -> sdl3::pixels::PixelFormat {
     use sdl3::pixels::PixelFormat;
-    use sdl3::pixels::PixelMasks;
-    
-    //Initially RGBA32
-    let mut pixel_mask: PixelMasks = PixelMasks {
-        bpp: 8,
-        rmask: 0xFF000000,
-        gmask: 0x00FF0000,
-        bmask: 0x0000FF00,
-        amask: 0x000000FF
-    };
-    
+    use sdl3_sys::pixels::SDL_PixelFormat;
+
     match color_type {
-            png::ColorType::Grayscale => {
-                //sdl3::pixels::PixelFormatEnum::RGB24
-                pixel_mask.rmask = 0x00FF0000;
-                pixel_mask.gmask = 0x0000FF00;
-                pixel_mask.bmask = 0x000000FF;
-                pixel_mask.amask = 0x00000000;
-            },
-            png::ColorType::Indexed => {
-                //sdl3::pixels::PixelFormatEnum::Index8
-                pixel_mask.rmask = 0x00000000;
-                pixel_mask.gmask = 0x00000000;
-                pixel_mask.bmask = 0x00000000;
-                pixel_mask.amask = 0x00000000;
-            },
-            png::ColorType::Rgb => {
-                //sdl3::pixels::PixelFormatEnum::RGB24,
-                pixel_mask.rmask = 0x00FF0000;
-                pixel_mask.gmask = 0x0000FF00;
-                pixel_mask.bmask = 0x000000FF;
-                pixel_mask.amask = 0x00000000;
-            }
-            //png::ColorType::Rgba => sdl3::pixels::PixelFormatEnum::RGBA32,
-            //png::ColorType::GrayscaleAlpha => sdl3::pixels::PixelFormatEnum::RGBA32
-            _ => {}
+            png::ColorType::Grayscale => PixelFormat::from(SDL_PixelFormat::RGB24.0 as i64),
+            png::ColorType::GrayscaleAlpha => PixelFormat::from(SDL_PixelFormat::RGBA32.0 as i64),
+            png::ColorType::Indexed => PixelFormat::from(SDL_PixelFormat::INDEX8.0 as i64),
+            png::ColorType::Rgb => PixelFormat::from(SDL_PixelFormat::RGB24.0 as i64),
+            png::ColorType::Rgba => PixelFormat::from(SDL_PixelFormat::RGBA32.0 as i64)
     }
-    
-    PixelFormat::from_masks(pixel_mask)
 }
 
 fn convert_from_greyscale(vec: &mut Vec<u8>) {
     let mut buffer: Vec<u8> = Vec::with_capacity(vec.len() * 3);
-    for chunk in  vec.iter() {
+    for chunk in vec.iter() {
         buffer.extend_from_slice(&[*chunk, *chunk, *chunk]);
     }
     *vec = buffer;
@@ -901,7 +869,7 @@ fn convert_from_greyscale(vec: &mut Vec<u8>) {
 
 fn convert_from_greyscale_alpha(vec: &mut Vec<u8>) {
     let mut buffer: Vec<u8> = Vec::with_capacity(vec.len() * 2);
-    for chunk in  vec.chunks(2) {
+    for chunk in vec.chunks(2) {
         buffer.extend_from_slice(&[chunk[0], chunk[0], chunk[0], chunk[1]]);
     }
     *vec = buffer;

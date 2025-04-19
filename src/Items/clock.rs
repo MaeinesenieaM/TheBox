@@ -35,6 +35,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         let _ = clock.draw(display);
 
         display.canvas.present();
+        display.sleep()
     }
 }
 #[allow(dead_code)]

@@ -193,6 +193,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         
         display.canvas.present();
+        display.sleep()
     }
     display.canvas.clear();
 }

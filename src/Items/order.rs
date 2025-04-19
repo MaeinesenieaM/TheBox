@@ -54,6 +54,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         message.draw(display).unwrap();
 
         display.canvas.present();
+        display.sleep()
     }
 }
 
