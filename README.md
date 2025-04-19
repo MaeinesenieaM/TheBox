@@ -1,5 +1,5 @@
 # A Box With Not So Useless Stuff
-This "project" was created in an attempt to not only learn how to learn to program in Rust but also to experiment with SDL2.
+This "project" was created in an attempt to not only learn how to learn to program in Rust but also to experiment with SDL3.
 
 But also as an idea to not flood my git with a bunch of mini dead projects, so instead of doing that, I mostly put them in here to keep things in one single, nifty place.
 
