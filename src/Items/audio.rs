@@ -1,5 +1,3 @@
-use std::any::Any;
-use std::io::Read;
 //use sdl2::pixels::Color;
 use sdl3::keyboard::*;
 use sdl3::audio::*;
@@ -36,7 +34,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         Err(damn) => panic!("{}", damn)
     };
 
-    let mut queue = audio_device.open_device_stream(Some(&desired_spec)).unwrap();
+    let queue = audio_device.open_device_stream(Some(&desired_spec)).unwrap();
 
     //THIS IS SO MUCH BETTER THAN SDL2!
     queue.put_data(audio_data.buffer()).unwrap();
