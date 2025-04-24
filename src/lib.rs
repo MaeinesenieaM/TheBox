@@ -333,7 +333,7 @@ impl<T: PrimitiveNumber> Slider<T> {
         self.value = value;
     }
 
-    //Recommended for controlled values.
+    ///Recommended for controlled values.
     pub fn set_value_limited(&mut self, value: T)
     where
         T: PrimitiveNumber

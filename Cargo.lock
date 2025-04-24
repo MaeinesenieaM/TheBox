@@ -97,9 +97,9 @@ dependencies = [
 
 [[package]]
 name = "sdl3"
-version = "0.14.24"
+version = "0.14.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e5cb447a0ced1371168118f7189ce6234f20ba4f5209681c9492d371e83c8fa"
+checksum = "32937025fa7a6af8f0336b857fd8cfc64530ea9056a0c5be93829012727b28cc"
 dependencies = [
  "bitflags 2.9.0",
  "lazy_static",
@@ -116,9 +116,9 @@ checksum = "f0d16a8a3623a4cb39a3661c81d9d4c5fd77ada27fc056e320b3651bf7bde1b1"
 
 [[package]]
 name = "sdl3-ttf-sys"
-version = "0.1.2+SDL3-ttf-3.2.2"
+version = "0.1.3+SDL3-ttf-3.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "532a0c92efad5a0c32ca27ea6cd2ee9fab3f57015361e1f68310ee3b76f1100b"
+checksum = "5b1fb9599629d232ddc3a8cd3a884e28a9f98abed7e6cac597d9d5c3fddc74c1"
 dependencies = [
  "sdl3-sys",
 ]
