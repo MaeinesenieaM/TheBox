@@ -387,13 +387,31 @@ impl<T: PrimitiveNumber> Slider<T> {
             SliderType::SliderHorizontal => {
                 Point::new(
                     pos.x + (self.length as f32 * self.percentage()) as i32,
-                    pos.y()
+                    pos.y
                 )
             }
             SliderType::SliderVertical => {
                 Point::new(
-                    pos.x(),
-                    pos.y() + self.length as i32 - (self.length as f32 * self.percentage()) as i32
+                    pos.x,
+                    pos.y + self.length as i32 - (self.length as f32 * self.percentage()) as i32
+                )
+            }
+        }
+    }
+    
+    pub fn pivot_f(&self) -> FPoint {
+        let pos = self.start_pos();
+        match &self.slider_type {
+            SliderType::SliderHorizontal => {
+                FPoint::new(
+                    pos.x as f32 + (self.length as f32 * self.percentage()),
+                    pos.y as f32
+                )
+            }
+            SliderType::SliderVertical => {
+                FPoint::new(
+                    pos.x as f32,
+                    pos.y as f32 + self.length as f32 - (self.length as f32 * self.percentage())
                 )
             }
         }

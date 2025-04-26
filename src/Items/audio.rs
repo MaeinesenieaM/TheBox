@@ -4,7 +4,8 @@ use sdl3::keyboard::*;
 use sdl3::audio::*;
 
 use std::path::*;
-use thebox::{Display, Write, SdlContext, Draw, COLOR_GREEN, PrimitiveNumber};
+use sdl3::render::FPoint;
+use thebox::{Display, Write, SdlContext, Draw, PrimitiveNumber};
 use thebox::{Slider, SliderType};
 
 pub const NAME: &str = "Audio";
@@ -12,7 +13,7 @@ pub const ID: u8 = 6;
 
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
 
-    let mut volume_slider = Slider::new(-0.5f32, 0.5f32, 200, 300, 256, SliderType::SliderVertical);
+    //let mut volume_slider = Slider::new(-0.5f32, 0.5f32, 200, 300, 256, SliderType::SliderVertical);
 
     let audio_message: thebox::Label = thebox::Label::new(
         400, 
@@ -45,6 +46,15 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     queue.resume().unwrap();
     println!("{:?}", audio_data.format);
 
+    let mut sliders = create_sliders(
+        display,
+        -1f32,
+        1f32,
+        0f32,
+        128,
+        16
+    );
+    
     'repeat: loop {
         display.canvas.set_draw_color(thebox::DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
@@ -55,18 +65,75 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         println!("{:?}", queue.read_f32_samples(&mut buff).unwrap());
         println!("{:?}", buff);
 
-        volume_slider.set_value_limited(buff[0]);
+        let mut slider_buff: Vec<f32> = vec!(0f32; 8);
+        
+        sliders.last_mut().unwrap().set_value_limited(buff[0]);
+        
+        //volume_slider.set_value_limited(buff[0]);
 
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
         
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
 
-        volume_slider.draw_cl(display, COLOR_GREEN).unwrap();
-        let _ = audio_message.draw(display);
+        //volume_slider.draw_cl(display, COLOR_GREEN).unwrap();
+        
+        //for slider in sliders.iter() {
+        //    slider.draw_cl(display, thebox::COLOR_RED).unwrap()
+        //}
+        
+        let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();
+        display.canvas.set_draw_color(thebox::DEFAULT_COLOR);
+        display.canvas.draw_lines(sliders_points.as_slice()).unwrap();
+        
+        audio_message.draw(display).unwrap();
 
         display.canvas.present();
         display.sleep()
+    }
+}
+
+fn create_sliders<Type: PrimitiveNumber>(
+    display: &Display,
+    min: Type,
+    max: Type,
+    value: Type,
+    length: u32,
+    quantity: u32
+) -> Vec<Slider<Type>> {
+    let mut sliders: Vec<Slider<Type>> = Vec::with_capacity(quantity as usize);
+    
+    let offset = display.width() / (quantity * 2);
+    
+    let width_distance = (display.width()) / quantity;
+    let height = display.height_center();
+    
+    for index in 0..quantity {
+        let mut slider = Slider::new(
+            min,
+            max,
+            (offset + width_distance * index) as i32,
+            height as i32,
+            length,
+            SliderType::SliderVertical
+        );
+        slider.set_value_limited(value);
+        sliders.push(slider);
+    }
+    sliders
+}
+
+//fn push_sliders<Type: PrimitiveNumber>(sliders: &mut Vec<Slider<Type>>, value: Type) {
+    //for slider in sliders.iter_mut().rev().skip(1) {
+    //    slider
+    //}
+//    sliders.truncate()
+//    
+//}
+
+fn copy_buffer<Type: PrimitiveNumber>(sliders: &mut Vec<Slider<Type>>, buffer: &[Type]) {
+    for slider in sliders.iter_mut().enumerate() {
+        slider.1.set_value_limited(buffer[slider.0])
     }
 }
 
