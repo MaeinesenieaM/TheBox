@@ -11,10 +11,34 @@ use thebox::{Slider, SliderType};
 pub const NAME: &str = "Audio";
 pub const ID: u8 = 6;
 
+struct AudioBuffer {
+    format: AudioFormat,
+    buffer: Box<[u8]>,
+    last_heard: Vec<i16>,
+    index: usize
+}
+
+impl AudioCallback<i16> for AudioBuffer {
+    fn callback(&mut self, stream: &mut AudioStream, requested: i32) {
+        let requested_index = self.index + requested as usize * 2;
+        if requested_index >= self.buffer.len() {
+            return;
+        }
+        stream.put_data(
+            &self.buffer[self.index..requested_index]
+        ).unwrap();
+
+        let mut buffer: Vec<i16> = Vec::with_capacity(requested as usize);
+        for bytes in self.buffer[self.index..requested_index].chunks(2) {
+            buffer.push(i16::from_le_bytes([bytes[0], bytes[1]]));
+        }
+
+        self.last_heard = buffer;
+        self.index += requested as usize * 2;
+    }
+}
+
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
-
-    //let mut volume_slider = Slider::new(-0.5f32, 0.5f32, 200, 300, 256, SliderType::SliderVertical);
-
     let audio_message: thebox::Label = thebox::Label::new(
         400, 
         550,
@@ -34,54 +58,44 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         format: Some(audio_data.format),
     };
 
-    let audio_device = match sdl_context.audio_subsystem.open_playback_device(&desired_spec) {
+    let queue_device = match sdl_context.audio_subsystem.open_playback_device(&desired_spec) {
         Ok(audio_device) => audio_device,
         Err(damn) => panic!("{}", damn)
     };
 
-    let mut queue = audio_device.open_device_stream(Some(&desired_spec)).unwrap();
+    let audio_buffer = AudioBuffer {
+        format: audio_data.format,
+        buffer: Box::from(audio_data.buffer()),
+        last_heard: Vec::new(),
+        index: 0
+    };
+
+    let mut queue = queue_device.open_playback_stream_with_callback(&desired_spec, audio_buffer).unwrap();
 
     //THIS IS SO MUCH BETTER THAN SDL2!
-    queue.put_data(audio_data.buffer()).unwrap();
+    //queue.put_data(audio_data.buffer()).unwrap();
     queue.resume().unwrap();
-    println!("{:?}", audio_data.format);
+    let samples_ammount: u32 = 600;
 
     let mut sliders = create_sliders(
         display,
-        -1f32,
-        1f32,
-        0f32,
+        -512_i16,
+        512_i16,
+        0_i16,
         128,
-        16
+        samples_ammount
     );
-    
     'repeat: loop {
         display.canvas.set_draw_color(thebox::DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
-
-        let mut buff: Vec<f32> = vec!(0f32; 2);
-        //queue.read_f32_samples(&mut buff).unwrap();
-        //queue.read_to_end(&mut buff).unwrap();
-        println!("{:?}", queue.read_f32_samples(&mut buff).unwrap());
-        println!("{:?}", buff);
-
-        let mut slider_buff: Vec<f32> = vec!(0f32; 8);
-        
-        sliders.last_mut().unwrap().set_value_limited(buff[0]);
-        
-        //volume_slider.set_value_limited(buff[0]);
 
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
         
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
 
-        //volume_slider.draw_cl(display, COLOR_GREEN).unwrap();
-        
-        //for slider in sliders.iter() {
-        //    slider.draw_cl(display, thebox::COLOR_RED).unwrap()
-        //}
-        
+        copy_buffer(&mut sliders, &queue.lock().unwrap().last_heard);
+
         let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();
         display.canvas.set_draw_color(thebox::DEFAULT_COLOR);
         display.canvas.draw_lines(sliders_points.as_slice()).unwrap();
@@ -100,19 +114,17 @@ fn create_sliders<Type: PrimitiveNumber>(
     value: Type,
     length: u32,
     quantity: u32
-) -> Vec<Slider<Type>> {
+) -> Vec<Slider<Type>>
+{
     let mut sliders: Vec<Slider<Type>> = Vec::with_capacity(quantity as usize);
-    
-    let offset = display.width() / (quantity * 2);
-    
-    let width_distance = (display.width()) / quantity;
-    let height = display.height_center();
+    let width_distance = (display.width_f()) / (quantity - 1) as f32;
+    let height = display.height_center_f();
     
     for index in 0..quantity {
         let mut slider = Slider::new(
             min,
             max,
-            (offset + width_distance * index) as i32,
+            (width_distance * index as f32) as i32,
             height as i32,
             length,
             SliderType::SliderVertical
@@ -123,20 +135,9 @@ fn create_sliders<Type: PrimitiveNumber>(
     sliders
 }
 
-//fn push_sliders<Type: PrimitiveNumber>(sliders: &mut Vec<Slider<Type>>, value: Type) {
-    //for slider in sliders.iter_mut().rev().skip(1) {
-    //    slider
-    //}
-//    sliders.truncate()
-//    
-//}
-
 fn copy_buffer<Type: PrimitiveNumber>(sliders: &mut Vec<Slider<Type>>, buffer: &[Type]) {
+    if buffer.is_empty() { return; }
     for slider in sliders.iter_mut().enumerate() {
         slider.1.set_value_limited(buffer[slider.0])
     }
 }
-
-//fn to_volume(sample: &[f32]) -> f32 { 
-//    (sample[0] * sample[0]).sqrt() + (sample[1] * sample[1]).sqrt() / 2f32
-//}

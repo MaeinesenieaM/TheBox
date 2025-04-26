@@ -284,6 +284,26 @@ impl Display {
         let window = self.canvas.window();
         window.size().1 / 2
     }
+    
+    pub fn width_f(&self) -> f32 {
+        let window = self.canvas.window();
+        (window.size().0) as f32
+    }
+    
+    pub fn width_center_f(&self) -> f32 {
+        let window = self.canvas.window();
+        (window.size().0 / 2) as f32
+    }
+    
+    pub fn height_f(&self) -> f32 {
+        let window = self.canvas.window();
+        (window.size().1) as f32
+    }
+    
+    pub fn height_center_f(&self) -> f32 {
+        let window = self.canvas.window();
+        (window.size().1 / 2) as f32
+    }
 }
 
 impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
@@ -351,6 +371,10 @@ impl<T: PrimitiveNumber> Slider<T> {
         &self.value
     }
 
+    pub fn get_value_mut_ref(&mut self) -> &mut T {
+        &mut self.value
+    }
+    
     pub fn from_value(&self) -> T
     {
         T::from(self.value)
