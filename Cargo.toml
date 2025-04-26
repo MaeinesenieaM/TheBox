@@ -1,11 +1,11 @@
 [package]
 name = "thebox"
-version = "0.6.1"
+version = "0.6.2"
 edition = "2024"
 build = "build.rs"
 
 [dependencies]
 fastrand = "2.3.0"
 sdl3 = { version = "0", features = ["ttf"] }
-sdl3-sys = "0.4.7"
+sdl3-sys = "0"
 png = "0.17.16"
