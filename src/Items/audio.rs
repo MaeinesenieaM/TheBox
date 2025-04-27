@@ -1,4 +1,3 @@
-use std::io::Read;
 //use sdl2::pixels::Color;
 use sdl3::keyboard::*;
 use sdl3::audio::*;
@@ -13,7 +12,7 @@ pub const ID: u8 = 6;
 
 struct AudioBuffer {
     format: AudioFormat,
-    buffer: Box<[u8]>,
+    buffer: Vec<u8>,
     last_heard: Vec<i16>,
     index: usize
 }
@@ -24,12 +23,13 @@ impl AudioCallback<i16> for AudioBuffer {
         if requested_index >= self.buffer.len() {
             return;
         }
+        let requested_buffer = &self.buffer[self.index..requested_index];
         stream.put_data(
-            &self.buffer[self.index..requested_index]
+            &requested_buffer
         ).unwrap();
 
         let mut buffer: Vec<i16> = Vec::with_capacity(requested as usize);
-        for bytes in self.buffer[self.index..requested_index].chunks(2) {
+        for bytes in requested_buffer.chunks(2) {
             buffer.push(i16::from_le_bytes([bytes[0], bytes[1]]));
         }
 
@@ -65,7 +65,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
     let audio_buffer = AudioBuffer {
         format: audio_data.format,
-        buffer: Box::from(audio_data.buffer()),
+        buffer: Vec::from(audio_data.buffer()),
         last_heard: Vec::new(),
         index: 0
     };
@@ -89,12 +89,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         display.canvas.set_draw_color(thebox::DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
+        copy_buffer(&mut sliders, &queue.lock().unwrap().last_heard);
+        
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
         
         if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
         if sdl_context.check_quit() {break 'repeat}
-
-        copy_buffer(&mut sliders, &queue.lock().unwrap().last_heard);
 
         let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();
         display.canvas.set_draw_color(thebox::DEFAULT_COLOR);
@@ -105,6 +105,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         display.canvas.present();
         display.sleep()
     }
+    queue.pause().unwrap()
 }
 
 fn create_sliders<Type: PrimitiveNumber>(
