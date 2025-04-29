@@ -125,7 +125,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         display.canvas.clear();
 
         let mouse: MouseState = MouseState::new(&sdl_context.event_pump);
-        
+
         //Despite I'm having more knowledge of user inputs, I'm not going to refactor this code just
         //because I think its funny. trollface.jpg
         for event in sdl_context.event_pump.poll_iter() {
@@ -150,10 +150,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             }
         }
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
-        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
+        if keyboard.is_scancode_pressed(Scancode::Escape) {
+            let _ = sdl_context.send_quit();
+        }
 
-        if sdl_context.check_quit() {break 'repeat}
-        
+        if sdl_context.check_quit() {
+            break 'repeat;
+        }
+
         //Check input of mouse in the slider.
         //TODO! Make all this into a simpler function.
         if mouse.left() && slider_id == 0 {
@@ -224,7 +228,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             modifiers_label.set_pos(modifier.slider.x, modifier.slider.y - 22);
             modifiers_label.update_text(String::from(&modifier.name));
             let _ = modifiers_label.draw(display);
-            if modifier.slider.bar_rect().contains_point((mouse.x() as i32, mouse.y() as i32)) {
+            if modifier
+                .slider
+                .bar_rect()
+                .contains_point((mouse.x() as i32, mouse.y() as i32))
+            {
                 let _ = modifier.slider.draw_outline(display, COLOR_WHITE);
             }
             let _ = modifier.slider.draw_cl(display, Color::RGB(30, 110, 40));

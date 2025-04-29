@@ -26,35 +26,34 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         window_y_middle + 100,
         16,
         &write,
-        Some(String::from("ORBIT!"))
+        Some(String::from("ORBIT!")),
     );
-    
-    'repeat: loop {
 
+    'repeat: loop {
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
-        
-        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
-        if sdl_context.check_quit() {break 'repeat}
+
+        if keyboard.is_scancode_pressed(Scancode::Escape) {
+            let _ = sdl_context.send_quit();
+        }
+        if sdl_context.check_quit() {
+            break 'repeat;
+        }
 
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
-        
+
         let _ = orbit_message.draw_cl(display, Color::RGB(120, 120, blue));
-        
+
         display.canvas.set_draw_color(COLOR_WHITE);
 
-        let _ = display.draw_geometry(
-            (window_x_middle, window_y_middle),
-            24,
-            radius
-        );
+        let _ = display.draw_geometry((window_x_middle, window_y_middle), 24, radius);
 
         display.canvas.set_draw_color(circle_color);
 
         let _ = display.draw_geometry(
             angle_point((window_x_middle, window_y_middle), angle, radius),
             16,
-            16.0
+            16.0,
         );
 
         if blue == 255 || blue == 0 {

@@ -4,7 +4,7 @@ use sdl3::rect::*;
 
 use std::time;
 
-use thebox::{Display, Write, SdlContext};
+use thebox::{Display, SdlContext, Write};
 
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;
@@ -25,12 +25,16 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
         display.canvas.set_draw_color(thebox::COLOR_WHITE);
-        
+
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
-        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
-        if sdl_context.check_quit() {break 'repeat}
-        
+        if keyboard.is_scancode_pressed(Scancode::Escape) {
+            let _ = sdl_context.send_quit();
+        }
+        if sdl_context.check_quit() {
+            break 'repeat;
+        }
+
         clock.update_hands_real();
         let _ = clock.draw(display);
 
@@ -56,7 +60,7 @@ impl Clock {
             minute_hand_ang: 0.0,
             hour_hand_ang: 0.0,
             size,
-            local_time: time::SystemTime::now()
+            local_time: time::SystemTime::now(),
         }
     }
     //This might get an error, be sure to handle it well.

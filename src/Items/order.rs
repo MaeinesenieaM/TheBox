@@ -23,21 +23,27 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let points = grid_points(window.size(), 16);
 
     let message: Label = Label::new(
-            400,
-            550,
-            16,
-            &write,
-            Some(String::from("This section will have a vector visualizer and it will order it."))
+        400,
+        550,
+        16,
+        &write,
+        Some(String::from(
+            "This section will have a vector visualizer and it will order it.",
+        )),
     );
-    
+
     'repeat: loop {
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
-        
-        if keyboard.is_scancode_pressed(Scancode::Escape) {let _ = sdl_context.send_quit();}
-        if sdl_context.check_quit() {break 'repeat}
+
+        if keyboard.is_scancode_pressed(Scancode::Escape) {
+            let _ = sdl_context.send_quit();
+        }
+        if sdl_context.check_quit() {
+            break 'repeat;
+        }
 
         let mut count = 0;
 
@@ -50,7 +56,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             display.canvas.set_draw_color(Color::RGB(200, 200, 200));
             let _ = display.canvas.draw_point(*point);
         }
-        
+
         message.draw(display).unwrap();
 
         display.canvas.present();
@@ -70,10 +76,7 @@ fn grid_points(size: (u32, u32), difference: i32) -> Vec<Point> {
 
     for i in 0..amount_y {
         for j in 0..amount_x {
-            points.push(Point::new(
-                (width / amount_x) * j,
-                (height / amount_y) * i,
-            ));
+            points.push(Point::new((width / amount_x) * j, (height / amount_y) * i));
         }
     }
 

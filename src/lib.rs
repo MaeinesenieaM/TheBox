@@ -1,19 +1,19 @@
 use sdl3::pixels::Color;
-use sdl3::{ttf};
+use sdl3::ttf;
 
 use sdl3::Sdl;
-use sdl3::{EventPump, VideoSubsystem, AudioSubsystem, EventSubsystem};
+use sdl3::{AudioSubsystem, EventPump, EventSubsystem, VideoSubsystem};
 
+use sdl3::event::Event;
 use sdl3::rect::*;
 use sdl3::render::*;
 use sdl3::video::WindowContext;
-use sdl3::event::Event;
 
 use png;
 
-use std::path::*;
 use std::fs;
 use std::io;
+use std::path::*;
 
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
@@ -42,52 +42,100 @@ pub trait PrimitiveNumber: Copy + PartialOrd + std::fmt::Debug + std::ops::Div {
 }
 
 impl PrimitiveNumber for u8 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> u8 { value as u8 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> u8 {
+        value as u8
+    }
 }
 impl PrimitiveNumber for i8 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> i8 { value as i8 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> i8 {
+        value as i8
+    }
 }
 impl PrimitiveNumber for u16 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> u16 { value as u16 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> u16 {
+        value as u16
+    }
 }
 impl PrimitiveNumber for i16 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> i16 { value as i16 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> i16 {
+        value as i16
+    }
 }
 impl PrimitiveNumber for u32 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> u32 { value as u32 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> u32 {
+        value as u32
+    }
 }
 impl PrimitiveNumber for i32 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> i32 { value as i32 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> i32 {
+        value as i32
+    }
 }
 impl PrimitiveNumber for u64 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> u64 { value as u64 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> u64 {
+        value as u64
+    }
 }
 impl PrimitiveNumber for i64 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> i64 { value as i64 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> i64 {
+        value as i64
+    }
 }
 impl PrimitiveNumber for f32 {
-    fn as_f32(self) -> f32 { self }
-    fn from_f32(value: f32) -> f32 { value }
+    fn as_f32(self) -> f32 {
+        self
+    }
+    fn from_f32(value: f32) -> f32 {
+        value
+    }
 }
 impl PrimitiveNumber for f64 {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> f64 { value as f64 }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> f64 {
+        value as f64
+    }
 }
 impl PrimitiveNumber for usize {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> usize { value as usize }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> usize {
+        value as usize
+    }
 }
 impl PrimitiveNumber for isize {
-    fn as_f32(self) -> f32 { self as f32 }
-    fn from_f32(value: f32) -> isize { value as isize }
+    fn as_f32(self) -> f32 {
+        self as f32
+    }
+    fn from_f32(value: f32) -> isize {
+        value as isize
+    }
 }
 
 pub trait Draw {
@@ -102,14 +150,14 @@ pub struct SdlContext {
     pub event_pump: EventPump,
     pub event_subsystem: EventSubsystem,
     pub video_subsystem: VideoSubsystem,
-    pub audio_subsystem: AudioSubsystem
+    pub audio_subsystem: AudioSubsystem,
 }
 
-/// Display was initially where all the render magic happened, now it is being planned to be
+///Display was initially where all the render magic happened, now it is being planned to be
 ///transformed into a Trait for a more modular, and borrowing friendly system.
 pub struct Display {
     pub canvas: WindowCanvas,
-//    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
+    //    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
     pub fps_limit: f64,
 }
 
@@ -118,12 +166,12 @@ pub struct Display {
 pub struct Write<'ttf, 'r, 'render> {
     pub ttf: &'ttf ttf::Sdl3TtfContext,
     pub font: ttf::Font<'ttf, 'r>,
-    pub texture_creator: &'render TextureCreator<WindowContext>
+    pub texture_creator: &'render TextureCreator<WindowContext>,
 }
 
 pub enum SliderType {
     SliderHorizontal,
-    SliderVertical
+    SliderVertical,
 }
 
 ///The slider is a user input element, where the user moves a pivot to control the value.
@@ -140,11 +188,11 @@ pub struct Slider<T: PrimitiveNumber> {
 pub struct Button {
     pub state: bool,
     pub x: i32,
-    pub y: i32
+    pub y: i32,
 }
-///Labels are essentially dynamic text that changes with its string. 
+///Labels are essentially dynamic text that changes with its string.
 ///
-/// If for some reason you want to use multiple screens in one application, keep in mind to use the 
+/// If for some reason you want to use multiple screens in one application, keep in mind to use the
 ///same one in its context.
 ///
 /// Labels are also somewhat expensive since they create a texture every single frame. If you want
@@ -156,12 +204,11 @@ pub struct Label<'render, 'w, 'ttf, 'r> {
     write: &'w Write<'ttf, 'r, 'render>,
     pub size: u32,
     x: i32,
-    y: i32
+    y: i32,
 }
 
 impl SdlContext {
     pub fn init_context() -> SdlContext {
-
         let sdl = sdl3::init().unwrap();
 
         SdlContext {
@@ -174,12 +221,15 @@ impl SdlContext {
     }
 
     pub fn send_quit(&self) -> Result<(), sdl3::Error> {
-        self.event_subsystem.push_event(Event::Quit { timestamp: 0 })
+        self.event_subsystem
+            .push_event(Event::Quit { timestamp: 0 })
     }
-    
+
     ///Returns true if there is a Quit Event and false if not.
     pub fn check_quit(&mut self) -> bool {
-        self.event_pump.poll_iter().any(|quit| quit.is_same_kind_as(&Event::Quit { timestamp: 0 }))
+        self.event_pump
+            .poll_iter()
+            .any(|quit| quit.is_same_kind_as(&Event::Quit { timestamp: 0 }))
     }
 }
 
@@ -191,22 +241,22 @@ impl Display {
             .position_centered()
             .build()
             .unwrap();
-        
+
         let canvas = window.into_canvas();
         let fps_limit: f64 = 60.0;
         Display {
-//            texture_creator: canvas.texture_creator(),
-            canvas, 
+            //            texture_creator: canvas.texture_creator(),
+            canvas,
             fps_limit,
         }
     }
-    
+
     pub fn sleep(&self) {
         let sleep_time = std::time::Duration::from_secs_f64(1.0 / self.fps_limit);
         std::thread::sleep(sleep_time)
     }
 
-    pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), sdl3::Error> {        
+    pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), sdl3::Error> {
         let outline: Rect = Rect::new(
             rect.x() - 2,
             rect.y() - 2,
@@ -218,7 +268,12 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_geometry<P: Into<FPoint>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), sdl3::Error> {
+    pub fn draw_geometry<P: Into<FPoint>>(
+        &mut self,
+        pos: P,
+        vertices: u8,
+        size: f32,
+    ) -> Result<(), sdl3::Error> {
         let pos: FPoint = pos.into();
         let mut vert: Vec<FPoint> = geometry(pos, vertices, size);
 
@@ -228,7 +283,12 @@ impl Display {
         Ok(())
     }
 
-    pub fn draw_geometry_points<P: Into<FPoint>>(&mut self, pos: P, vertices: u8, size: f32) -> Result<(), sdl3::Error> {
+    pub fn draw_geometry_points<P: Into<FPoint>>(
+        &mut self,
+        pos: P,
+        vertices: u8,
+        size: f32,
+    ) -> Result<(), sdl3::Error> {
         let pos: FPoint = pos.into();
         let mut vert: Vec<FPoint> = geometry(pos, vertices, size);
 
@@ -242,7 +302,7 @@ impl Display {
         &mut self,
         pos: P,
         angle: f32,
-        distance: f32
+        distance: f32,
     ) -> Result<(), sdl3::Error> {
         let pos1: Point = pos.into();
         let pos2: Point = angle_point(pos1, angle, distance);
@@ -250,13 +310,13 @@ impl Display {
         self.canvas.draw_line(pos1, pos2)?;
         Ok(())
     }
-    
+
     ///Deprecated, sdl3 now enforces the use of FPoint in all circumstances.
     pub fn draw_angle_float<P: Into<FPoint>>(
         &mut self,
         pos: P,
         angle: f32,
-        distance: f32
+        distance: f32,
     ) -> Result<(), sdl3::Error> {
         let pos1: FPoint = pos.into();
         let pos2: FPoint = angle_fpoint(pos1, angle, distance);
@@ -264,70 +324,73 @@ impl Display {
         self.canvas.draw_line(pos1, pos2)?;
         Ok(())
     }
-        
+
     pub fn width(&self) -> u32 {
         let window = self.canvas.window();
         window.size().0
     }
-    
+
     pub fn width_center(&self) -> u32 {
         let window = self.canvas.window();
         window.size().0 / 2
     }
-    
+
     pub fn height(&self) -> u32 {
         let window = self.canvas.window();
         window.size().1
     }
-    
+
     pub fn height_center(&self) -> u32 {
         let window = self.canvas.window();
         window.size().1 / 2
     }
-    
+
     pub fn width_f(&self) -> f32 {
         let window = self.canvas.window();
-        (window.size().0) as f32
+        window.size().0 as f32
     }
-    
+
     pub fn width_center_f(&self) -> f32 {
         let window = self.canvas.window();
         (window.size().0 / 2) as f32
     }
-    
+
     pub fn height_f(&self) -> f32 {
         let window = self.canvas.window();
-        (window.size().1) as f32
+        window.size().1 as f32
     }
-    
+
     pub fn height_center_f(&self) -> f32 {
         let window = self.canvas.window();
         (window.size().1 / 2) as f32
     }
 }
 
-impl <'t, 'f, 'render> Write<'t, 'f, 'render> {
+impl<'t, 'f, 'render> Write<'t, 'f, 'render> {
     pub fn init_write(
         ttf: &'t ttf::Sdl3TtfContext,
         texture_creator: &'render TextureCreator<WindowContext>,
-        font: &str
+        font: &str,
     ) -> Write<'t, 'f, 'render> {
         let mut path = PathBuf::from(get_assets_path());
         path.push(font);
 
         let font = match ttf.load_font(path, 32.0) {
             Ok(font_src) => font_src,
-            Err(damn) => panic!("ERROR: {}", &damn)
+            Err(damn) => panic!("ERROR: {}", &damn),
         };
-        Write { ttf, font, texture_creator }
+        Write {
+            ttf,
+            font,
+            texture_creator,
+        }
     }
 
     pub fn create_text(
         &self,
         string: &str,
-        color: Color
-    ) -> Result<Texture<'render>, TextureValueError>
-    {
+        color: Color,
+    ) -> Result<Texture<'render>, TextureValueError> {
         self.font
             .render(string)
             .solid(color)
@@ -349,14 +412,17 @@ impl<T: PrimitiveNumber> Slider<T> {
         }
     }
 
-    pub fn set_value(&mut self, value: T) {
+    pub fn set_value(&mut self, value: T)
+    where
+        T: PrimitiveNumber,
+    {
         self.value = value;
     }
 
     ///Recommended for controlled values.
     pub fn set_value_limited(&mut self, value: T)
     where
-        T: PrimitiveNumber
+        T: PrimitiveNumber,
     {
         if value < self.min {
             self.value = self.min
@@ -374,74 +440,63 @@ impl<T: PrimitiveNumber> Slider<T> {
     pub fn get_value_mut_ref(&mut self) -> &mut T {
         &mut self.value
     }
-    
-    pub fn from_value(&self) -> T
-    {
+
+    pub fn from_value(&self) -> T {
         T::from(self.value)
     }
 
-    //Mutates the given value from the value of the slider.
+    ///Mutates the given value from the value of the slider.
     pub fn mut_from_slider<F: PrimitiveNumber>(&self, value: &mut F) {
         *value = PrimitiveNumber::from_f32(self.value.as_f32());
     }
 
-    pub fn get_type(&self) -> &SliderType { &self.slider_type }
+    pub fn get_type(&self) -> &SliderType {
+        &self.slider_type
+    }
 
-    //Returns how filled is the slider.
+    ///Returns how filled is the slider.
     pub fn percentage(&self) -> f32 {
         (self.value.as_f32() - self.min.as_f32()) / (self.max.as_f32() - self.min.as_f32())
     }
 
-    //Returns a position at the beginning of the slider.
+    ///Returns a position at the beginning of the slider.
     fn start_pos(&self) -> Point {
         match self.slider_type {
-            SliderType::SliderHorizontal => {
-                (self.x - self.length as i32 / 2, self.y).into()
-            },
-            SliderType::SliderVertical => {
-                (self.x, self.y - self.length as i32 / 2).into()
-            }
+            SliderType::SliderHorizontal => (self.x - self.length as i32 / 2, self.y).into(),
+            SliderType::SliderVertical => (self.x, self.y - self.length as i32 / 2).into(),
         }
     }
 
-    //Calculates and returns the position of the pivot.
+    ///Calculates and returns the position of the pivot.
     pub fn pivot(&self) -> Point {
         let pos = self.start_pos();
         match &self.slider_type {
-            SliderType::SliderHorizontal => {
-                Point::new(
-                    pos.x + (self.length as f32 * self.percentage()) as i32,
-                    pos.y
-                )
-            }
-            SliderType::SliderVertical => {
-                Point::new(
-                    pos.x,
-                    pos.y + self.length as i32 - (self.length as f32 * self.percentage()) as i32
-                )
-            }
-        }
-    }
-    
-    pub fn pivot_f(&self) -> FPoint {
-        let pos = self.start_pos();
-        match &self.slider_type {
-            SliderType::SliderHorizontal => {
-                FPoint::new(
-                    pos.x as f32 + (self.length as f32 * self.percentage()),
-                    pos.y as f32
-                )
-            }
-            SliderType::SliderVertical => {
-                FPoint::new(
-                    pos.x as f32,
-                    pos.y as f32 + self.length as f32 - (self.length as f32 * self.percentage())
-                )
-            }
+            SliderType::SliderHorizontal => Point::new(
+                pos.x + (self.length as f32 * self.percentage()) as i32,
+                pos.y,
+            ),
+            SliderType::SliderVertical => Point::new(
+                pos.x,
+                pos.y + self.length as i32 - (self.length as f32 * self.percentage()) as i32,
+            ),
         }
     }
 
-    //Returns the Rect of the pivot.
+    pub fn pivot_f(&self) -> FPoint {
+        let pos = self.start_pos();
+        match &self.slider_type {
+            SliderType::SliderHorizontal => FPoint::new(
+                pos.x as f32 + (self.length as f32 * self.percentage()),
+                pos.y as f32,
+            ),
+            SliderType::SliderVertical => FPoint::new(
+                pos.x as f32,
+                pos.y as f32 + self.length as f32 - (self.length as f32 * self.percentage()),
+            ),
+        }
+    }
+
+    ///Returns the Rect of the pivot.
     pub fn pivot_rect(&self) -> Rect {
         let pos = self.pivot();
         Rect::new(
@@ -452,7 +507,7 @@ impl<T: PrimitiveNumber> Slider<T> {
         )
     }
 
-    //Returns the Rect of the Bar.
+    ///Returns the Rect of the Bar.
     pub fn bar_rect(&self) -> Rect {
         let pos = self.start_pos();
         match self.slider_type {
@@ -471,25 +526,26 @@ impl<T: PrimitiveNumber> Slider<T> {
         }
     }
 
-    //This will be like this until I have the patience to add more SliderTypes o7
+    ///This will be like this until I have the patience to add more SliderTypes o7
     pub fn update_from_pos<P: Into<Point>>(&mut self, point: P) {
         let pos: Point = self.start_pos();
         let point: Point = point.into();
         let distance: i32;
         match self.slider_type {
             SliderType::SliderHorizontal => distance = point.x() - pos.x(),
-            SliderType::SliderVertical => distance =  (pos.y() + self.length as i32) - point.y(),
-        }                                           /*^^Extra orientation calculus^^.*/
+            SliderType::SliderVertical => distance = (pos.y() + self.length as i32) - point.y(),
+        } /*^^Extra orientation calculus^^.*/
         let value: T = PrimitiveNumber::from_f32(
             //This formula makes so negative minimal values are possible.
-            self.min.as_f32() + (distance as f32 / self.length as f32) * (self.max.as_f32() - self.min.as_f32())
+            self.min.as_f32()
+                + (distance as f32 / self.length as f32) * (self.max.as_f32() - self.min.as_f32()),
         );
         self.set_value_limited(value);
     }
 }
 
 impl<T: PrimitiveNumber> Draw for Slider<T> {
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error>{
+    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(SLIDER_BAR_DEFAULT_COLOR);
         display.canvas.fill_rect(self.bar_rect())?;
         display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -497,7 +553,7 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>{
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(self.bar_rect())?;
         display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -508,20 +564,20 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
     fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         let bar_rect: Rect = self.bar_rect();
         let pivot_rect: Rect = self.pivot_rect();
-        
+
         let bar_outline: FRect = FRect::new(
             bar_rect.x() as f32 - 2f32,
             bar_rect.y() as f32 - 2f32,
             bar_rect.width() as f32 + 4f32,
-            bar_rect.height() as f32 + 4f32
+            bar_rect.height() as f32 + 4f32,
         );
         let pivot_outline: FRect = FRect::new(
             pivot_rect.x() as f32 - 2f32,
             pivot_rect.y() as f32 - 2f32,
             pivot_rect.width() as f32 + 4f32,
-            pivot_rect.height() as f32 + 4f32
+            pivot_rect.height() as f32 + 4f32,
         );
-        
+
         display.canvas.set_draw_color(color);
         display.canvas.fill_rects(&[bar_outline, pivot_outline])?;
         display.canvas.set_draw_color(DEFAULT_COLOR);
@@ -534,9 +590,13 @@ impl Button {
         Button { state, x, y }
     }
 
-    pub fn set_state(&mut self, state: bool) { self.state = state; }
+    pub fn set_state(&mut self, state: bool) {
+        self.state = state;
+    }
 
-    pub fn get_state(&self) -> bool { self.state }
+    pub fn get_state(&self) -> bool {
+        self.state
+    }
 
     pub fn get_state_color(&self) -> Color {
         if self.state {
@@ -551,8 +611,10 @@ impl Button {
         self.x = point.x();
         self.y = point.y();
     }
-    
-    pub fn toggle(&mut self) { self.state = !self.state; }
+
+    pub fn toggle(&mut self) {
+        self.state = !self.state;
+    }
 
     pub fn rect(&self) -> Rect {
         Rect::new(
@@ -562,7 +624,7 @@ impl Button {
             BUTTON_RECT_SIZE,
         )
     }
-    
+
     pub fn state_rect(&self) -> Rect {
         Rect::new(
             self.x - BUTTON_RECT_STATE_SIZE as i32 / 2,
@@ -574,7 +636,7 @@ impl Button {
 }
 
 impl Draw for Button {
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error>{
+    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(BUTTON_DEFAULT_COLOR);
         display.canvas.fill_rect(self.rect())?;
         display.canvas.set_draw_color(self.get_state_color());
@@ -582,7 +644,7 @@ impl Draw for Button {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>{
+    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(self.rect())?;
         display.canvas.set_draw_color(self.get_state_color());
@@ -605,13 +667,13 @@ impl Draw for Button {
     }
 }
 
-impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
+impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
     pub fn new(
         x: i32,
         y: i32,
         size: u32,
         write: &'w Write<'ttf, 'r, 'render>,
-        string: Option<String>
+        string: Option<String>,
     ) -> Label<'render, 'w, 'ttf, 'r> {
         let string: String = string.unwrap_or_else(|| String::new());
         Label {
@@ -619,7 +681,7 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
             write,
             size,
             x,
-            y
+            y,
         }
     }
 
@@ -631,16 +693,18 @@ impl <'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
     pub fn change_write(&mut self, write: &'w Write<'ttf, 'r, 'render>) {
         self.write = write;
     }
-    //Takes ownership of the given String!
+    ///Takes ownership of the given String!
     pub fn update_text(&mut self, string: String) {
         self.string = string;
     }
-    fn update_texture(&self, color: Option<Color>) -> Result<Texture<'render>, TextureValueError> { 
-        self.write.create_text(&self.string, color.unwrap_or_else(|| DEFAULT_COLOR))
+    fn update_texture(&self, color: Option<Color>) -> Result<Texture<'render>, TextureValueError> {
+        self.write
+            .create_text(&self.string, color.unwrap_or_else(|| DEFAULT_COLOR))
     }
-    
+
     fn error_texture(&self) -> Texture {
-        self.write.font
+        self.write
+            .font
             .render("!ERROR!")
             .solid(COLOR_RED)
             .unwrap()
@@ -655,7 +719,7 @@ impl Draw for Label<'_, '_, '_, '_> {
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32,
             self.string.len() as u32 * self.size,
-            self.size * 2
+            self.size * 2,
         );
         let texture = self.update_texture(None).unwrap_or_else(|err| {
             println!("Failed to create text Texture: {:?}", err);
@@ -668,7 +732,7 @@ impl Draw for Label<'_, '_, '_, '_> {
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y,
             self.string.len() as u32 * self.size,
-            self.size * 2
+            self.size * 2,
         );
         let texture = self.update_texture(Some(color)).unwrap_or_else(|err| {
             println!("Failed to create text Texture: {:?}", err);
@@ -682,7 +746,7 @@ impl Draw for Label<'_, '_, '_, '_> {
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32 - 2,
             self.string.len() as u32 * self.size + 2,
-            self.size * 2 + 2
+            self.size * 2 + 2,
         );
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(area)?;
@@ -697,11 +761,7 @@ pub fn percentage_from_int(value: &i32, max: &i32) -> u8 {
         return 0;
     }
     let over = *value * 100 / *max; //The over value is used to check if is bigger than 100;
-    if over <= 100 {
-        over as u8
-    } else {
-        100
-    }
+    if over <= 100 { over as u8 } else { 100 }
 }
 
 ///Takes a percentage from 0 to 100 and return the possible value.
@@ -717,18 +777,22 @@ pub fn get_assets_path() -> String {
     match path.try_exists() {
         Ok(true) => {
             //This might break in some occasions, probably will fix when I properly learn OsString.
-            return path.into_os_string().into_string().expect("Could not transform OsString into String!");
-        },
+            return path
+                .into_os_string()
+                .into_string()
+                .expect("Could not transform OsString into String!");
+        }
         Ok(false) => path.pop(),
-        Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!")
+        Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!"),
     };
     path.push("src/main_assets");
     match path.try_exists() {
-        Ok(true) => {
-            path.into_os_string().into_string().expect("Could not transform OsString into String!")
-        },
+        Ok(true) => path
+            .into_os_string()
+            .into_string()
+            .expect("Could not transform OsString into String!"),
         Ok(false) => panic!("THE FOLDER [main_assets] DOES NOT EXIST!"),
-        Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!")
+        Err(_) => panic!("COULD NOT VERIFY PATH! POSSIBLY A PERMISSION PROBLEM!"),
     }
 }
 
@@ -738,38 +802,38 @@ pub fn get_asset_file(file: &str) -> Result<fs::File, io::Error> {
 }
 
 ///Return a point based mainly on angle and the distance given.
-pub fn angle_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
+pub fn angle_point<P: Into<Point>>(point: P, angle: f32, distance: f32) -> Point {
     let point: Point = point.into();
     Point::new(
         point.x() + (distance * angle.to_radians().sin()) as i32,
-        point.y() + (distance * angle.to_radians().cos()) as i32 * -1 //makes sure it stays on raster format.
+        point.y() + (distance * angle.to_radians().cos()) as i32 * -1, //makes sure it stays on raster format.
     )
 }
 
 ///Same as angle_point(), but with radians instead.
-pub fn angler_point<P: Into<Point>> (point: P, angle: f32, distance: f32) -> Point  {
+pub fn angler_point<P: Into<Point>>(point: P, angle: f32, distance: f32) -> Point {
     let point: Point = point.into();
     Point::new(
         point.x + (distance * angle.sin()) as i32,
-        point.y + (distance * angle.cos()) as i32 * -1 //makes sure it stays on raster format.
+        point.y + (distance * angle.cos()) as i32 * -1, //makes sure it stays on raster format.
     )
 }
 
 ///Same as angle_point(), but for a FPoint.
-pub fn angle_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
+pub fn angle_fpoint<P: Into<FPoint>>(point: P, angle: f32, distance: f32) -> FPoint {
     let point: FPoint = point.into();
     FPoint::new(
         point.x + (distance * angle.to_radians().sin()),
-        point.y + (distance * angle.to_radians().cos()) * -1.0 //makes sure it stays on raster format.
+        point.y + (distance * angle.to_radians().cos()) * -1.0, //makes sure it stays on raster format.
     )
 }
 
 ///Same as angle_fpoint(), but with radians instead.
-pub fn angler_fpoint<P: Into<FPoint>> (point: P, angle: f32, distance: f32) -> FPoint  {
+pub fn angler_fpoint<P: Into<FPoint>>(point: P, angle: f32, distance: f32) -> FPoint {
     let point: FPoint = point.into();
     FPoint::new(
         point.x + (distance * angle.sin()),
-        point.y + (distance * angle.cos()) * -1.0 //makes sure it stays on raster format.
+        point.y + (distance * angle.cos()) * -1.0, //makes sure it stays on raster format.
     )
 }
 
@@ -794,12 +858,12 @@ pub fn angler_difference_sin(angle: f32, counter_angle: f32) -> f32 {
 }
 
 ///Creates points for a basic geometry based on the vertices. For example, 3 vertices would give a triangle.
-pub fn geometry<P: Into<FPoint>> (pos: P, vertices: u8, size: f32) -> Vec<FPoint> {
+pub fn geometry<P: Into<FPoint>>(pos: P, vertices: u8, size: f32) -> Vec<FPoint> {
     let pos: FPoint = pos.into();
     let mut edges: Vec<FPoint> = Vec::new();
     let angle_difference: f32 = (360.0 / vertices as f32).to_radians();
-    
-    for i in 0..vertices { 
+
+    for i in 0..vertices {
         edges.push(angler_fpoint(pos, angle_difference * i as f32, size));
     }
     edges
@@ -810,81 +874,71 @@ pub fn geometry<P: Into<FPoint>> (pos: P, vertices: u8, size: f32) -> Vec<FPoint
 /// Note: DO NOT ignore the error that comes from it.
 pub fn texture_from_file<Render>(
     file: fs::File,
-    texture_creator: &TextureCreator<Render>
-) -> Result<Texture, String>
-{
+    texture_creator: &TextureCreator<Render>,
+) -> Result<Texture, String> {
     let mut reader = png_reader(file)?;
 
-    let mut buffer = vec!(0; reader.output_buffer_size());
+    let mut buffer = vec![0; reader.output_buffer_size()];
     let info = reader.next_frame(&mut buffer).unwrap();
     let pixel_format = translate_color_format(info.color_type);
 
-    let mut image = texture_creator.create_texture_static(
-        pixel_format,
-        info.width,
-        info.height
-    ).unwrap();
+    let mut image = texture_creator
+        .create_texture_static(pixel_format, info.width, info.height)
+        .unwrap();
     let pitch: usize = pixel_format.byte_size_per_pixel() * info.width as usize;
     match info.color_type {
         png::ColorType::Rgba => image.set_blend_mode(BlendMode::Blend),
         png::ColorType::Grayscale => {
             convert_from_greyscale(&mut buffer);
             image.set_blend_mode(BlendMode::Blend);
-        },
+        }
         png::ColorType::GrayscaleAlpha => {
             convert_from_greyscale_alpha(&mut buffer);
             image.set_blend_mode(BlendMode::Blend);
-        },
+        }
         _ => {}
     }
 
-    image.update(
-        None,
-        &buffer,
-        pitch
-    ).map_err(|err|
-        match err {
-            UpdateTextureError::PitchOverflows(overflow) => 
-                format!("Pitch has overflowed!: {overflow}"),
-            UpdateTextureError::PitchMustBeMultipleOfTwoForFormat(num, format) =>
-                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
-                        num,
-                        format
-                ),
-            UpdateTextureError::XMustBeMultipleOfTwoForFormat(num, format) =>
-                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
-                        num,
-                        format
-                ),
-            UpdateTextureError::YMustBeMultipleOfTwoForFormat(num, format) =>
-                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
-                        num,
-                        format
-                ),
-            UpdateTextureError::WidthMustBeMultipleOfTwoForFormat(num, format) =>
-                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
-                        num,
-                        format
-                ),
-            UpdateTextureError::HeightMustBeMultipleOfTwoForFormat(num, format) =>
-                format!("Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
-                        num,
-                        format
-                ),
+    image
+        .update(None, &buffer, pitch)
+        .map_err(|err| match err {
+            UpdateTextureError::PitchOverflows(overflow) => {
+                format!("Pitch has overflowed!: {overflow}")
+            }
+            UpdateTextureError::PitchMustBeMultipleOfTwoForFormat(num, format) => format!(
+                "Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                num, format
+            ),
+            UpdateTextureError::XMustBeMultipleOfTwoForFormat(num, format) => format!(
+                "Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                num, format
+            ),
+            UpdateTextureError::YMustBeMultipleOfTwoForFormat(num, format) => format!(
+                "Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                num, format
+            ),
+            UpdateTextureError::WidthMustBeMultipleOfTwoForFormat(num, format) => format!(
+                "Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                num, format
+            ),
+            UpdateTextureError::HeightMustBeMultipleOfTwoForFormat(num, format) => format!(
+                "Pitch must be multiple of two for format! pitch: {:?} format: {:?}",
+                num, format
+            ),
             UpdateTextureError::SdlError(err) => err.to_string(),
-        },
-    ).map(|()| image)
+        })
+        .map(|()| image)
 }
 
 fn png_reader<R: io::Read>(file: R) -> Result<png::Reader<R>, String> {
-    png::Decoder::new(file).read_info().map_err(|err|
-        match err {
+    png::Decoder::new(file)
+        .read_info()
+        .map_err(|err| match err {
             png::DecodingError::IoError(error) => error.to_string(),
             png::DecodingError::Format(_) => String::from("The PNG format is invalid!"),
             png::DecodingError::Parameter(error) => error.to_string(),
             png::DecodingError::LimitsExceeded => String::from("LIMITS EXCEEDED!"),
-        }
-    )
+        })
 }
 
 fn translate_color_format(color_type: png::ColorType) -> sdl3::pixels::PixelFormat {
@@ -892,11 +946,11 @@ fn translate_color_format(color_type: png::ColorType) -> sdl3::pixels::PixelForm
     use sdl3_sys::pixels::SDL_PixelFormat;
 
     match color_type {
-            png::ColorType::Grayscale => PixelFormat::from(SDL_PixelFormat::RGB24.0 as i64),
-            png::ColorType::GrayscaleAlpha => PixelFormat::from(SDL_PixelFormat::RGBA32.0 as i64),
-            png::ColorType::Indexed => PixelFormat::from(SDL_PixelFormat::INDEX8.0 as i64),
-            png::ColorType::Rgb => PixelFormat::from(SDL_PixelFormat::RGB24.0 as i64),
-            png::ColorType::Rgba => PixelFormat::from(SDL_PixelFormat::RGBA32.0 as i64)
+        png::ColorType::Grayscale => PixelFormat::from(SDL_PixelFormat::RGB24.0 as i64),
+        png::ColorType::GrayscaleAlpha => PixelFormat::from(SDL_PixelFormat::RGBA32.0 as i64),
+        png::ColorType::Indexed => PixelFormat::from(SDL_PixelFormat::INDEX8.0 as i64),
+        png::ColorType::Rgb => PixelFormat::from(SDL_PixelFormat::RGB24.0 as i64),
+        png::ColorType::Rgba => PixelFormat::from(SDL_PixelFormat::RGBA32.0 as i64),
     }
 }
 
