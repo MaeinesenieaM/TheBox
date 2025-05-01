@@ -229,7 +229,13 @@ impl SdlContext {
     pub fn check_quit(&mut self) -> bool {
         self.event_pump
             .poll_iter()
-            .any(|quit| quit.is_same_kind_as(&Event::Quit { timestamp: 0 }))
+            .any(|quit| matches!(quit, Event::Quit { .. }))
+    }
+
+    pub fn check_file_drop(&mut self) -> bool {
+        self.event_pump
+            .poll_iter()
+            .any(|quit| matches!(quit, Event::DropFile { .. }) )
     }
 }
 

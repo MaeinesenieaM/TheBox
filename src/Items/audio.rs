@@ -68,16 +68,16 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
 
     //THIS IS SO MUCH BETTER THAN SDL2!
     //queue.put_data(audio_data.buffer()).unwrap();
-    
+
     queue.resume().unwrap();
     let samples_ammount: u32 = 800;
     let limit: i16 = 32000;
     let mut sliders = create_sliders(
-        display, 
-        -limit, 
-        limit, 
-        0, 
-        display.height(), 
+        display,
+        -limit,
+        limit,
+        0,
+        display.height(),
         samples_ammount,
     );
     'repeat: loop {
