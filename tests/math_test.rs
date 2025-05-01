@@ -1,13 +1,8 @@
 use sdl3::rect::Point;
 use sdl3::render::FPoint;
 use thebox::{
-    angle_difference_cos,
-    angle_difference_sin,
-    angle_fpoint,
-    angle_point,
-    angler_difference_cos,
-    angler_difference_sin,
-    geometry,
+    angle_difference_cos, angle_difference_sin, angle_fpoint, angle_point, angler_difference_cos,
+    angler_difference_sin, geometry,
 };
 
 #[test]
@@ -31,7 +26,10 @@ fn check_geometry() {
     let points: Vec<FPoint> = geometry((0_f32, 0_f32), 2, 1_f32); //DAMN YOU FLOAT PRECISION!
     assert_eq!(
         points,
-        vec!(FPoint::new(0_f32, -1_f32), FPoint::new(-0.00000008742278_f32, 1_f32))
+        vec!(
+            FPoint::new(0_f32, -1_f32),
+            FPoint::new(-0.00000008742278_f32, 1_f32)
+        )
     );
 }
 

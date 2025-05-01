@@ -235,7 +235,7 @@ impl SdlContext {
     pub fn check_file_drop(&mut self) -> bool {
         self.event_pump
             .poll_iter()
-            .any(|quit| matches!(quit, Event::DropFile { .. }) )
+            .any(|quit| matches!(quit, Event::DropFile { .. }))
     }
 }
 
