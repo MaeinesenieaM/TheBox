@@ -1,8 +1,9 @@
 use sdl3::audio::*;
-use sdl3::keyboard::*;
 
 use sdl3::render::FPoint;
 use std::path::*;
+use std::thread::current;
+use sdl3::event::Event;
 use thebox::{Display, SdlContext, Write, PrimitiveNumber};
 use thebox::{Slider, SliderType};
 
@@ -65,10 +66,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
     let mut queue = queue_device
         .open_playback_stream_with_callback(&desired_spec, audio_buffer)
         .unwrap();
-
-    //THIS IS SO MUCH BETTER THAN SDL2!
-    //queue.put_data(audio_data.buffer()).unwrap();
-
+    
     queue.resume().unwrap();
     let samples_ammount: u32 = 800;
     let limit: i16 = 32000;
@@ -78,14 +76,36 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         display.canvas.clear();
 
         copy_buffer(&mut sliders, &queue.lock().unwrap().last_heard);
-
-        let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
-
-        if keyboard.is_scancode_pressed(Scancode::Escape) {
-            let _ = sdl_context.send_quit();
+        
+        
+        for event in sdl_context.event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. } => {
+                    break 'repeat;
+                },
+                Event::DropFile { filename, .. } => {
+                    println!("{:?}", filename);
+                    let audio = AudioSpecWAV::load_wav(filename).unwrap();
+                    let mut current_audio = queue.lock().unwrap();
+                    current_audio.buffer = Vec::from(audio.buffer());
+                    current_audio.index = 0;
+                }
+                _ => {}
+            }
         }
-        if sdl_context.check_quit() {
-            break 'repeat;
+
+        for code in sdl_context.event_pump.keyboard_state().scancodes() {
+            use sdl3::keyboard::Scancode::*;
+            if code.1 {
+                match code.0 {
+                    Escape => sdl_context.send_quit().unwrap(),
+                    _ => {}
+                }
+            } else {
+                //match code.0 {
+                //    _ => {}
+                //}
+            }
         }
 
         let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();

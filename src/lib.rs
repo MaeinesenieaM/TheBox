@@ -226,12 +226,17 @@ impl SdlContext {
     }
 
     ///Returns true if there is a Quit Event and false if not.
+    /// (WARNING this consumes the entire EventPoll.
+    /// This is probably going to be DEPRECATED in the near future!)
     pub fn check_quit(&mut self) -> bool {
         self.event_pump
             .poll_iter()
             .any(|quit| matches!(quit, Event::Quit { .. }))
     }
 
+    ///Returns true if there is a DropFile Event and false if not.
+    /// (WARNING this consumes the entire EventPoll.
+    /// This is probably going to be DEPRECATED in the near future!)
     pub fn check_file_drop(&mut self) -> bool {
         self.event_pump
             .poll_iter()
