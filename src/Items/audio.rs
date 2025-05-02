@@ -2,7 +2,6 @@ use sdl3::audio::*;
 
 use sdl3::render::FPoint;
 use std::path::*;
-use std::thread::current;
 use sdl3::event::Event;
 use thebox::{Display, SdlContext, Write, PrimitiveNumber};
 use thebox::{Slider, SliderType};
@@ -25,12 +24,15 @@ impl AudioCallback<i16> for AudioBuffer {
         }
         let requested_buffer = &self.buffer[self.index..requested_index];
         stream.put_data(&requested_buffer).unwrap();
-
+        
         let mut buffer: Vec<i16> = Vec::with_capacity(requested as usize);
         for bytes in requested_buffer.chunks(2) {
-            buffer.push(i16::from_le_bytes([bytes[0], bytes[1]]));
+            match self.format {
+                AudioFormat::S16LE => buffer.push(i16::from_le_bytes([bytes[0], bytes[1]])),
+                AudioFormat::S16BE => buffer.push(i16::from_be_bytes([bytes[0], bytes[1]])),
+                _ => panic!("UNSUPPORTED FORMAT! (THE DEV WAS TO LAZY TO IMPLEMENT THE OTHERS!)")
+            }
         }
-
         self.last_heard = buffer;
         self.index += requested as usize * 2;
     }
@@ -68,9 +70,9 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         .unwrap();
     
     queue.resume().unwrap();
-    let samples_ammount: u32 = 800;
+    let samples_amount: u32 = 800;
     let limit: i16 = 32000;
-    let mut sliders = create_sliders(display, -limit, limit, 0, display.height(), samples_ammount);
+    let mut sliders = create_sliders(display, -limit, limit, 0, display.height(), samples_amount);
     'repeat: loop {
         display.canvas.set_draw_color(thebox::DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
