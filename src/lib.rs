@@ -159,9 +159,11 @@ pub trait CartesianTranslate {
 
 impl<'render> CPoint<'render> {
     pub fn from_point<P: Into<FPoint>>(point: P, display: &Display) -> CPoint {
+        let width_middle = display.width_center_f();
+        let height_middle = display.height_center_f();
         let point: FPoint = point.into();
-        let x = point.x / display.width_f();
-        let y = -point.y / display.height_f();
+        let x = (point.x - width_middle) / width_middle;
+        let y = (-point.y - height_middle) / height_middle;
         CPoint {
             x,
             y,
@@ -639,9 +641,11 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
 
 impl<T: PrimitiveNumber> CartesianTranslate for Slider<T> {
     fn get_cartesian<'render>(&self, display: &'render Display) -> CPoint<'render> {
+        let width_middle: f32 = display.width_center_f();
+        let height_middle: f32 = display.height_center_f();
         CPoint {
-            x: self.x as f32 / display.width_f(),
-            y: -self.y as f32 / display.height_f(),
+            x: (self.x as f32 - width_middle) / width_middle,
+            y: (height_middle - self.y as f32) / height_middle,
             display
         }
     }
