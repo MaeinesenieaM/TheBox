@@ -145,6 +145,47 @@ pub trait Draw {
     fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>;
 }
 
+///CPoint is a cartesian point in relation to the window; ranging from -1 and 1.
+pub struct CPoint<'render> {
+    pub x: f32,
+    pub y: f32,
+    pub display: &'render Display,
+}
+
+pub trait CartesianTranslate {
+    fn get_cartesian<'render>(&self, display: &'render Display) -> CPoint<'render>;
+    fn def_cartesian(&mut self, point: &CPoint);
+}
+
+impl<'render> CPoint<'render> {
+    pub fn from_point<P: Into<FPoint>>(point: P, display: &Display) -> CPoint {
+        let point: FPoint = point.into();
+        let x = point.x / display.width_f();
+        let y = -point.y / display.height_f();
+        CPoint {
+            x,
+            y,
+            display
+        }
+    }
+    
+    pub fn get_raster(&self) -> FPoint {
+        FPoint {
+            x: self.x * self.display.width_f(),
+            y: -self.y * self.display.height_f(),
+        }
+    }
+}
+
+impl<'render> Into<FPoint> for CPoint<'render> {
+    fn into(self) -> FPoint {
+        FPoint {
+            x: self.x * self.display.width_f(),
+            y: -self.y * self.display.height_f(),
+        }
+    }
+}
+
 pub struct SdlContext {
     pub sdl: Sdl,
     pub event_pump: EventPump,
@@ -593,6 +634,22 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         display.canvas.fill_rects(&[bar_outline, pivot_outline])?;
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
+    }
+}
+
+impl<T: PrimitiveNumber> CartesianTranslate for Slider<T> {
+    fn get_cartesian<'render>(&self, display: &'render Display) -> CPoint<'render> {
+        CPoint {
+            x: self.x as f32 / display.width_f(),
+            y: -self.y as f32 / display.height_f(),
+            display
+        }
+    }
+
+    fn def_cartesian(&mut self, point: &CPoint) {
+        let point: FPoint = point.get_raster();
+        self.x = point.x as i32;
+        self.y = point.y as i32;
     }
 }
 

@@ -119,11 +119,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         }
 
         if slider_id != 0 {
-            sliders
-                .iter_mut()
+            let slider = sliders.iter_mut()
                 .nth(slider_id - 1)
-                .expect("Something went wrong on reading the Slider Iter.")
-                .update_from_pos((mouse.x() as i32, mouse.y() as i32));
+                .expect("Something went wrong on reading the Slider Iter.");
+            slider.update_from_pos((mouse.x() as i32, mouse.y() as i32));
+            
+            println!("[{}, {}]", slider.get_cartesian(display).x, slider.get_cartesian(display).y);
         }
 
         //This draws the sliders.

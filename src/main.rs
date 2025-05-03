@@ -31,7 +31,7 @@ fn main() {
     let mut fps_label = Label::new(400, 0, 8, &write, None);
     let mut count_label = Label::new(400, 300, 16, &write, Some(count.to_string()));
     let mut item_label = Label::new(400, 332, 16, &write, None);
-
+    
     'running: loop {
         for event in sdl_context.event_pump.poll_iter() {
             match event {
