@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use sdl3::audio::*;
 
 use sdl3::render::FPoint;
@@ -11,18 +12,39 @@ pub const ID: u8 = 6;
 
 struct AudioBuffer {
     format: AudioFormat,
-    buffer: Vec<u8>,
+    audio_buffer: Vec<u8>,
     last_heard: Vec<i16>,
     index: usize,
+}
+
+impl AudioBuffer {
+    pub fn new(audio_path: &PathBuf) -> AudioBuffer {
+        let audio = AudioSpecWAV::load_wav(audio_path).unwrap();
+        AudioBuffer {
+            format: audio.format,
+            audio_buffer: audio.buffer().to_owned(),
+            last_heard: Vec::new(),
+            index: 0,
+        }
+    }
+    
+    pub fn from_wav_spec(audio_wav: AudioSpecWAV) -> AudioBuffer {
+        AudioBuffer {
+            format: audio_wav.format,
+            audio_buffer: audio_wav.buffer().to_owned(),
+            last_heard: Vec::new(),
+            index: 0,
+        }
+    }
 }
 
 impl AudioCallback<i16> for AudioBuffer {
     fn callback(&mut self, stream: &mut AudioStream, requested: i32) {
         let requested_index = self.index + requested as usize * 2;
-        if requested_index >= self.buffer.len() {
+        if requested_index >= self.audio_buffer.len() {
             return;
         }
-        let requested_buffer = &self.buffer[self.index..requested_index];
+        let requested_buffer: &[u8] = &self.audio_buffer[self.index..requested_index];
         stream.put_data(&requested_buffer).unwrap();
         
         let mut buffer: Vec<i16> = Vec::with_capacity(requested as usize);
@@ -42,7 +64,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
     let mut audio_path: PathBuf = PathBuf::from(thebox::get_assets_path());
     audio_path.push("audio_demo.wav");
 
-    let audio_data = AudioSpecWAV::load_wav(audio_path).unwrap();
+    let audio_data = AudioSpecWAV::load_wav(&audio_path).unwrap();
 
     let desired_spec = AudioSpec {
         freq: Some(audio_data.freq),
@@ -50,24 +72,17 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         format: Some(audio_data.format),
     };
 
-    let queue_device = match sdl_context
+    let queue_device: AudioDevice = match sdl_context
         .audio_subsystem
         .open_playback_device(&desired_spec)
     {
         Ok(audio_device) => audio_device,
         Err(damn) => panic!("{}", damn),
     };
-
-    let audio_buffer = AudioBuffer {
-        format: audio_data.format,
-        buffer: Vec::from(audio_data.buffer()),
-        last_heard: Vec::new(),
-        index: 0,
-    };
-
-    let mut queue = queue_device
-        .open_playback_stream_with_callback(&desired_spec, audio_buffer)
-        .unwrap();
+    
+    queue_device.resume();
+    
+    let mut queue = initialize_audio_stream_callback(&queue_device, &audio_path);
     
     queue.resume().unwrap();
     let samples_amount: u32 = 800;
@@ -89,7 +104,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
                     println!("{:?}", filename);
                     let audio = AudioSpecWAV::load_wav(filename).unwrap();
                     let mut current_audio = queue.lock().unwrap();
-                    current_audio.buffer = Vec::from(audio.buffer());
+                    current_audio.audio_buffer = audio.buffer().to_owned();
                     current_audio.index = 0;
                 }
                 _ => {}
@@ -117,6 +132,20 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         display.sleep()
     }
     queue.pause().unwrap()
+}
+
+fn initialize_audio_stream_callback(device: &AudioDevice, audio_path: &PathBuf) 
+    -> AudioStreamWithCallback<AudioBuffer> {
+    let audio_data = AudioSpecWAV::load_wav(&audio_path).unwrap();
+    let desired_spec = AudioSpec {
+        freq: Some(audio_data.freq),
+        channels: Some(audio_data.channels as i32),
+        format: Some(audio_data.format),
+    };
+    device.open_playback_stream_with_callback(
+        &desired_spec, 
+        AudioBuffer::from_wav_spec(audio_data)
+    ).unwrap()
 }
 
 fn create_sliders<Type: PrimitiveNumber>(
