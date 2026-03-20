@@ -9,3 +9,4 @@ fastrand = "2.3.0"
 sdl3 = { version = "0", features = ["ttf"] }
 sdl3-sys = "0"
 png = "0.17.16"
+mlua = { version = "0.11", features = ["lua55", "vendored"] }

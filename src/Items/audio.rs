@@ -1,10 +1,9 @@
-use std::ops::Deref;
 use sdl3::audio::*;
 
+use sdl3::event::Event;
 use sdl3::render::FPoint;
 use std::path::*;
-use sdl3::event::Event;
-use thebox::{Display, SdlContext, Write, PrimitiveNumber};
+use thebox::{Display, PrimitiveNumber, SdlContext, Write};
 use thebox::{Slider, SliderType};
 
 pub const NAME: &str = "Audio";
@@ -18,16 +17,16 @@ struct AudioBuffer {
 }
 
 impl AudioBuffer {
-    pub fn new(audio_path: &PathBuf) -> AudioBuffer {
-        let audio = AudioSpecWAV::load_wav(audio_path).unwrap();
-        AudioBuffer {
-            format: audio.format,
-            audio_buffer: audio.buffer().to_owned(),
-            last_heard: Vec::new(),
-            index: 0,
-        }
-    }
-    
+    //pub fn new(audio_path: &PathBuf) -> AudioBuffer {
+    //    let audio = AudioSpecWAV::load_wav(audio_path).unwrap();
+    //    AudioBuffer {
+    //        format: audio.format,
+    //        audio_buffer: audio.buffer().to_owned(),
+    //        last_heard: Vec::new(),
+    //        index: 0,
+    //    }
+    //}
+
     pub fn from_wav_spec(audio_wav: AudioSpecWAV) -> AudioBuffer {
         AudioBuffer {
             format: audio_wav.format,
@@ -46,13 +45,13 @@ impl AudioCallback<i16> for AudioBuffer {
         }
         let requested_buffer: &[u8] = &self.audio_buffer[self.index..requested_index];
         stream.put_data(&requested_buffer).unwrap();
-        
+
         let mut buffer: Vec<i16> = Vec::with_capacity(requested as usize);
         for bytes in requested_buffer.chunks(2) {
             match self.format {
                 AudioFormat::S16LE => buffer.push(i16::from_le_bytes([bytes[0], bytes[1]])),
                 AudioFormat::S16BE => buffer.push(i16::from_be_bytes([bytes[0], bytes[1]])),
-                _ => panic!("UNSUPPORTED FORMAT! (THE DEV WAS TO LAZY TO IMPLEMENT THE OTHERS!)")
+                _ => panic!("UNSUPPORTED FORMAT! (THE DEV WAS TO LAZY TO IMPLEMENT THE OTHERS!)"),
             }
         }
         self.last_heard = buffer;
@@ -79,11 +78,11 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         Ok(audio_device) => audio_device,
         Err(damn) => panic!("{}", damn),
     };
-    
+
     queue_device.resume();
-    
+
     let mut queue = initialize_audio_stream_callback(&queue_device, &audio_path);
-    
+
     queue.resume().unwrap();
     let samples_amount: u32 = 800;
     let limit: i16 = 32000;
@@ -93,13 +92,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         display.canvas.clear();
 
         copy_buffer(&mut sliders, &queue.lock().unwrap().last_heard);
-        
-        
+
         for event in sdl_context.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => {
                     break 'repeat;
-                },
+                }
                 Event::DropFile { filename, .. } => {
                     println!("{:?}", filename);
                     let audio = AudioSpecWAV::load_wav(filename).unwrap();
@@ -127,25 +125,29 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
 
         let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();
         display.canvas.set_draw_color(thebox::DEFAULT_COLOR);
-        display.canvas.draw_lines(sliders_points.as_slice()).unwrap();
+        display
+            .canvas
+            .draw_lines(sliders_points.as_slice())
+            .unwrap();
         display.canvas.present();
         display.sleep()
     }
     queue.pause().unwrap()
 }
 
-fn initialize_audio_stream_callback(device: &AudioDevice, audio_path: &PathBuf) 
-    -> AudioStreamWithCallback<AudioBuffer> {
+fn initialize_audio_stream_callback(
+    device: &AudioDevice,
+    audio_path: &PathBuf,
+) -> AudioStreamWithCallback<AudioBuffer> {
     let audio_data = AudioSpecWAV::load_wav(&audio_path).unwrap();
     let desired_spec = AudioSpec {
         freq: Some(audio_data.freq),
         channels: Some(audio_data.channels as i32),
         format: Some(audio_data.format),
     };
-    device.open_playback_stream_with_callback(
-        &desired_spec, 
-        AudioBuffer::from_wav_spec(audio_data)
-    ).unwrap()
+    device
+        .open_playback_stream_with_callback(&desired_spec, AudioBuffer::from_wav_spec(audio_data))
+        .unwrap()
 }
 
 fn create_sliders<Type: PrimitiveNumber>(

@@ -1,4 +1,3 @@
-use sdl3::event::Event;
 use sdl3::keyboard::*;
 use sdl3::mouse::MouseState;
 use sdl3::pixels::Color;

@@ -713,7 +713,7 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
             .create_text(&self.string, color.unwrap_or_else(|| DEFAULT_COLOR))
     }
 
-    fn error_texture(&self) -> Texture {
+    fn error_texture<'t>(&'t self) -> Texture<'t> {
         self.write
             .font
             .render("!ERROR!")
@@ -883,10 +883,10 @@ pub fn geometry<P: Into<FPoint>>(pos: P, vertices: u8, size: f32) -> Vec<FPoint>
 ///This function receives an image file, (PNGs for now) and transforms them into a Texture.
 ///
 /// Note: DO NOT ignore the error that comes from it.
-pub fn texture_from_file<Render>(
+pub fn texture_from_file<'t, Render>(
     file: fs::File,
-    texture_creator: &TextureCreator<Render>,
-) -> Result<Texture, String> {
+    texture_creator: &'t TextureCreator<Render>,
+) -> Result<Texture<'t>, String> {
     let mut reader = png_reader(file)?;
 
     let mut buffer = vec![0; reader.output_buffer_size()];
