@@ -66,15 +66,16 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
     let mut pendulum2: Pendulum = Pendulum::new(pendulum1.end, fastrand::f32() * 90.0, 175.0, 20.0);
     pendulum2.update_pos();
 
-    let mut sliders: Vec<Slider<f32>> = Vec::new();
-    sliders.push(Slider::new(
-        -2000.0,
-        2000.0,
-        display.width_center() as i32 / 3 + 10,
-        display.height_center() as i32 / 8,
-        200,
-        SliderType::SliderHorizontal,
-    ));
+    let mut sliders: Vec<Slider<f32>> = vec![
+        Slider::new(
+            -2000.0,
+            2000.0,
+            display.width_center() as i32 / 3 + 10,
+            display.height_center() as i32 / 8,
+            200,
+            SliderType::SliderHorizontal,
+        )
+    ];
 
     sliders[0].set_value(980.7);
 
@@ -84,7 +85,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
     let mut tracers: Vec<FPoint> = Vec::with_capacity(tracing_length);
     for _ in 0..tracers.capacity() {
-        tracers.push(FPoint::from(pendulum2.end));
+        tracers.push(pendulum2.end);
     }
 
     'repeat: loop {

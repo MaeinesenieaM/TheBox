@@ -26,7 +26,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         400,
         550,
         16,
-        &write,
+        write,
         Some(String::from(
             "This section will have a vector visualizer and it will order it.",
         )),
@@ -45,11 +45,8 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             break 'repeat;
         }
 
-        let mut count = 0;
-
         for point in points.iter() {
-            count = count + 1;
-            let pos: (i32, i32) = sdl3::rect::Point::from(*point.clone()).into();
+            let pos: (i32, i32) = (*point).into();
             let rectangle = FRect::new(pos.0 as f32, pos.1 as f32, 16_f32, 16_f32);
             display.canvas.set_draw_color(Color::RGB(100, 120, 100));
             let _ = display.canvas.draw_rect(rectangle);

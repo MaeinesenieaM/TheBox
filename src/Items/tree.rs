@@ -10,7 +10,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         400,
         550,
         16,
-        &write,
+        write,
         Some(String::from("There will be procedural a tree in here.")),
     );
 

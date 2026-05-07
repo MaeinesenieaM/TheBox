@@ -44,7 +44,7 @@ impl AudioCallback<i16> for AudioBuffer {
             return;
         }
         let requested_buffer: &[u8] = &self.audio_buffer[self.index..requested_index];
-        stream.put_data(&requested_buffer).unwrap();
+        stream.put_data(requested_buffer).unwrap();
 
         let mut buffer: Vec<i16> = Vec::with_capacity(requested as usize);
         for bytes in requested_buffer.chunks(2) {
@@ -112,10 +112,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         for code in sdl_context.event_pump.keyboard_state().scancodes() {
             use sdl3::keyboard::Scancode::*;
             if code.1 {
-                match code.0 {
-                    Escape => sdl_context.send_quit().unwrap(),
-                    _ => {}
-                }
+                if code.0 == Escape { sdl_context.send_quit().unwrap(); }
             } else {
                 //match code.0 {
                 //    _ => {}
@@ -139,7 +136,7 @@ fn initialize_audio_stream_callback(
     device: &AudioDevice,
     audio_path: &PathBuf,
 ) -> AudioStreamWithCallback<AudioBuffer> {
-    let audio_data = AudioSpecWAV::load_wav(&audio_path).unwrap();
+    let audio_data = AudioSpecWAV::load_wav(audio_path).unwrap();
     let desired_spec = AudioSpec {
         freq: Some(audio_data.freq),
         channels: Some(audio_data.channels as i32),
@@ -177,7 +174,7 @@ fn create_sliders<Type: PrimitiveNumber>(
     sliders
 }
 
-fn copy_buffer<Type: PrimitiveNumber>(sliders: &mut Vec<Slider<Type>>, buffer: &[Type]) {
+fn copy_buffer<Type: PrimitiveNumber>(sliders: &mut [Slider<Type>], buffer: &[Type]) {
     if buffer.is_empty() {
         return;
     }

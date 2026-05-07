@@ -25,7 +25,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         (window_x / 2) as i32,
         window_y_middle + 100,
         16,
-        &write,
+        write,
         Some(String::from("ORBIT!")),
     );
 
@@ -60,7 +60,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             over = !over
         };
 
-        if over == true {
+        if over {
             blue += 1
         } else {
             blue -= 1

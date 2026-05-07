@@ -49,7 +49,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
     let mut modifiers: Vec<Modifier> = Vec::new();
 
-    let mut modifiers_label: Label = Label::new(0, 0, 8, &write, None);
+    let mut modifiers_label: Label = Label::new(0, 0, 8, write, None);
 
     modifiers.push(Modifier {
         name: String::from("Precision"),
@@ -163,14 +163,13 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                     slider_id = modifier.0 + 1;
                 }
             }
-        } else if mouse.left() == false {
+        } else if mouse.left() {
             slider_id = 0;
         }
 
         if slider_id != 0 {
             modifiers
-                .iter_mut()
-                .nth(slider_id - 1)
+                .get_mut(slider_id - 1)
                 .expect("Something went wrong on reading the Slider Iter.")
                 .slider
                 .update_from_pos((mouse.x() as i32, mouse.y() as i32));
@@ -237,7 +236,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
 //return a position based on the angle.
 fn angle_pos(x: i32, y: i32, mut angle: f32, distance: f32) -> (i32, i32) {
-    angle = PI * angle;
+    angle *= PI;
     (
         x + (distance * angle.sin()) as i32,
         y + (distance * angle.cos()) as i32,
@@ -265,7 +264,7 @@ fn ray_corner(
         let (mut px, mut py) = angle_pos(x, y, *angle, (ray_length / precision as f32) * i as f32);
         if px > width as i32 || px < 0 {
             rounder(&mut px, width);
-            *angle = *angle * -1.0;
+            *angle *= -1.0;
             return (px, py);
         } else if py > height as i32 || py < 0 {
             rounder(&mut py, height);
@@ -279,18 +278,18 @@ fn ray_corner(
 
 impl Arrow {
     fn turn(&mut self, direction: &ButtonState) {
-        if direction.pressed != true {
+        if !direction.pressed {
             return;
         }
         match direction {
             ButtonState {
                 keycode: Keycode::Right,
                 ..
-            } => self.angle = self.angle + 0.0020,
+            } => self.angle += 0.0020,
             ButtonState {
                 keycode: Keycode::Left,
                 ..
-            } => self.angle = self.angle - 0.0020,
+            } => self.angle -= 0.0020,
             _ => {}
         };
     }

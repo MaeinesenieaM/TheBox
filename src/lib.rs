@@ -9,8 +9,6 @@ use sdl3::rect::*;
 use sdl3::render::*;
 use sdl3::video::WindowContext;
 
-use png;
-
 use std::fs;
 use std::io;
 use std::path::*;
@@ -288,7 +286,7 @@ impl Display {
         let pos: FPoint = pos.into();
         let mut vert: Vec<FPoint> = geometry(pos, vertices, size);
 
-        vert.push(vert.first().unwrap().clone());
+        vert.push(*vert.first().unwrap());
 
         self.canvas.draw_lines(vert.as_slice())?;
         Ok(())
@@ -303,7 +301,7 @@ impl Display {
         let pos: FPoint = pos.into();
         let mut vert: Vec<FPoint> = geometry(pos, vertices, size);
 
-        vert.push(vert.first().unwrap().clone());
+        vert.push(*vert.first().unwrap());
 
         self.canvas.draw_points(vert.as_slice())?;
         Ok(())
@@ -453,7 +451,7 @@ impl<T: PrimitiveNumber> Slider<T> {
     }
 
     pub fn from_value(&self) -> T {
-        T::from(self.value)
+        self.value
     }
 
     ///Mutates the given value from the value of the slider.
@@ -541,11 +539,12 @@ impl<T: PrimitiveNumber> Slider<T> {
     pub fn update_from_pos<P: Into<Point>>(&mut self, point: P) {
         let pos: Point = self.start_pos();
         let point: Point = point.into();
-        let distance: i32;
-        match self.slider_type {
-            SliderType::SliderHorizontal => distance = point.x() - pos.x(),
-            SliderType::SliderVertical => distance = (pos.y() + self.length as i32) - point.y(),
-        } /*^^Extra orientation calculus^^.*/
+
+        let distance: i32 = match self.slider_type {
+            SliderType::SliderHorizontal => point.x() - pos.x(),
+            SliderType::SliderVertical => (pos.y() + self.length as i32) - point.y(),
+        }; /*^^Extra orientation calculus^^.*/
+
         let value: T = PrimitiveNumber::from_f32(
             //This formula makes so negative minimal values are possible.
             self.min.as_f32()
@@ -686,7 +685,7 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
         write: &'w Write<'ttf, 'r, 'render>,
         string: Option<String>,
     ) -> Label<'render, 'w, 'ttf, 'r> {
-        let string: String = string.unwrap_or_else(|| String::new());
+        let string: String = string.unwrap_or_default();
         Label {
             string,
             write,
@@ -710,7 +709,7 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
     }
     fn update_texture(&self, color: Option<Color>) -> Result<Texture<'render>, TextureValueError> {
         self.write
-            .create_text(&self.string, color.unwrap_or_else(|| DEFAULT_COLOR))
+            .create_text(&self.string, color.unwrap_or(DEFAULT_COLOR))
     }
 
     fn error_texture<'t>(&'t self) -> Texture<'t> {
@@ -817,7 +816,7 @@ pub fn angle_point<P: Into<Point>>(point: P, angle: f32, distance: f32) -> Point
     let point: Point = point.into();
     Point::new(
         point.x() + (distance * angle.to_radians().sin()) as i32,
-        point.y() + (distance * angle.to_radians().cos()) as i32 * -1, //makes sure it stays on raster format.
+        point.y() + -((distance * angle.to_radians().cos()) as i32), //The - makes sure it stays on raster format.
     )
 }
 
@@ -826,7 +825,7 @@ pub fn angler_point<P: Into<Point>>(point: P, angle: f32, distance: f32) -> Poin
     let point: Point = point.into();
     Point::new(
         point.x + (distance * angle.sin()) as i32,
-        point.y + (distance * angle.cos()) as i32 * -1, //makes sure it stays on raster format.
+        point.y + -((distance * angle.cos()) as i32),
     )
 }
 
@@ -835,7 +834,7 @@ pub fn angle_fpoint<P: Into<FPoint>>(point: P, angle: f32, distance: f32) -> FPo
     let point: FPoint = point.into();
     FPoint::new(
         point.x + (distance * angle.to_radians().sin()),
-        point.y + (distance * angle.to_radians().cos()) * -1.0, //makes sure it stays on raster format.
+        point.y + -(distance * angle.to_radians().cos()),
     )
 }
 
@@ -844,7 +843,7 @@ pub fn angler_fpoint<P: Into<FPoint>>(point: P, angle: f32, distance: f32) -> FP
     let point: FPoint = point.into();
     FPoint::new(
         point.x + (distance * angle.sin()),
-        point.y + (distance * angle.cos()) * -1.0, //makes sure it stays on raster format.
+        point.y + -(distance * angle.cos()),
     )
 }
 

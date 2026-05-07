@@ -35,7 +35,7 @@ impl SliderPixelColor {
 pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
     let texture_creator = display.canvas.texture_creator();
     let png_file: Result<fs::File, io::Error> = get_asset_file("texture_test.png");
-    if let Err(_) = png_file {
+    if png_file.is_err() {
         let err = Label::new(
             120,
             40,
@@ -59,40 +59,40 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         image.query().height,
     );
 
-    let mut sliders: Vec<SliderPixelColor> = Vec::with_capacity(3);
-
-    sliders.push(SliderPixelColor::new(
-        display.width_center() as i32 / 3 + 10,
-        display.height_center() as i32 / 8,
-        256,
-        SliderType::SliderHorizontal,
-        "red:",
-        COLOR_RED,
-    ));
-    sliders.push(SliderPixelColor::new(
-        display.width_center() as i32 / 3 + 10,
-        display.height_center() as i32 / 8 + 20,
-        256,
-        SliderType::SliderHorizontal,
-        "green:",
-        COLOR_GREEN,
-    ));
-    sliders.push(SliderPixelColor::new(
-        display.width_center() as i32 / 3 + 10,
-        display.height_center() as i32 / 8 + 40,
-        256,
-        SliderType::SliderHorizontal,
-        "blue:",
-        COLOR_BLUE,
-    ));
-    sliders.push(SliderPixelColor::new(
-        display.width_center() as i32 / 3 + 10,
-        display.height_center() as i32 / 8 + 60,
-        256,
-        SliderType::SliderHorizontal,
-        "alpha:",
-        COLOR_GRAY,
-    ));
+    let mut sliders: Vec<SliderPixelColor> = vec![
+        SliderPixelColor::new(
+            display.width_center() as i32 / 3 + 10,
+            display.height_center() as i32 / 8,
+            256,
+            SliderType::SliderHorizontal,
+            "red:",
+            COLOR_RED,
+        ),
+        SliderPixelColor::new(
+            display.width_center() as i32 / 3 + 10,
+            display.height_center() as i32 / 8 + 20,
+            256,
+            SliderType::SliderHorizontal,
+            "green:",
+            COLOR_GREEN,
+        ),
+        SliderPixelColor::new(
+            display.width_center() as i32 / 3 + 10,
+            display.height_center() as i32 / 8 + 40,
+            256,
+            SliderType::SliderHorizontal,
+            "blue:",
+            COLOR_BLUE,
+        ),
+        SliderPixelColor::new(
+            display.width_center() as i32 / 3 + 10,
+            display.height_center() as i32 / 8 + 60,
+            256,
+            SliderType::SliderHorizontal,
+            "alpha:",
+            COLOR_GRAY,
+        )
+    ];
 
     for slider in sliders.iter_mut() {
         slider.slider.set_value(255)

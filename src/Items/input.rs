@@ -72,14 +72,14 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
         if blue < 65 {
-            add = true
+            add = true;
         } else if blue > 185 {
-            add = false
+            add = false;
         };
-        if add == true {
-            blue = blue + 1
+        if add {
+            blue += 1;
         } else {
-            blue = blue - 1
+            blue -= 1;
         };
 
         display.canvas.set_draw_color(DEFAULT_CLEAR_COLOR);
@@ -103,12 +103,12 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
                     slider_id = slider.0 + 1;
                 }
             }
-        } else if mouse.left() == false {
+        } else if !mouse.left() {
             slider_id = 0;
         }
 
         //For the user be able to click the buttons
-        if mouse.left() && last_mouse_state == false {
+        if mouse.left() && !last_mouse_state {
             for button in buttons.iter_mut() {
                 if button
                     .rect()
@@ -121,8 +121,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
 
         if slider_id != 0 {
             sliders
-                .iter_mut()
-                .nth(slider_id - 1)
+                .get_mut(slider_id - 1)
                 .expect("Something went wrong on reading the Slider Iter.")
                 .update_from_pos((mouse.x() as i32, mouse.y() as i32));
         }
@@ -142,7 +141,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write)
             {
                 let _ = slider.draw_outline(display, COLOR_WHITE);
             }
-            let _ = slider.draw_cl(display, Color::RGB(30, 30, blue.clone()));
+            let _ = slider.draw_cl(display, Color::RGB(30, 30, blue));
         }
 
         //This draws the buttons
