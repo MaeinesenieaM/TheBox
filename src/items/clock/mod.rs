@@ -4,7 +4,7 @@ use sdl3::rect::*;
 
 use std::time;
 
-use thebox::{Display, SdlContext, Write};
+use super::*;
 
 pub const NAME: &str = "Clock";
 pub const ID: u8 = 7;

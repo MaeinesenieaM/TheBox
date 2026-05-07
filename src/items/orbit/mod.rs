@@ -1,7 +1,8 @@
 use sdl3::keyboard::*;
 use sdl3::pixels::Color;
 use sdl3::video::Window;
-use thebox::*;
+
+use super::*;
 
 pub const NAME: &str = "Orbit";
 pub const ID: u8 = 0;

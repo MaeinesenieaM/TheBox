@@ -1,6 +1,7 @@
 //use sdl2::pixels::Color;
 use sdl3::keyboard::*;
-use thebox::*;
+
+use super::*;
 
 pub const NAME: &str = "Tree";
 pub const ID: u8 = 4;

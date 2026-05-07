@@ -6,7 +6,8 @@ use sdl3::render::FPoint;
 
 use fastrand;
 use std::time::*;
-use thebox::*;
+
+use super::*;
 
 pub const NAME: &str = "Double Pendulum";
 pub const ID: u8 = 3;

@@ -1,8 +1,10 @@
+extern crate sdl3;
+
 use sdl3::keyboard::*;
 use sdl3::mouse::*;
 use sdl3::pixels::Color;
 
-use thebox::*;
+use super::*;
 
 pub const NAME: &str = "Input";
 pub const ID: u8 = 1;

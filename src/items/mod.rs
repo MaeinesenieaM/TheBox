@@ -11,7 +11,13 @@ pub mod tree;
 //This code is starting to hit a nerve on me, but it's going to be here for the long run until
 //I figure something better...
 
-use thebox::{Display, SdlContext, Write};
+use super::*;
+
+struct Item {
+    id: int,
+    name: String,
+    start: fn (display: &mut Dispaly, sdl_context: &mut SdlContext, write: &Write)
+}
 
 pub fn select_item(
     choice: i32,

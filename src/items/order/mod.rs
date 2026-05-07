@@ -3,7 +3,8 @@ use sdl3::rect::*;
 
 use sdl3::keyboard::*;
 use sdl3::render::FRect;
-use thebox::*;
+
+use super::*;
 
 /*
 struct Entity {

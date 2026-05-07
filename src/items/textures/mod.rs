@@ -3,7 +3,8 @@ use sdl3::pixels::Color;
 
 use sdl3::mouse::MouseState;
 use std::{fs, io};
-use thebox::*;
+
+use super::*;
 
 pub const NAME: &str = "Textures";
 pub const ID: u8 = 5;

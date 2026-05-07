@@ -3,8 +3,8 @@ use sdl3::audio::*;
 use sdl3::event::Event;
 use sdl3::render::FPoint;
 use std::path::*;
-use thebox::{Display, PrimitiveNumber, SdlContext, Write};
-use thebox::{Slider, SliderType};
+
+use super::*;
 
 pub const NAME: &str = "Audio";
 pub const ID: u8 = 6;

@@ -3,7 +3,8 @@ use sdl3::mouse::MouseState;
 use sdl3::pixels::Color;
 
 use std::f32::consts::PI;
-use thebox::*;
+
+use super::*;
 
 pub const NAME: &str = "Rays";
 pub const ID: u8 = 2;

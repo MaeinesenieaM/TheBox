@@ -1,3 +1,5 @@
+pub mod items;
+
 use sdl3::pixels::Color;
 use sdl3::ttf;
 
