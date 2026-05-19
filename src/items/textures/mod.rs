@@ -33,7 +33,7 @@ impl SliderPixelColor {
     }
 }
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Write) {
     let texture_creator = display.canvas.texture_creator();
     let png_file: Result<fs::File, io::Error> = get_asset_file("texture_test.png");
     if png_file.is_err() {

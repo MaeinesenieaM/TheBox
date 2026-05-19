@@ -18,7 +18,7 @@ struct Entity {
 pub const NAME: &str = "Order";
 pub const ID: u8 = 9;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Write) {
     let window = display.canvas.window();
 
     let points = grid_points(window.size(), 16);

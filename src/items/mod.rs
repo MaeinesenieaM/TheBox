@@ -1,57 +1,43 @@
-pub mod audio;
-pub mod clock;
-pub mod input;
-pub mod orbit;
-pub mod order;
-pub mod pendulum;
-pub mod rays;
-pub mod textures;
-pub mod tree;
-
-//This code is starting to hit a nerve on me, but it's going to be here for the long run until
-//I figure something better...
-
 use super::*;
 
-struct Item {
-    id: int,
-    name: String,
-    start: fn (display: &mut Dispaly, sdl_context: &mut SdlContext, write: &Write)
-}
+macro_rules! register_modules {
+    ($( $id:expr => $mod_name:ident ),* $(,)?) => {
+        // 1. Automatically declare the modules
+        $( pub mod $mod_name; )*
 
-pub fn select_item(
-    choice: i32,
-    display: &mut Display,
-    sdl_context: &mut SdlContext,
-    write: &Write,
-) {
-    match choice {
-        0 => orbit::start(display, sdl_context, write),
-        1 => input::start(display, sdl_context, write),
-        2 => rays::start(display, sdl_context, write),
-        3 => pendulum::start(display, sdl_context, write),
-        4 => tree::start(display, sdl_context, write),
-        5 => textures::start(display, sdl_context, write),
-        6 => audio::start(display, sdl_context, write),
-        7 => clock::start(display, sdl_context, write),
-        9 => order::start(display, sdl_context, write),
-        _ => {
-            println!("COULD NOT FIND ANYTHING!");
+        // 2. Generate the selection function
+        pub fn select_item(
+            choice: i32,
+            display: &mut BoxDisplay,
+            sdl_context: &mut SdlContext,
+            write: &Write,
+        ) {
+            match choice {
+                $( $id => $mod_name::start(display, sdl_context, write), )*
+                _ => {
+                    println!("COULD NOT FIND ANYTHING!");
+                }
+            }
         }
-    }
+
+        // 3. Generate the naming function
+        pub fn name_item(choice: i32) -> &'static str {
+            match choice {
+                $( $id => $mod_name::NAME, )*
+                _ => "<NOTHING>",
+            }
+        }
+    };
 }
 
-pub fn name_item(choice: i32) -> &'static str {
-    match choice {
-        0 => orbit::NAME,
-        1 => input::NAME,
-        2 => rays::NAME,
-        3 => pendulum::NAME,
-        4 => tree::NAME,
-        5 => textures::NAME,
-        6 => audio::NAME,
-        7 => clock::NAME,
-        9 => order::NAME,
-        _ => "<NOTHING>",
-    }
+register_modules! {
+    0 => orbit,
+    1 => input,
+    2 => rays,
+    3 => pendulum,
+    4 => tree,
+    5 => textures,
+    6 => audio,
+    7 => clock,
+    9 => order
 }

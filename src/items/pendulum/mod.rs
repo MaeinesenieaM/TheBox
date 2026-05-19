@@ -36,7 +36,7 @@ impl Pendulum {
         }
     }
 
-    pub fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
+    pub fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
 
         //    let end_fpoint: FPoint = angle_fpoint(*self.axle, self.angle, self.length);
@@ -54,7 +54,7 @@ impl Pendulum {
     }
 }
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Write) {
     let mut time = Instant::now();
     let main_axle: FPoint = FPoint::new(
         display.width_center() as f32,

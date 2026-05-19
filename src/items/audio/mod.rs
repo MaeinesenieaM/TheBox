@@ -59,8 +59,8 @@ impl AudioCallback<i16> for AudioBuffer {
     }
 }
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write) {
-    let mut audio_path: PathBuf = PathBuf::from(thebox::get_assets_path());
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, _write: &Write) {
+    let mut audio_path: PathBuf = PathBuf::from(crate::get_assets_path());
     audio_path.push("audio_demo.wav");
 
     let audio_data = AudioSpecWAV::load_wav(&audio_path).unwrap();
@@ -88,7 +88,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
     let limit: i16 = 32000;
     let mut sliders = create_sliders(display, -limit, limit, 0, display.height(), samples_amount);
     'repeat: loop {
-        display.canvas.set_draw_color(thebox::DEFAULT_CLEAR_COLOR);
+        display.canvas.set_draw_color(crate::DEFAULT_CLEAR_COLOR);
         display.canvas.clear();
 
         copy_buffer(&mut sliders, &queue.lock().unwrap().last_heard);
@@ -121,7 +121,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
         }
 
         let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();
-        display.canvas.set_draw_color(thebox::DEFAULT_COLOR);
+        display.canvas.set_draw_color(crate::DEFAULT_COLOR);
         display
             .canvas
             .draw_lines(sliders_points.as_slice())
@@ -148,7 +148,7 @@ fn initialize_audio_stream_callback(
 }
 
 fn create_sliders<Type: PrimitiveNumber>(
-    display: &Display,
+    display: &BoxDisplay,
     min: Type,
     max: Type,
     value: Type,

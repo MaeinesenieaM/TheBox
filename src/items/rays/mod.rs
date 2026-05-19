@@ -26,7 +26,7 @@ struct Modifier {
 }
 
 //I Should've use Points instead of a bunch of tuples, but I'm too lazy to rewrite it.
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Write) {
     let window_ref = display.canvas.window();
     let (window_width, window_height): (u32, u32) = window_ref.size();
 

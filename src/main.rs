@@ -15,7 +15,7 @@ fn main() {
     println!("The box shall open, once again...");
 
     let mut sdl_context = SdlContext::init_context();
-    let mut display = Display::init_display(&sdl_context.video_subsystem, 800, 600);
+    let mut display = BoxDisplay::init_display(&sdl_context.video_subsystem, 800, 600);
 
     let ttf = sdl3::ttf::init().unwrap();
     let texture_creator = display.canvas.texture_creator();

@@ -6,7 +6,7 @@ use super::*;
 pub const NAME: &str = "Tree";
 pub const ID: u8 = 4;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, write: &Write) {
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Write) {
     let message: Label = Label::new(
         400,
         550,

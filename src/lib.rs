@@ -139,10 +139,10 @@ impl PrimitiveNumber for isize {
 }
 
 pub trait Draw {
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error>;
+    fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error>;
     ///draw_cl is the same as draw(), but with color!
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>;
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error>;
+    fn draw_cl(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error>;
+    fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error>;
 }
 
 pub struct SdlContext {
@@ -153,9 +153,9 @@ pub struct SdlContext {
     pub audio_subsystem: AudioSubsystem,
 }
 
-///Display was initially where all the render magic happened, now it is being planned to be
+///BoxDisplay was initially where all the render magic happened, now it is being planned to be
 ///transformed into a Trait for a more modular, and borrowing friendly system.
-pub struct Display {
+pub struct BoxDisplay {
     pub canvas: WindowCanvas,
     //    pub texture_creator: TextureCreator<WindowContext> //Never use this as a reference!
     pub fps_limit: f64,
@@ -190,6 +190,7 @@ pub struct Button {
     pub x: i32,
     pub y: i32,
 }
+
 ///Labels are essentially dynamic text that changes with its string.
 ///
 /// If for some reason you want to use multiple screens in one application, keep in mind to use the
@@ -198,7 +199,7 @@ pub struct Button {
 /// Labels are also somewhat expensive since they create a texture every single frame. If you want
 ///a static text, use Write directly.
 ///
-/// Warning! Label can only be used in the same Display that Write has been created!
+/// Warning! Label can only be used in the same BoxDisplay that Write has been created!
 pub struct Label<'render, 'w, 'ttf, 'r> {
     string: String,
     write: &'w Write<'ttf, 'r, 'render>,
@@ -244,8 +245,8 @@ impl SdlContext {
     }
 }
 
-impl Display {
-    pub fn init_display(video_subsystem: &VideoSubsystem, width: u32, height: u32) -> Display {
+impl BoxDisplay {
+    pub fn init_display(video_subsystem: &VideoSubsystem, width: u32, height: u32) -> BoxDisplay {
         let window = video_subsystem
             .window("BOX", width, height)
             .opengl()
@@ -255,7 +256,7 @@ impl Display {
 
         let canvas = window.into_canvas();
         let fps_limit: f64 = 60.0;
-        Display {
+        BoxDisplay {
             //            texture_creator: canvas.texture_creator(),
             canvas,
             fps_limit,
@@ -557,7 +558,7 @@ impl<T: PrimitiveNumber> Slider<T> {
 }
 
 impl<T: PrimitiveNumber> Draw for Slider<T> {
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
+    fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(SLIDER_BAR_DEFAULT_COLOR);
         display.canvas.fill_rect(self.bar_rect())?;
         display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -565,7 +566,7 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
+    fn draw_cl(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(self.bar_rect())?;
         display.canvas.set_draw_color(SLIDER_PIVOT_COLOR);
@@ -573,7 +574,7 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
+    fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
         let bar_rect: Rect = self.bar_rect();
         let pivot_rect: Rect = self.pivot_rect();
 
@@ -648,7 +649,7 @@ impl Button {
 }
 
 impl Draw for Button {
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
+    fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(BUTTON_DEFAULT_COLOR);
         display.canvas.fill_rect(self.rect())?;
         display.canvas.set_draw_color(self.get_state_color());
@@ -656,7 +657,7 @@ impl Draw for Button {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
+    fn draw_cl(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(self.rect())?;
         display.canvas.set_draw_color(self.get_state_color());
@@ -664,7 +665,7 @@ impl Draw for Button {
         display.canvas.set_draw_color(DEFAULT_COLOR);
         Ok(())
     }
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
+    fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
         let button_rect: Rect = self.rect();
         let outline: Rect = Rect::new(
             button_rect.x() - 2,
@@ -726,7 +727,7 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
 }
 
 impl Draw for Label<'_, '_, '_, '_> {
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
+    fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32,
@@ -739,7 +740,7 @@ impl Draw for Label<'_, '_, '_, '_> {
         });
         display.canvas.copy(&texture, None, area)
     }
-    fn draw_cl(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
+    fn draw_cl(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y,
@@ -753,7 +754,7 @@ impl Draw for Label<'_, '_, '_, '_> {
         display.canvas.copy(&texture, None, area)
     }
     ///This function will only draw a rectangle on the text.
-    fn draw_outline(&self, display: &mut Display, color: Color) -> Result<(), sdl3::Error> {
+    fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
         let area = Rect::new(
             self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
             self.y - (self.size / 2) as i32 - 2,

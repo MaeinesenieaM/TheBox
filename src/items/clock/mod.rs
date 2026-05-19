@@ -11,7 +11,7 @@ pub const ID: u8 = 7;
 
 const CLOCK_SIZE: f32 = 180.0;
 
-pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write) {
+pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, _write: &Write) {
     let (window_x, window_y): (u32, u32) = display.canvas.window().size();
 
     let window_x: i16 = window_x.try_into().unwrap();
@@ -24,7 +24,7 @@ pub fn start(display: &mut Display, sdl_context: &mut SdlContext, _write: &Write
     'repeat: loop {
         display.canvas.set_draw_color(Color::RGB(20, 20, 20));
         display.canvas.clear();
-        display.canvas.set_draw_color(thebox::COLOR_WHITE);
+        display.canvas.set_draw_color(crate::COLOR_WHITE);
 
         let keyboard: KeyboardState = KeyboardState::new(&sdl_context.event_pump);
 
@@ -64,14 +64,14 @@ impl Clock {
         }
     }
     //This might get an error, be sure to handle it well.
-    fn draw(&self, display: &mut Display) -> Result<(), sdl3::Error> {
+    fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error> {
         display.draw_geometry(self.pos, 16, self.size)?;
         display.draw_geometry_points(self.pos, 12, self.size * 0.9)?;
         display.canvas.set_draw_color(Color::RGB(180, 40, 40));
         display.draw_angle(self.pos, self.second_hand_ang, self.size * 0.8)?;
         display.canvas.set_draw_color(Color::RGB(40, 40, 180));
         display.draw_angle(self.pos, self.minute_hand_ang, self.size * 0.7)?;
-        display.canvas.set_draw_color(thebox::COLOR_WHITE);
+        display.canvas.set_draw_color(crate::COLOR_WHITE);
         display.draw_angle(self.pos, self.hour_hand_ang, self.size * 0.5)?;
         Ok(())
     }
