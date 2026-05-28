@@ -15,6 +15,133 @@ use std::fs;
 use std::io;
 use std::path::*;
 
+/// Extension trait that provides the methods FRect is missing compared to Rect.
+/// Covers edge accessors, corner helpers, point/rect containment, intersection,
+/// union, and mutation helpers (offset, resize, center_on, set_* edges).
+pub trait FRectExt {
+    /// Returns the y coordinate of the top edge.
+    fn top(&self) -> f32;
+    /// Returns the y coordinate of the bottom edge (y + height).
+    fn bottom(&self) -> f32;
+    /// Returns the x coordinate of the left edge.
+    fn left(&self) -> f32;
+    /// Returns the x coordinate of the right edge (x + width).
+    fn right(&self) -> f32;
+    /// Returns the centre point of the rect.
+    fn center(&self) -> FPoint;
+    /// Returns the top-left corner.
+    fn top_left(&self) -> FPoint;
+    /// Returns the top-right corner.
+    fn top_right(&self) -> FPoint;
+    /// Returns the bottom-left corner.
+    fn bottom_left(&self) -> FPoint;
+    /// Returns the bottom-right corner.
+    fn bottom_right(&self) -> FPoint;
+    /// Returns true when the point lies inside or on the boundary of this rect.
+    fn contains_point<P: Into<FPoint>>(&self, point: P) -> bool;
+    /// Returns true when `other` is fully enclosed by this rect.
+    fn contains_rect(&self, other: &FRect) -> bool;
+    /// Returns true when this rect and `other` overlap (touching edges count as no intersection).
+    fn has_intersection(&self, other: &FRect) -> bool;
+    /// Returns the overlapping region of the two rects, or `None` if they do not intersect.
+    fn intersection(&self, other: &FRect) -> Option<FRect>;
+    /// Returns the smallest rect that fully encloses both rects.
+    fn union(&self, other: &FRect) -> FRect;
+    /// Translates the rect by `(dx, dy)` in place.
+    fn offset(&mut self, dx: f32, dy: f32);
+    /// Replaces the size of the rect in place, keeping the origin.
+    fn resize(&mut self, width: f32, height: f32);
+    /// Repositions the rect so that its centre lands on `point`.
+    fn center_on<P: Into<FPoint>>(&mut self, point: P);
+    /// Moves the left edge to `left`, keeping the width.
+    fn set_left(&mut self, left: f32);
+    /// Moves the top edge to `top`, keeping the height.
+    fn set_top(&mut self, top: f32);
+    /// Moves the right edge to `right`, keeping the width (adjusts x).
+    fn set_right(&mut self, right: f32);
+    /// Moves the bottom edge to `bottom`, keeping the height (adjusts y).
+    fn set_bottom(&mut self, bottom: f32);
+}
+
+impl FRectExt for FRect {
+    #[inline] fn top(&self) -> f32    { self.y }
+    #[inline] fn bottom(&self) -> f32 { self.y + self.h }
+    #[inline] fn left(&self) -> f32   { self.x }
+    #[inline] fn right(&self) -> f32  { self.x + self.w }
+
+    fn center(&self) -> FPoint {
+        FPoint::new(self.x + self.w / 2.0, self.y + self.h / 2.0)
+    }
+    fn top_left(&self) -> FPoint     { FPoint::new(self.x,          self.y)  }
+    fn top_right(&self) -> FPoint    { FPoint::new(self.x + self.w, self.y)  }
+    fn bottom_left(&self) -> FPoint  { FPoint::new(self.x,  self.y + self.h) }
+    fn bottom_right(&self) -> FPoint { FPoint::new(self.x + self.w, self.y + self.h) }
+
+    fn contains_point<P: Into<FPoint>>(&self, point: P) -> bool {
+        let p: FPoint = point.into();
+        p.x >= self.left() && p.x <= self.right() && p.y >= self.top() && p.y <= self.bottom()
+    }
+
+    fn contains_rect(&self, other: &FRect) -> bool {
+        other.left() >= self.left()
+            && other.top() >= self.top()
+            && other.right() <= self.right()
+            && other.bottom() <= self.bottom()
+    }
+
+    fn has_intersection(&self, other: &FRect) -> bool {
+        self.left() < other.right()
+            && self.right() > other.left()
+            && self.top() < other.bottom()
+            && self.bottom() > other.top()
+    }
+
+    fn intersection(&self, other: &FRect) -> Option<FRect> {
+        if !self.has_intersection(other) {
+            return None;
+        }
+        let x = self.left().max(other.left());
+        let y = self.top().max(other.top());
+        let r = self.right().min(other.right());
+        let b = self.bottom().min(other.bottom());
+        Some(FRect::new(x, y, r - x, b - y))
+    }
+
+    fn union(&self, other: &FRect) -> FRect {
+        let x = self.left().min(other.left());
+        let y = self.top().min(other.top());
+        let r = self.right().max(other.right());
+        let b = self.bottom().max(other.bottom());
+        FRect::new(x, y, r - x, b - y)
+    }
+
+    fn offset(&mut self, dx: f32, dy: f32) {
+        *self = FRect::new(self.x + dx, self.y + dy, self.w, self.h);
+    }
+
+    fn resize(&mut self, width: f32, height: f32) {
+        *self = FRect::new(self.x, self.y, width, height);
+    }
+
+    fn center_on<P: Into<FPoint>>(&mut self, point: P) {
+        let p: FPoint = point.into();
+        *self = FRect::new(p.x - self.w / 2.0, p.y - self.h / 2.0, self.w, self.h);
+    }
+
+    fn set_left(&mut self, left: f32) {
+        *self = FRect::new(left, self.y, self.w, self.h);
+    }
+    fn set_top(&mut self, top: f32) {
+        *self = FRect::new(self.x, top, self.w, self.h);
+    }
+    fn set_right(&mut self, right: f32) {
+        *self = FRect::new(right - self.w, self.y, self.w, self.h);
+    }
+    fn set_bottom(&mut self, bottom: f32) {
+        *self = FRect::new(self.x, bottom - self.h, self.w, self.h);
+    }
+}
+
 pub const DEFAULT_COLOR: Color = Color::RGB(210, 210, 220);
 pub const DEFAULT_CLEAR_COLOR: Color = Color::RGB(20, 20, 20);
 
@@ -179,16 +306,16 @@ pub struct Slider<T: PrimitiveNumber> {
     value: T,
     min: T,
     max: T,
-    pub x: i32,
-    pub y: i32,
+    pub x: f32,
+    pub y: f32,
     length: u32,
     slider_type: SliderType,
 }
 
 pub struct Button {
     pub state: bool,
-    pub x: i32,
-    pub y: i32,
+    pub x: f32,
+    pub y: f32,
 }
 
 ///Labels are essentially dynamic text that changes with its string.
@@ -204,8 +331,8 @@ pub struct Label<'render, 'w, 'ttf, 'r> {
     string: String,
     write: &'w Write<'ttf, 'r, 'render>,
     pub size: u32,
-    x: i32,
-    y: i32,
+    x: f32,
+    y: f32,
 }
 
 impl SdlContext {
@@ -268,12 +395,12 @@ impl BoxDisplay {
         std::thread::sleep(sleep_time)
     }
 
-    pub fn draw_outline(&mut self, rect: &Rect) -> Result<(), sdl3::Error> {
-        let outline: Rect = Rect::new(
-            rect.x() - 2,
-            rect.y() - 2,
-            rect.width() + 4,
-            rect.height() + 4,
+    pub fn draw_outline(&mut self, rect: &FRect) -> Result<(), sdl3::Error> {
+        let outline = FRect::new(
+            rect.x - 2.0,
+            rect.y - 2.0,
+            rect.w + 4.0,
+            rect.h + 4.0,
         );
         self.canvas.set_draw_color(COLOR_WHITE);
         self.canvas.fill_rect(outline)?;
@@ -310,20 +437,20 @@ impl BoxDisplay {
         Ok(())
     }
 
-    pub fn draw_angle<P: Into<Point>>(
+    pub fn draw_angle<P: Into<FPoint>>(
         &mut self,
         pos: P,
         angle: f32,
         distance: f32,
     ) -> Result<(), sdl3::Error> {
-        let pos1: Point = pos.into();
-        let pos2: Point = angle_point(pos1, angle, distance);
+        let pos1: FPoint = pos.into();
+        let pos2: FPoint = angle_fpoint(pos1, angle, distance);
 
         self.canvas.draw_line(pos1, pos2)?;
         Ok(())
     }
 
-    ///Deprecated, sdl3 now enforces the use of FPoint in all circumstances.
+    ///Deprecated, use draw_angle() directly — sdl3 now enforces the use of FPoint in all circumstances.
     pub fn draw_angle_float<P: Into<FPoint>>(
         &mut self,
         pos: P,
@@ -412,7 +539,7 @@ impl<'t, 'f, 'render> Write<'t, 'f, 'render> {
 }
 
 impl<T: PrimitiveNumber> Slider<T> {
-    pub fn new(min: T, max: T, x: i32, y: i32, length: u32, slider_type: SliderType) -> Slider<T> {
+    pub fn new(min: T, max: T, x: f32, y: f32, length: u32, slider_type: SliderType) -> Slider<T> {
         Slider {
             min,
             max,
@@ -472,86 +599,77 @@ impl<T: PrimitiveNumber> Slider<T> {
     }
 
     ///Returns a position at the beginning of the slider.
-    fn start_pos(&self) -> Point {
+    fn start_pos(&self) -> FPoint {
         match self.slider_type {
-            SliderType::SliderHorizontal => (self.x - self.length as i32 / 2, self.y).into(),
-            SliderType::SliderVertical => (self.x, self.y - self.length as i32 / 2).into(),
+            SliderType::SliderHorizontal => FPoint::new(self.x - self.length as f32 / 2.0, self.y),
+            SliderType::SliderVertical =>   FPoint::new(self.x, self.y - self.length as f32 / 2.0),
         }
     }
 
     ///Calculates and returns the position of the pivot.
-    pub fn pivot(&self) -> Point {
-        let pos = self.start_pos();
-        match &self.slider_type {
-            SliderType::SliderHorizontal => Point::new(
-                pos.x + (self.length as f32 * self.percentage()) as i32,
-                pos.y,
-            ),
-            SliderType::SliderVertical => Point::new(
-                pos.x,
-                pos.y + self.length as i32 - (self.length as f32 * self.percentage()) as i32,
-            ),
-        }
-    }
-
-    pub fn pivot_f(&self) -> FPoint {
+    pub fn pivot(&self) -> FPoint {
         let pos = self.start_pos();
         match &self.slider_type {
             SliderType::SliderHorizontal => FPoint::new(
-                pos.x as f32 + (self.length as f32 * self.percentage()),
-                pos.y as f32,
+                pos.x + self.length as f32 * self.percentage(),
+                pos.y,
             ),
             SliderType::SliderVertical => FPoint::new(
-                pos.x as f32,
-                pos.y as f32 + self.length as f32 - (self.length as f32 * self.percentage()),
+                pos.x,
+                pos.y + self.length as f32 - self.length as f32 * self.percentage(),
             ),
         }
     }
 
-    ///Returns the Rect of the pivot.
-    pub fn pivot_rect(&self) -> Rect {
+    ///Same as pivot(). Kept for compatibility — pivot() now returns FPoint directly.
+    pub fn pivot_f(&self) -> FPoint {
+        self.pivot()
+    }
+
+    ///Returns the FRect of the pivot.
+    pub fn pivot_rect(&self) -> FRect {
         let pos = self.pivot();
-        Rect::new(
-            pos.x() - (SLIDER_PIVOT_SIZE / 2) as i32,
-            pos.y() - (SLIDER_PIVOT_SIZE / 2) as i32, // - SLIDER_BAR_SIZE as i32 / 2
-            SLIDER_PIVOT_SIZE,
-            SLIDER_PIVOT_SIZE,
+        FRect::new(
+            pos.x - SLIDER_PIVOT_SIZE as f32 / 2.0,
+            pos.y - SLIDER_PIVOT_SIZE as f32 / 2.0,
+            SLIDER_PIVOT_SIZE as f32,
+            SLIDER_PIVOT_SIZE as f32,
         )
     }
 
-    ///Returns the Rect of the Bar.
-    pub fn bar_rect(&self) -> Rect {
+    ///Returns the FRect of the Bar.
+    pub fn bar_rect(&self) -> FRect {
         let pos = self.start_pos();
         match self.slider_type {
-            SliderType::SliderHorizontal => Rect::new(
-                pos.x(),
-                pos.y() - (SLIDER_BAR_SIZE / 2) as i32,
-                self.length,
-                SLIDER_BAR_SIZE,
+            SliderType::SliderHorizontal => FRect::new(
+                pos.x,
+                pos.y - SLIDER_BAR_SIZE as f32 / 2.0,
+                self.length as f32,
+                SLIDER_BAR_SIZE as f32,
             ),
-            SliderType::SliderVertical => Rect::new(
-                pos.x() - (SLIDER_BAR_SIZE / 2) as i32,
-                pos.y(),
-                SLIDER_BAR_SIZE,
-                self.length,
+            SliderType::SliderVertical => FRect::new(
+                pos.x - SLIDER_BAR_SIZE as f32 / 2.0,
+                pos.y,
+                SLIDER_BAR_SIZE as f32,
+                self.length as f32,
             ),
         }
     }
 
     ///This will be like this until I have the patience to add more SliderTypes o7
-    pub fn update_from_pos<P: Into<Point>>(&mut self, point: P) {
-        let pos: Point = self.start_pos();
-        let point: Point = point.into();
+    pub fn update_from_pos<P: Into<FPoint>>(&mut self, point: P) {
+        let pos: FPoint = self.start_pos();
+        let point: FPoint = point.into();
 
-        let distance: i32 = match self.slider_type {
-            SliderType::SliderHorizontal => point.x() - pos.x(),
-            SliderType::SliderVertical => (pos.y() + self.length as i32) - point.y(),
+        let distance: f32 = match self.slider_type {
+            SliderType::SliderHorizontal => point.x - pos.x,
+            SliderType::SliderVertical => (pos.y + self.length as f32) - point.y,
         }; /*^^Extra orientation calculus^^.*/
 
         let value: T = PrimitiveNumber::from_f32(
             //This formula makes so negative minimal values are possible.
             self.min.as_f32()
-                + (distance as f32 / self.length as f32) * (self.max.as_f32() - self.min.as_f32()),
+                + (distance / self.length as f32) * (self.max.as_f32() - self.min.as_f32()),
         );
         self.set_value_limited(value);
     }
@@ -575,20 +693,20 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
         Ok(())
     }
     fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
-        let bar_rect: Rect = self.bar_rect();
-        let pivot_rect: Rect = self.pivot_rect();
+        let bar_rect: FRect = self.bar_rect();
+        let pivot_rect: FRect = self.pivot_rect();
 
         let bar_outline: FRect = FRect::new(
-            bar_rect.x() as f32 - 2f32,
-            bar_rect.y() as f32 - 2f32,
-            bar_rect.width() as f32 + 4f32,
-            bar_rect.height() as f32 + 4f32,
+            bar_rect.x - 2.0,
+            bar_rect.y - 2.0,
+            bar_rect.w + 4.0,
+            bar_rect.h + 4.0,
         );
         let pivot_outline: FRect = FRect::new(
-            pivot_rect.x() as f32 - 2f32,
-            pivot_rect.y() as f32 - 2f32,
-            pivot_rect.width() as f32 + 4f32,
-            pivot_rect.height() as f32 + 4f32,
+            pivot_rect.x - 2.0,
+            pivot_rect.y - 2.0,
+            pivot_rect.w + 4.0,
+            pivot_rect.h + 4.0,
         );
 
         display.canvas.set_draw_color(color);
@@ -599,7 +717,7 @@ impl<T: PrimitiveNumber> Draw for Slider<T> {
 }
 
 impl Button {
-    pub fn new(state: bool, x: i32, y: i32) -> Button {
+    pub fn new(state: bool, x: f32, y: f32) -> Button {
         Button { state, x, y }
     }
 
@@ -619,31 +737,31 @@ impl Button {
         }
     }
 
-    pub fn set_pos<P: Into<Point>>(&mut self, point: P) {
-        let point: Point = point.into();
-        self.x = point.x();
-        self.y = point.y();
+    pub fn set_pos<P: Into<FPoint>>(&mut self, point: P) {
+        let point: FPoint = point.into();
+        self.x = point.x;
+        self.y = point.y;
     }
 
     pub fn toggle(&mut self) {
         self.state = !self.state;
     }
 
-    pub fn rect(&self) -> Rect {
-        Rect::new(
-            self.x - BUTTON_RECT_SIZE as i32 / 2,
-            self.y - BUTTON_RECT_SIZE as i32 / 2,
-            BUTTON_RECT_SIZE,
-            BUTTON_RECT_SIZE,
+    pub fn rect(&self) -> FRect {
+        FRect::new(
+            self.x - BUTTON_RECT_SIZE as f32 / 2.0,
+            self.y - BUTTON_RECT_SIZE as f32 / 2.0,
+            BUTTON_RECT_SIZE as f32,
+            BUTTON_RECT_SIZE as f32,
         )
     }
 
-    pub fn state_rect(&self) -> Rect {
-        Rect::new(
-            self.x - BUTTON_RECT_STATE_SIZE as i32 / 2,
-            self.y - BUTTON_RECT_STATE_SIZE as i32 / 2,
-            BUTTON_RECT_STATE_SIZE,
-            BUTTON_RECT_STATE_SIZE,
+    pub fn state_rect(&self) -> FRect {
+        FRect::new(
+            self.x - BUTTON_RECT_STATE_SIZE as f32 / 2.0,
+            self.y - BUTTON_RECT_STATE_SIZE as f32 / 2.0,
+            BUTTON_RECT_STATE_SIZE as f32,
+            BUTTON_RECT_STATE_SIZE as f32,
         )
     }
 }
@@ -666,12 +784,12 @@ impl Draw for Button {
         Ok(())
     }
     fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
-        let button_rect: Rect = self.rect();
-        let outline: Rect = Rect::new(
-            button_rect.x() - 2,
-            button_rect.y() - 2,
-            button_rect.width() + 4,
-            button_rect.height() + 4,
+        let button_rect: FRect = self.rect();
+        let outline = FRect::new(
+            button_rect.x - 2.0,
+            button_rect.y - 2.0,
+            button_rect.w + 4.0,
+            button_rect.h + 4.0,
         );
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(outline)?;
@@ -682,8 +800,8 @@ impl Draw for Button {
 
 impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
     pub fn new(
-        x: i32,
-        y: i32,
+        x: f32,
+        y: f32,
         size: u32,
         write: &'w Write<'ttf, 'r, 'render>,
         string: Option<String>,
@@ -698,7 +816,7 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
         }
     }
 
-    pub fn set_pos(&mut self, x: i32, y: i32) {
+    pub fn set_pos(&mut self, x: f32, y: f32) {
         self.x = x;
         self.y = y;
     }
@@ -728,11 +846,11 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
 
 impl Draw for Label<'_, '_, '_, '_> {
     fn draw(&self, display: &mut BoxDisplay) -> Result<(), sdl3::Error> {
-        let area = Rect::new(
-            self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
-            self.y - (self.size / 2) as i32,
-            self.string.len() as u32 * self.size,
-            self.size * 2,
+        let area = FRect::new(
+            self.x - self.string.len() as f32 * (self.size as f32 / 2.0),
+            self.y - self.size as f32 / 2.0,
+            self.string.len() as f32 * self.size as f32,
+            self.size as f32 * 2.0,
         );
         let texture = self.update_texture(None).unwrap_or_else(|err| {
             println!("Failed to create text Texture: {:?}", err);
@@ -741,11 +859,11 @@ impl Draw for Label<'_, '_, '_, '_> {
         display.canvas.copy(&texture, None, area)
     }
     fn draw_cl(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
-        let area = Rect::new(
-            self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
+        let area = FRect::new(
+            self.x - self.string.len() as f32 * (self.size as f32 / 2.0),
             self.y,
-            self.string.len() as u32 * self.size,
-            self.size * 2,
+            self.string.len() as f32 * self.size as f32,
+            self.size as f32 * 2.0,
         );
         let texture = self.update_texture(Some(color)).unwrap_or_else(|err| {
             println!("Failed to create text Texture: {:?}", err);
@@ -755,11 +873,11 @@ impl Draw for Label<'_, '_, '_, '_> {
     }
     ///This function will only draw a rectangle on the text.
     fn draw_outline(&self, display: &mut BoxDisplay, color: Color) -> Result<(), sdl3::Error> {
-        let area = Rect::new(
-            self.x - (self.string.len() as u32 * (self.size / 2)) as i32,
-            self.y - (self.size / 2) as i32 - 2,
-            self.string.len() as u32 * self.size + 2,
-            self.size * 2 + 2,
+        let area = FRect::new(
+            self.x - self.string.len() as f32 * (self.size as f32 / 2.0),
+            self.y - self.size as f32 / 2.0 - 2.0,
+            self.string.len() as f32 * self.size as f32 + 2.0,
+            self.size as f32 * 2.0 + 2.0,
         );
         display.canvas.set_draw_color(color);
         display.canvas.fill_rect(area)?;
@@ -815,20 +933,20 @@ pub fn get_asset_file(file: &str) -> Result<fs::File, io::Error> {
 }
 
 ///Return a point based mainly on angle and the distance given.
-pub fn angle_point<P: Into<Point>>(point: P, angle: f32, distance: f32) -> Point {
-    let point: Point = point.into();
-    Point::new(
-        point.x() + (distance * angle.to_radians().sin()) as i32,
-        point.y() + -((distance * angle.to_radians().cos()) as i32), //The - makes sure it stays on raster format.
+pub fn angle_point<P: Into<FPoint>>(point: P, angle: f32, distance: f32) -> FPoint {
+    let point: FPoint = point.into();
+    FPoint::new(
+        point.x + distance * angle.to_radians().sin(),
+        point.y + -(distance * angle.to_radians().cos()), //The - makes sure it stays on raster format.
     )
 }
 
 ///Same as angle_point(), but with radians instead.
-pub fn angler_point<P: Into<Point>>(point: P, angle: f32, distance: f32) -> Point {
-    let point: Point = point.into();
-    Point::new(
-        point.x + (distance * angle.sin()) as i32,
-        point.y + -((distance * angle.cos()) as i32),
+pub fn angler_point<P: Into<FPoint>>(point: P, angle: f32, distance: f32) -> FPoint {
+    let point: FPoint = point.into();
+    FPoint::new(
+        point.x + distance * angle.sin(),
+        point.y + -(distance * angle.cos()),
     )
 }
 
