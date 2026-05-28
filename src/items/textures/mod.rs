@@ -17,8 +17,8 @@ struct SliderPixelColor {
 
 impl SliderPixelColor {
     fn new<S: Into<String>>(
-        x: i32,
-        y: i32,
+        x: f32,
+        y: f32,
         length: u32,
         slider_type: SliderType,
         name: S,
@@ -38,8 +38,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     let png_file: Result<fs::File, io::Error> = get_asset_file("texture_test.png");
     if png_file.is_err() {
         let err = Label::new(
-            120,
-            40,
+            120.0,
+            40.0,
             8,
             write,
             Some(String::from("UNABLE TO READ FILE!")),
@@ -62,32 +62,32 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
 
     let mut sliders: Vec<SliderPixelColor> = vec![
         SliderPixelColor::new(
-            display.width_center() as i32 / 3 + 10,
-            display.height_center() as i32 / 8,
+            display.width_center()  as f32 / 3.0 + 10.0,
+            display.height_center() as f32 / 8.0,
             256,
             SliderType::SliderHorizontal,
             "red:",
             COLOR_RED,
         ),
         SliderPixelColor::new(
-            display.width_center() as i32 / 3 + 10,
-            display.height_center() as i32 / 8 + 20,
+            display.width_center()  as f32 / 3.0 + 10.0,
+            display.height_center() as f32 / 8.0 + 20.0,
             256,
             SliderType::SliderHorizontal,
             "green:",
             COLOR_GREEN,
         ),
         SliderPixelColor::new(
-            display.width_center() as i32 / 3 + 10,
-            display.height_center() as i32 / 8 + 40,
+            display.width_center()  as f32 / 3.0 + 10.0,
+            display.height_center() as f32 / 8.0 + 40.0,
             256,
             SliderType::SliderHorizontal,
             "blue:",
             COLOR_BLUE,
         ),
         SliderPixelColor::new(
-            display.width_center() as i32 / 3 + 10,
-            display.height_center() as i32 / 8 + 60,
+            display.width_center()  as f32 / 3.0 + 10.0,
+            display.height_center() as f32 / 8.0 + 60.0,
             256,
             SliderType::SliderHorizontal,
             "alpha:",
@@ -138,8 +138,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
             spc_ref.slider.draw_cl(display, spc_ref.color).unwrap();
 
             Label::new(
-                spc_ref.slider.x + 180,
-                spc_ref.slider.y - 9,
+                spc_ref.slider.x + 180.0,
+                spc_ref.slider.y - 9.0,
                 8,
                 write,
                 Some(format!(

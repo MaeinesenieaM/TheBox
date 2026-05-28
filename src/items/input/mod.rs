@@ -17,8 +17,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     let mut buttons: Vec<Button> = Vec::new();
 
     let input_message: Label = Label::new(
-        400,
-        550,
+        400.0,
+        550.0,
         8,
         write,
         Some(String::from(
@@ -29,8 +29,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     sliders.push(Slider::new(
         0,
         255,
-        (window_width / 2) as i32,
-        (window_height / 2) as i32,
+        (window_width / 2)  as f32,
+        (window_height / 2) as f32,
         255,
         SliderType::SliderHorizontal,
     ));
@@ -38,8 +38,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     sliders.push(Slider::new(
         0,
         100,
-        40,
-        (window_height / 2) as i32,
+        40.0,
+        (window_height / 2) as f32,
         400,
         SliderType::SliderVertical,
     ));
@@ -47,18 +47,18 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     sliders.push(Slider::new(
         0,
         50,
-        (window_width / 2) as i32,
-        40,
+        (window_width / 2) as f32,
+        40.0,
         window_width - 100,
         SliderType::SliderHorizontal,
     ));
 
-    let mut sliders_label: Label = Label::new(0, 0, 8, write, None);
+    let mut sliders_label: Label = Label::new(0.0, 0.0, 8, write, None);
 
     buttons.push(Button::new(
         false,
-        (window_width - 64) as i32,
-        (window_height - 64) as i32,
+        (window_width - 64)  as f32,
+        (window_height - 64) as f32,
     ));
 
     let mut slider_id: usize = 0;
@@ -131,8 +131,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
         //This draws the sliders.
         for slider in sliders.iter() {
             match slider.get_type() {
-                SliderType::SliderHorizontal => sliders_label.set_pos(slider.x, slider.y - 20),
-                SliderType::SliderVertical => sliders_label.set_pos(slider.x - 20, slider.y),
+                SliderType::SliderHorizontal => sliders_label.set_pos(slider.x, slider.y - 20.0),
+                SliderType::SliderVertical   => sliders_label.set_pos(slider.x - 20.0, slider.y),
             }
             sliders_label.update_text(slider.get_value_ref().to_string());
             let _ = sliders_label.draw(display);

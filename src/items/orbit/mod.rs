@@ -18,13 +18,13 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     let window_ref: &Window = display.canvas.window();
 
     let (window_x, window_y) = window_ref.size();
-    let (window_x_middle, window_y_middle): (i32, i32) = (window_x as i32 / 2, window_y as i32 / 2);
+    let (window_x_middle, window_y_middle): (f32, f32) = (window_x as f32 / 2.0, window_y as f32 / 2.0);
 
     let circle_color: Color = Color::RGB(230, 80, 60);
 
     let orbit_message: Label = Label::new(
-        (window_x / 2) as i32,
-        window_y_middle + 100,
+        (window_x / 2) as f32,
+        window_y_middle + 100.0,
         16,
         write,
         Some(String::from("ORBIT!")),

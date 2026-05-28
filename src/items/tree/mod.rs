@@ -8,8 +8,8 @@ pub const ID: u8 = 4;
 
 pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Write) {
     let message: Label = Label::new(
-        400,
-        550,
+        400.0,
+        550.0,
         16,
         write,
         Some(String::from("There will be procedural a tree in here.")),

@@ -1,7 +1,6 @@
 use sdl3::keyboard::*;
 use sdl3::mouse::*;
 use sdl3::pixels::Color;
-use sdl3::rect::*;
 use sdl3::render::FPoint;
 
 use fastrand;
@@ -40,7 +39,7 @@ impl Pendulum {
         display.canvas.set_draw_color(DEFAULT_COLOR);
 
         //    let end_fpoint: FPoint = angle_fpoint(*self.axle, self.angle, self.length);
-        let end_point: Point = Point::new(self.end.x as i32, self.end.y as i32); //THE HORROR OF AS!
+        let end_point: FPoint = FPoint::new(self.end.x, self.end.y); //THE HORROR OF AS!
 
         display.canvas.draw_line(self.axle, self.end)?; //Something is going to break here, I feel it...
         display.canvas.set_draw_color(COLOR_RED);
@@ -71,8 +70,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
         Slider::new(
             -2000.0,
             2000.0,
-            display.width_center() as i32 / 3 + 10,
-            display.height_center() as i32 / 8,
+            display.width_center()  as f32 / 3.0 + 10.0,
+            display.height_center() as f32 / 8.0,
             200,
             SliderType::SliderHorizontal,
         )
@@ -124,8 +123,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
             spc_ref.draw_cl(display, COLOR_GRAY).unwrap();
 
             Label::new(
-                spc_ref.x,
-                spc_ref.y - 22,
+                spc_ref.x.round(),
+                spc_ref.y - 22.0,
                 8,
                 write,
                 Some(format!("Gravity in cm/s: {}", spc_ref.get_value_ref())),

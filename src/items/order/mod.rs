@@ -24,8 +24,8 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, write: &Wri
     let points = grid_points(window.size(), 16);
 
     let message: Label = Label::new(
-        400,
-        550,
+        400.0,
+        550.0,
         16,
         write,
         Some(String::from(

@@ -120,7 +120,7 @@ pub fn start(display: &mut BoxDisplay, sdl_context: &mut SdlContext, _write: &Wr
             }
         }
 
-        let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot_f()).collect();
+        let sliders_points: Vec<FPoint> = sliders.iter().map(|slider| slider.pivot()).collect();
         display.canvas.set_draw_color(crate::DEFAULT_COLOR);
         display
             .canvas
@@ -163,8 +163,8 @@ fn create_sliders<Type: PrimitiveNumber>(
         let mut slider = Slider::new(
             min,
             max,
-            (width_distance * index as f32) as i32,
-            height as i32,
+            (width_distance * index as f32) as f32,
+            height,
             length,
             SliderType::SliderVertical,
         );

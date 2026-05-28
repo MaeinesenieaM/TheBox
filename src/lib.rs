@@ -7,7 +7,6 @@ use sdl3::Sdl;
 use sdl3::{AudioSubsystem, EventPump, EventSubsystem, VideoSubsystem};
 
 use sdl3::event::Event;
-use sdl3::rect::*;
 use sdl3::render::*;
 use sdl3::video::WindowContext;
 
@@ -622,6 +621,7 @@ impl<T: PrimitiveNumber> Slider<T> {
     }
 
     ///Same as pivot(). Kept for compatibility — pivot() now returns FPoint directly.
+    #[deprecated = "Use pivot() instead. Previously this function was used to return a float point, but pivot() now returns that by default."]
     pub fn pivot_f(&self) -> FPoint {
         self.pivot()
     }
@@ -811,8 +811,8 @@ impl<'render, 'w, 'ttf, 'r> Label<'render, 'w, 'ttf, 'r> {
             string,
             write,
             size,
-            x,
-            y,
+            x: x.round(), //For text not display incorrectly and blurry, we must round
+            y: y.round(), //the numbers.
         }
     }
 
